@@ -100,18 +100,19 @@ const Discover = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 pb-24">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Loading profiles...</p>
         </div>
+        <BottomNav />
       </div>
     );
   }
 
   if (!currentProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4 pb-24">
         <div className="text-center max-w-md">
           <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary animate-pulse" />
           <h2 className="text-2xl font-bold mb-2">You're Early! 🎉</h2>
@@ -125,6 +126,7 @@ const Discover = () => {
             Back to Home
           </Button>
         </div>
+        <BottomNav />
       </div>
     );
   }
