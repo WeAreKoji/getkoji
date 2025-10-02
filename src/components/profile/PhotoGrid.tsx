@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Camera } from "lucide-react";
+import { ImageViewer } from "@/components/media/ImageViewer";
+import { haptics } from "@/lib/native";
 
 interface Photo {
   id: string;
@@ -10,21 +13,37 @@ interface Photo {
 interface PhotoGridProps {
   photos: Photo[];
   onPhotoClick?: (photo: Photo) => void;
+  enableViewer?: boolean;
 }
 
-const PhotoGrid = ({ photos, onPhotoClick }: PhotoGridProps) => {
+const PhotoGrid = ({ photos, onPhotoClick, enableViewer = true }: PhotoGridProps) => {
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
   // Fill empty slots to always show 9 slots
   const slots = Array.from({ length: 9 }, (_, i) => photos[i] || null);
 
+  const handlePhotoClick = (photo: Photo, index: number) => {
+    haptics.light();
+    
+    if (onPhotoClick) {
+      onPhotoClick(photo);
+    } else if (enableViewer) {
+      setViewerIndex(index);
+      setViewerOpen(true);
+    }
+  };
+
   return (
-    <div className="grid grid-cols-3 gap-2">
-      {slots.map((photo, index) => (
-        <AspectRatio
-          key={photo?.id || `empty-${index}`}
-          ratio={1}
-          className="bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={() => photo && onPhotoClick?.(photo)}
-        >
+    <>
+      <div className="grid grid-cols-3 gap-2">
+        {slots.map((photo, index) => (
+          <AspectRatio
+            key={photo?.id || `empty-${index}`}
+            ratio={1}
+            className="bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => photo && handlePhotoClick(photo, index)}
+          >
           {photo ? (
             <img
               src={photo.photo_url}
@@ -37,8 +56,18 @@ const PhotoGrid = ({ photos, onPhotoClick }: PhotoGridProps) => {
             </div>
           )}
         </AspectRatio>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {enableViewer && photos.length > 0 && (
+        <ImageViewer
+          images={photos}
+          initialIndex={viewerIndex}
+          open={viewerOpen}
+          onOpenChange={setViewerOpen}
+        />
+      )}
+    </>
   );
 };
 
