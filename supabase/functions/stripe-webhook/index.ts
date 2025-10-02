@@ -235,6 +235,28 @@ serve(async (req) => {
                 logStep("Transfer created successfully", { transferId: transfer.id, amount: creatorEarnings });
               } catch (transferError: any) {
                 logStep("ERROR creating transfer", { error: transferError.message });
+                
+                // Log failed transfer to database for tracking and retry
+                const { error: failedTransferError } = await supabase
+                  .from("failed_transfers")
+                  .insert({
+                    creator_id: subData.creator_id,
+                    invoice_id: invoice.id,
+                    subscription_id: subData.id,
+                    amount: creatorEarnings,
+                    currency: invoice.currency,
+                    error_message: transferError.message,
+                    metadata: {
+                      stripe_account_id: creatorProfile.stripe_account_id,
+                      transfer_group: subscription.id,
+                      error_type: transferError.type,
+                      error_code: transferError.code,
+                    }
+                  });
+                
+                if (failedTransferError) {
+                  logStep("ERROR logging failed transfer", { error: failedTransferError });
+                }
               }
             } else {
               logStep("Skipping transfer - Stripe Connect not enabled", {

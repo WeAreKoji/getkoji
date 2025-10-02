@@ -99,6 +99,51 @@ export type Database = {
           },
         ]
       }
+      failed_transfers: {
+        Row: {
+          amount: number
+          created_at: string | null
+          creator_id: string
+          currency: string
+          error_message: string
+          id: string
+          invoice_id: string
+          last_retry_at: string | null
+          metadata: Json | null
+          resolved_at: string | null
+          retry_count: number | null
+          subscription_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          creator_id: string
+          currency: string
+          error_message: string
+          id?: string
+          invoice_id: string
+          last_retry_at?: string | null
+          metadata?: Json | null
+          resolved_at?: string | null
+          retry_count?: number | null
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          creator_id?: string
+          currency?: string
+          error_message?: string
+          id?: string
+          invoice_id?: string
+          last_retry_at?: string | null
+          metadata?: Json | null
+          resolved_at?: string | null
+          retry_count?: number | null
+          subscription_id?: string | null
+        }
+        Relationships: []
+      }
       interests: {
         Row: {
           category: string | null

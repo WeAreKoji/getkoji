@@ -4,37 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Loader2 } from "lucide-react";
-
-const SUBSCRIPTION_TIERS = [
-  {
-    priceId: "price_1SDisJEQjcZdgqoDhPvzRh33",
-    amount: 5,
-    name: "Basic",
-    description: "Great for getting started",
-  },
-  {
-    priceId: "price_1SDishEQjcZdgqoD97tJt5so",
-    amount: 10,
-    name: "Premium",
-    description: "Most popular choice",
-  },
-  {
-    priceId: "price_1SDitLEQjcZdgqoDVwE2qkUl",
-    amount: 20,
-    name: "Elite",
-    description: "For exclusive content",
-  },
-];
+import { ArrowLeft, Loader2, DollarSign } from "lucide-react";
 
 const CreatorSetup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [selectedTier, setSelectedTier] = useState(SUBSCRIPTION_TIERS[1].priceId);
+  const [price, setPrice] = useState("10");
 
   useEffect(() => {
     checkCreatorStatus();
@@ -85,15 +64,19 @@ const CreatorSetup = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const tier = SUBSCRIPTION_TIERS.find((t) => t.priceId === selectedTier);
-      if (!tier) throw new Error("Invalid tier selected");
+      const priceAmount = parseFloat(price);
+      
+      // Validate price
+      if (isNaN(priceAmount) || priceAmount < 1 || priceAmount > 999) {
+        throw new Error("Price must be between $1 and $999");
+      }
 
       // First create the creator profile
       const { error: profileError } = await supabase
         .from("creator_profiles")
         .insert({
           user_id: user.id,
-          subscription_price: tier.amount,
+          subscription_price: priceAmount,
         });
 
       if (profileError) throw profileError;
@@ -102,7 +85,7 @@ const CreatorSetup = () => {
       const { error: productError } = await supabase.functions.invoke(
         "create-creator-product",
         {
-          body: { subscriptionPrice: tier.amount },
+          body: { subscriptionPrice: priceAmount },
         }
       );
 
@@ -154,68 +137,55 @@ const CreatorSetup = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Set Your Subscription Price</h1>
             <p className="text-muted-foreground">
-              Choose how much your subscribers will pay per month
+              Choose your monthly subscription price (between $1 and $999)
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <RadioGroup value={selectedTier} onValueChange={setSelectedTier}>
-              <div className="space-y-3">
-                {SUBSCRIPTION_TIERS.map((tier) => (
-                  <div
-                    key={tier.priceId}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedTier === tier.priceId
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    }`}
-                    onClick={() => setSelectedTier(tier.priceId)}
-                  >
-                    <div className="flex items-start">
-                      <RadioGroupItem
-                        value={tier.priceId}
-                        id={tier.priceId}
-                        className="mt-1"
-                      />
-                      <Label
-                        htmlFor={tier.priceId}
-                        className="flex-1 ml-3 cursor-pointer"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-lg">{tier.name}</span>
-                          <span className="text-2xl font-bold">
-                            ${tier.amount}
-                            <span className="text-sm font-normal text-muted-foreground">
-                              /month
-                            </span>
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {tier.description}
-                        </p>
-                      </Label>
-                    </div>
-                  </div>
-                ))}
+            <div className="space-y-2">
+              <Label htmlFor="price">Monthly Subscription Price</Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="price"
+                  type="number"
+                  min="1"
+                  max="999"
+                  step="1"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="pl-9 text-lg"
+                  placeholder="10"
+                  required
+                />
               </div>
-            </RadioGroup>
+              <p className="text-xs text-muted-foreground">
+                Set a competitive price that reflects the value of your content
+              </p>
+            </div>
 
-            <div className="bg-muted rounded-lg p-4">
-              <h3 className="font-semibold mb-2">What you'll earn:</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                Stripe processing fee: ~3% + $0.30 per transaction
-              </p>
-              <p className="text-sm">
-                You'll receive approximately{" "}
-                <span className="font-semibold">
-                  ${(
-                    SUBSCRIPTION_TIERS.find((t) => t.priceId === selectedTier)!
-                      .amount * 0.97 -
-                    0.3
-                  ).toFixed(2)}
-                </span>{" "}
-                per subscriber per month
-              </p>
+            <div className="bg-muted rounded-lg p-4 space-y-2">
+              <h3 className="font-semibold">Revenue Breakdown</h3>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subscription price:</span>
+                  <span className="font-medium">${parseFloat(price || "0").toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Stripe fee (~3% + $0.30):</span>
+                  <span className="text-destructive">-${(parseFloat(price || "0") * 0.03 + 0.3).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Platform fee (20%):</span>
+                  <span className="text-destructive">-${((parseFloat(price || "0") - (parseFloat(price || "0") * 0.03 + 0.3)) * 0.20).toFixed(2)}</span>
+                </div>
+                <div className="border-t border-border pt-2 mt-2 flex justify-between">
+                  <span className="font-semibold">Your earnings per subscriber:</span>
+                  <span className="font-bold text-primary">
+                    ${((parseFloat(price || "0") - (parseFloat(price || "0") * 0.03 + 0.3)) * 0.80).toFixed(2)}
+                  </span>
+                </div>
+              </div>
             </div>
 
             <Button type="submit" disabled={loading} className="w-full" size="lg">

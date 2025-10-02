@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Plus, DollarSign, Users, FileText, BarChart3 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ArrowLeft, Loader2, Plus, DollarSign, Users, FileText, BarChart3, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -30,6 +31,15 @@ interface Post {
   created_at: string;
 }
 
+interface FailedTransfer {
+  id: string;
+  amount: number;
+  currency: string;
+  error_message: string;
+  retry_count: number;
+  created_at: string;
+}
+
 const CreatorDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -37,6 +47,7 @@ const CreatorDashboard = () => {
   const [stats, setStats] = useState<CreatorStats | null>(null);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
+  const [failedTransfers, setFailedTransfers] = useState<FailedTransfer[]>([]);
   const [showPriceEditor, setShowPriceEditor] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -165,6 +176,17 @@ const CreatorDashboard = () => {
         .limit(5);
 
       setRecentPosts(postsData || []);
+      
+      // Fetch unresolved failed transfers
+      const { data: failedTransfersData } = await supabase
+        .from("failed_transfers")
+        .select("*")
+        .eq("creator_id", creatorId)
+        .is("resolved_at", null)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      
+      setFailedTransfers(failedTransfersData || []);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -213,6 +235,19 @@ const CreatorDashboard = () => {
         </div>
 
         <div className="p-4 space-y-6">
+          {/* Failed Transfers Alert */}
+          {failedTransfers.length > 0 && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Transfer Issues Detected</AlertTitle>
+              <AlertDescription>
+                {failedTransfers.length} transfer{failedTransfers.length > 1 ? 's' : ''} failed. 
+                Total amount pending: ${failedTransfers.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}.
+                {' '}Please ensure your Stripe Connect account is properly set up in Payout Settings below.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {/* Metrics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
