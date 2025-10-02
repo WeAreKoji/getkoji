@@ -54,11 +54,11 @@ export const CreatorMonetization = () => {
           ))}
         </div>
 
-        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 sm:p-8 md:p-12 text-center border border-primary/20">
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-foreground">
+        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 text-center border border-primary/20">
+          <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-2 sm:mb-3 md:mb-4 text-foreground">
             Ready to Support Independent Creators?
           </h3>
-          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
+          <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-4 sm:mb-6 md:mb-8 max-w-2xl mx-auto px-2 sm:px-4">
             Discover creators who share your interests and subscribe to their exclusive content. 
             Your support helps them monetize their passion and create even better content.
           </p>

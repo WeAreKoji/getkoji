@@ -17,7 +17,7 @@ const Home = () => {
     <main className="min-h-screen">
       {/* Hero Section */}
       <header 
-        className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-16 sm:py-20 overflow-hidden"
+        className="relative min-h-[85vh] sm:min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: "cover",
@@ -26,12 +26,12 @@ const Home = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background" />
         
-        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
-          <div className="flex justify-center mb-6">
+        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 md:space-y-8">
+          <div className="flex justify-center mb-4 sm:mb-6">
             <img 
               src={logo} 
               alt="Koji app logo - Social discovery and creator monetization platform" 
-              className="w-24 h-24 md:w-32 md:h-32 animate-in fade-in zoom-in duration-700"
+              className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 animate-in fade-in zoom-in duration-700"
             />
           </div>
           
@@ -101,24 +101,24 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {/* Discover Card */}
             <article className="group p-4 sm:p-6 md:p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
-              <div className="text-3xl sm:text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                 💝
               </div>
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 text-foreground">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-foreground">
                 Find New Friends
               </h3>
-              <p className="text-muted-foreground leading-relaxed mb-3">
+              <p className="text-sm sm:text-base text-muted-foreground mb-3">
                 Our <a href="/discover" className="text-primary hover:underline">interest-based social network</a> helps you discover like-minded people who share your passions. 
                 Whether you're looking for friends or exploring dating based on interests, Koji's swipe to connect 
                 feature makes it easy to build authentic connections.
               </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <span>Interest-based matching algorithm</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <span>Best app to make friends based on hobbies</span>
                 </li>
               </ul>
@@ -126,24 +126,24 @@ const Home = () => {
 
             {/* Connect Card */}
             <article className="group p-4 sm:p-6 md:p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
-              <div className="text-3xl sm:text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                 👥
               </div>
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 text-foreground">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-foreground">
                 Build Your Community
               </h3>
-              <p className="text-muted-foreground leading-relaxed mb-3">
+              <p className="text-sm sm:text-base text-muted-foreground mb-3">
                 Koji is the <a href="/community" className="text-primary hover:underline">community building app</a> that helps you create meaningful relationships. 
                 Chat with matches, join conversations, and become part of our thriving online community platform 
                 where everyone can find their place.
               </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <span>Real-time messaging and connections</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <span>Platform to meet like-minded people safely</span>
                 </li>
               </ul>
@@ -151,24 +151,24 @@ const Home = () => {
 
             {/* Support Card */}
             <article className="group p-4 sm:p-6 md:p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
-              <div className="text-3xl sm:text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                 ✨
               </div>
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 text-foreground">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-foreground">
                 Support Creators
               </h3>
-              <p className="text-muted-foreground leading-relaxed mb-3">
+              <p className="text-sm sm:text-base text-muted-foreground mb-3">
                 Discover the <a href="/creators" className="text-primary hover:underline">exclusive content app</a> where you can support independent creators directly. 
                 Subscribe to creators who inspire you and get access to premium content. It's the easiest way to 
                 find creators to support and help them monetize their passion.
               </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <span>Direct creator monetization</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <span>Exclusive content and behind-the-scenes access</span>
                 </li>
               </ul>
@@ -192,8 +192,8 @@ const Home = () => {
       {/* Trust & Safety Section */}
       <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-secondary/5 to-background">
         <div className="container mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 mb-4 sm:mb-6">
-            <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-primary" aria-label="Koji app safety and security features" />
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-primary/10 mb-3 sm:mb-4 md:mb-6">
+            <Shield className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" aria-label="Koji app safety and security features" />
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-foreground">
             Trust & Safety First
@@ -202,21 +202,21 @@ const Home = () => {
             Your safety is our priority. Koji is a secure platform to meet like-minded people with robust 
             verification and moderation systems to ensure a safe, welcoming community building app experience.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
-            <div className="p-4">
-              <CheckCircle className="w-8 h-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold text-foreground mb-2">ID Verification</h3>
-              <p className="text-sm text-muted-foreground">Verify your identity for added trust</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-3xl mx-auto">
+            <div className="p-3 sm:p-4">
+              <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-primary mx-auto mb-2 sm:mb-3" />
+              <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">ID Verification</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Verify your identity for added trust</p>
             </div>
-            <div className="p-4">
-              <CheckCircle className="w-8 h-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold text-foreground mb-2">AI Moderation</h3>
-              <p className="text-sm text-muted-foreground">24/7 automated content monitoring</p>
+            <div className="p-3 sm:p-4">
+              <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-primary mx-auto mb-2 sm:mb-3" />
+              <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">AI Moderation</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">24/7 automated content monitoring</p>
             </div>
-            <div className="p-4">
-              <CheckCircle className="w-8 h-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold text-foreground mb-2">Human Review</h3>
-              <p className="text-sm text-muted-foreground">Expert team reviewing reports</p>
+            <div className="p-3 sm:p-4">
+              <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-primary mx-auto mb-2 sm:mb-3" />
+              <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">Human Review</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Expert team reviewing reports</p>
             </div>
           </div>
         </div>

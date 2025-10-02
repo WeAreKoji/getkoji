@@ -52,10 +52,10 @@ export const HowItWorks = () => {
               <div className="mb-2 text-primary font-semibold text-sm">
                 Step {index + 1}
               </div>
-              <h4 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 text-foreground">
+              <h4 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-foreground">
                 {step.title}
               </h4>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 {step.description}
               </p>
             </Card>
