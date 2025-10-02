@@ -405,12 +405,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_creator_earnings: {
+        Args: { amount: number; creator_user_id: string }
+        Returns: undefined
+      }
+      decrement_subscriber_count: {
+        Args: { creator_user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_subscriber_count: {
+        Args: { creator_user_id: string }
+        Returns: undefined
       }
       request_creator_role: {
         Args: { application_text: string }
