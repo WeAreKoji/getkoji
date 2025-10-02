@@ -11,6 +11,9 @@ import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
+import CreatorApplication from "./pages/CreatorApplication";
+import CreatorSetup from "./pages/CreatorSetup";
+import CreatorFeed from "./pages/CreatorFeed";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +34,9 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:userId" element={<Profile />} />
           <Route path="/profile/edit" element={<ProfileEdit />} />
+          <Route path="/creator/apply" element={<CreatorApplication />} />
+          <Route path="/creator/setup" element={<CreatorSetup />} />
+          <Route path="/creator/:creatorId" element={<CreatorFeed />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
