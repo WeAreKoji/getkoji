@@ -36,7 +36,7 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
     <>
       <div className={cn(
         "relative w-full bg-gradient-to-br from-primary/20 to-secondary/20",
-        isMobile ? "aspect-[3/4]" : "aspect-[16/7] max-h-[200px]"
+        isMobile ? "aspect-[3/4]" : "aspect-[16/7] max-h-[150px]"
       )}>
         {/* Main Photo */}
         {mainPhoto ? (
@@ -44,7 +44,7 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
             src={mainPhoto.photo_url}
             alt={displayName}
             className="w-full h-full object-cover cursor-pointer"
-            style={{ objectPosition: 'center 30%' }}
+            style={{ objectPosition: 'center 25%' }}
             onClick={() => handlePhotoClick(0)}
           />
         ) : (

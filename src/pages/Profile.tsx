@@ -10,6 +10,7 @@ import { ProfileHero } from "@/components/profile/ProfileHero";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ProfileActions } from "@/components/profile/ProfileActions";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
+import { ProfileInfoBar } from "@/components/profile/ProfileInfoBar";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -49,6 +50,8 @@ const Profile = () => {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [memberSince, setMemberSince] = useState<string>("");
+  const [stats, setStats] = useState<{ subscribers?: number; posts?: number; earnings?: number }>({});
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     checkAuth();
@@ -119,6 +122,28 @@ const Profile = () => {
         .map((ui: any) => ui.interests)
         .filter(Boolean);
       setInterests(interestsData);
+
+      // Fetch stats for creators
+      if (isOwnProfile && isCreator) {
+        const [subsResult, postsResult] = await Promise.all([
+          supabase
+            .from("subscriptions")
+            .select("id", { count: "exact", head: true })
+            .eq("creator_id", profileId)
+            .eq("status", "active"),
+          supabase
+            .from("creator_posts")
+            .select("id", { count: "exact", head: true })
+            .eq("creator_id", profileId),
+        ]);
+
+        setStats({
+          subscribers: subsResult.count || 0,
+          posts: postsResult.count || 0,
+          earnings: 0,
+        });
+      }
+      setStatsLoading(false);
     } catch (error) {
       console.error("Error fetching profile:", error);
       navigate("/discover");
@@ -159,7 +184,7 @@ const Profile = () => {
           />
 
           {/* Content */}
-          <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-6xl mx-auto px-6 py-8"}>
+          <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-4xl mx-auto px-6 py-6"}>
             {isMobile ? (
               // Mobile: Single column layout
               <div className="space-y-4">
@@ -181,44 +206,30 @@ const Profile = () => {
                 <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
               </div>
             ) : (
-              // Desktop: Two column layout
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* Left Column - Photo Grid and Quick Info */}
-                <div className="lg:col-span-2 space-y-4">
-                  {/* Member Since Card */}
-                  {memberSince && (
-                    <Card className="p-4">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        <span className="text-sm">Member since {memberSince}</span>
-                      </div>
-                    </Card>
-                  )}
-                  
-                  {/* Stats - Only for creators */}
-                  {isCreator && <ProfileStats userId={profile.id} isCreator={isCreator} />}
-                </div>
-
-                {/* Right Column - Main Content */}
-                <div className="lg:col-span-3 space-y-4">
-                  {/* Action Buttons - Only for viewing others' profiles */}
-                  {!isOwnProfile && (
+              // Desktop: Single column modern layout
+              <div className="space-y-4">
+                {/* Info Bar with Member Since, Stats, and Action Button */}
+                <ProfileInfoBar
+                  memberSince={memberSince}
+                  isCreator={isCreator}
+                  stats={stats}
+                  loading={statsLoading}
+                >
+                  {/* Action Button */}
+                  {!isOwnProfile ? (
                     <ProfileActions userId={profile.id} displayName={profile.display_name} />
-                  )}
-
-                  {/* Edit Button - Only for own profile */}
-                  {isOwnProfile && (
-                    <Link to="/profile/edit" className="block">
-                      <Button size="lg" className="w-full h-12 text-base font-semibold shadow-md">
-                        <Edit className="w-5 h-5 mr-2" />
+                  ) : (
+                    <Link to="/profile/edit">
+                      <Button variant="hero" size="lg" className="h-11 px-6 text-sm font-semibold">
+                        <Edit className="w-4 h-4 mr-2" />
                         Edit Profile
                       </Button>
                     </Link>
                   )}
+                </ProfileInfoBar>
 
-                  {/* Profile Info */}
-                  <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
-                </div>
+                {/* Profile Info - About, Looking For, Interests */}
+                <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
               </div>
             )}
           </div>
