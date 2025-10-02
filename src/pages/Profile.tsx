@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Loader2, Edit } from "lucide-react";
+import { ArrowLeft, MapPin, Loader2, Edit, LayoutDashboard } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import PhotoGrid from "@/components/profile/PhotoGrid";
 
@@ -38,6 +38,7 @@ const Profile = () => {
   const [interests, setInterests] = useState<Interest[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -53,6 +54,18 @@ const Profile = () => {
     // If no userId provided, show own profile
     const profileId = userId || user.id;
     setIsOwnProfile(profileId === user.id);
+
+    // Check if user is a creator
+    if (profileId === user.id) {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "creator")
+        .single();
+      
+      setIsCreator(!!roleData);
+    }
     
     await fetchProfile(profileId);
   };
@@ -118,12 +131,22 @@ const Profile = () => {
             <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
           </Link>
           {isOwnProfile && (
-            <Link to="/profile/edit">
-              <Button variant="ghost" size="sm">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              {isCreator && (
+                <Link to="/creator/dashboard">
+                  <Button variant="ghost" size="sm">
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
+              <Link to="/profile/edit">
+                <Button variant="ghost" size="sm">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Profile
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
 

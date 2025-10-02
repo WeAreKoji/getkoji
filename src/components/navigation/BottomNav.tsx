@@ -1,10 +1,31 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Heart, MessageCircle, User, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, User, Sparkles, LayoutDashboard } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const BottomNav = () => {
   const location = useLocation();
+  const [isCreator, setIsCreator] = useState(false);
 
-  const navItems = [
+  useEffect(() => {
+    checkCreatorRole();
+  }, []);
+
+  const checkCreatorRole = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "creator")
+      .single();
+
+    setIsCreator(!!data);
+  };
+
+  const baseNavItems = [
     {
       path: "/discover",
       icon: Heart,
@@ -26,6 +47,16 @@ const BottomNav = () => {
       label: "Profile",
     },
   ];
+
+  const creatorNavItem = {
+    path: "/creator/dashboard",
+    icon: LayoutDashboard,
+    label: "Dashboard",
+  };
+
+  const navItems = isCreator 
+    ? [baseNavItems[0], creatorNavItem, baseNavItems[1], baseNavItems[2], baseNavItems[3]]
+    : baseNavItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">

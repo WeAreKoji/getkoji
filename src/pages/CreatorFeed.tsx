@@ -193,9 +193,18 @@ const CreatorFeed = () => {
       <div className="container max-w-2xl mx-auto">
         {/* Header */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3">
-          <Link to="/discover">
-            <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link to="/discover">
+              <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
+            </Link>
+            {isOwnProfile && (
+              <Link to="/creator/dashboard">
+                <Button variant="outline" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Creator Info */}

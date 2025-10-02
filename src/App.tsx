@@ -18,6 +18,7 @@ import CreatorFeed from "./pages/CreatorFeed";
 import Subscriptions from "./pages/Subscriptions";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import SubscriptionCancelled from "./pages/SubscriptionCancelled";
+import CreatorDashboard from "./pages/CreatorDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
+          <Route path="/creator/dashboard" element={<CreatorDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
