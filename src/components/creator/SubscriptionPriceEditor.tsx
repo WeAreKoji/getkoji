@@ -71,11 +71,12 @@ const SubscriptionPriceEditor = ({
       } else {
         toast({
           title: "Price Updated",
-          description: "Your subscription price and Stripe product have been updated successfully",
+          description: "Your subscription price has been updated. New subscribers will pay the new price. Existing subscribers keep their current price.",
         });
       }
 
       onPriceUpdated();
+      onOpenChange(false);
     } catch (error: any) {
       toast({
         title: "Error",

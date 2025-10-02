@@ -23,3 +23,9 @@ verify_jwt = true
 
 [functions.get-payout-info]
 verify_jwt = true
+
+[functions.manage-subscription]
+verify_jwt = true
+
+[functions.retry-failed-transfers]
+verify_jwt = false

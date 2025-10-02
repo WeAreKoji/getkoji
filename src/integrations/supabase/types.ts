@@ -363,6 +363,8 @@ export type Database = {
           creator_id: string
           expires_at: string | null
           id: string
+          pause_until: string | null
+          previous_price: number | null
           started_at: string | null
           status: string | null
           stripe_subscription_id: string | null
@@ -372,6 +374,8 @@ export type Database = {
           creator_id: string
           expires_at?: string | null
           id?: string
+          pause_until?: string | null
+          previous_price?: number | null
           started_at?: string | null
           status?: string | null
           stripe_subscription_id?: string | null
@@ -381,6 +385,8 @@ export type Database = {
           creator_id?: string
           expires_at?: string | null
           id?: string
+          pause_until?: string | null
+          previous_price?: number | null
           started_at?: string | null
           status?: string | null
           stripe_subscription_id?: string | null
