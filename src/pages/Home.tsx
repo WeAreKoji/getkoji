@@ -41,7 +41,7 @@ const Home = () => {
           
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             The social discovery platform where interest-based connections meet creator monetization. 
-            Find new friends, explore dating, and support creators. Available on iOS & Android.
+            Find new friends, explore dating, and support creators on our active web platform.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
@@ -51,7 +51,7 @@ const Home = () => {
               onClick={() => navigate("/auth")}
               className="text-lg"
             >
-              Download Koji App Now
+              Start Using Koji Web App
             </Button>
             <Button 
               variant="outline" 
@@ -65,7 +65,13 @@ const Home = () => {
             </Button>
           </div>
 
-          <div className="pt-8 animate-in fade-in duration-700 delay-500">
+          <div className="mt-4 animate-in fade-in duration-700 delay-400">
+            <p className="text-xs sm:text-sm text-muted-foreground/80">
+              📱 Mobile apps coming soon · Web app active now
+            </p>
+          </div>
+
+          <div className="pt-4 sm:pt-8 animate-in fade-in duration-700 delay-500">
             <p className="text-sm text-muted-foreground mb-2">Trusted by thousands worldwide</p>
             <div className="flex items-center justify-center gap-1 text-yellow-500">
               {[...Array(5)].map((_, i) => (
@@ -232,7 +238,7 @@ const Home = () => {
             Start Your Koji Journey
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-            Join the social discovery platform trusted by thousands. Download Koji app now and discover 
+            Join the social discovery platform trusted by thousands. Start using Koji web app now and discover 
             authentic connections while supporting creators who share your passions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -242,7 +248,7 @@ const Home = () => {
               onClick={() => navigate("/auth")}
               className="text-lg"
             >
-              Download Koji App Now
+              Start Using Koji Now
             </Button>
             <Button 
               variant="secondary" 
@@ -253,6 +259,9 @@ const Home = () => {
               Find Creators to Support
             </Button>
           </div>
+          <p className="mt-4 text-xs sm:text-sm text-muted-foreground/70">
+            Mobile apps coming soon to iOS & Android
+          </p>
         </div>
       </section>
 
@@ -271,7 +280,7 @@ const Home = () => {
               </div>
               <p className="text-sm sm:text-base text-muted-foreground mb-4">
                 The social discovery platform where authentic connections meet creator monetization. 
-                Find new friends, explore dating, and support independent creators on iOS & Android.
+                Find new friends, explore dating, and support independent creators on our web platform.
               </p>
             </div>
             
@@ -307,7 +316,7 @@ const Home = () => {
           
           <div className="border-t border-border pt-6 sm:pt-8 text-center text-xs sm:text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} Koji - Connect, Create & Support. All rights reserved.</p>
-            <p className="mt-2">Social discovery platform | Creator monetization app | iOS & Android</p>
+            <p className="mt-2">Social discovery web platform · Creator monetization · Mobile apps coming soon</p>
           </div>
         </div>
       </footer>

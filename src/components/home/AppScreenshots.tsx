@@ -58,8 +58,8 @@ export const AppScreenshots = () => {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-muted-foreground">
-            Available on iPhone, iPad, and Android devices
+          <p className="text-muted-foreground text-sm">
+            Web app active now · Mobile apps coming soon
           </p>
         </div>
       </div>

@@ -32,7 +32,7 @@ export const HowItWorks = () => {
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             Koji is the social discovery platform where you can find new friends, explore dating based on interests, 
-            and connect with creators who inspire you. Available on iOS and Android.
+            and connect with creators who inspire you. Start using the web app now.
           </p>
         </div>
 
