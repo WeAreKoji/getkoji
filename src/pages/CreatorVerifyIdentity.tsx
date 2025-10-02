@@ -206,6 +206,27 @@ export default function CreatorVerifyIdentity() {
 
       if (error) throw error;
 
+      // Send confirmation email
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, email")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.email) {
+          await supabase.functions.invoke("send-verification-email", {
+            body: {
+              email: profile.email,
+              displayName: profile.display_name,
+              type: "submitted",
+            },
+          });
+        }
+      } catch (emailError) {
+        console.error("Email notification error:", emailError);
+      }
+
       toast({
         title: "Verification Submitted",
         description: "Your ID verification has been submitted for review. This typically takes 24-48 hours.",

@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "npm:resend@4.0.0";
+import { renderAsync } from "npm:@react-email/components@0.0.22";
+import React from "npm:react@18.3.1";
+import { VerificationApprovedEmail } from "../_shared/email-templates/verification-approved.tsx";
+import { VerificationRejectedEmail } from "../_shared/email-templates/verification-rejected.tsx";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -117,6 +122,49 @@ serve(async (req) => {
       if (profileError) {
         console.error("Error updating creator profile:", profileError);
       }
+    }
+
+    // Send email notification
+    try {
+      const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+      
+      // Get user profile for email
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("display_name, email")
+        .eq("id", verification.creator_id)
+        .single();
+
+      if (profile && profile.email) {
+        const appUrl = Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovable.app") || "https://yourapp.lovable.app";
+        
+        const emailHtml = await renderAsync(
+          approved
+            ? React.createElement(VerificationApprovedEmail, {
+                displayName: profile.display_name,
+                appUrl,
+              })
+            : React.createElement(VerificationRejectedEmail, {
+                displayName: profile.display_name,
+                rejectionReason: rejection_reason || "Please review and resubmit your documents",
+                appUrl,
+              })
+        );
+
+        await resend.emails.send({
+          from: "Koji <onboarding@resend.dev>",
+          to: [profile.email],
+          subject: approved 
+            ? "Your Creator Verification is Approved! 🎉"
+            : "Action Required: Update Your Verification",
+          html: emailHtml,
+        });
+
+        console.log(`Email sent to ${profile.email}`);
+      }
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      // Don't fail the request if email fails
     }
 
     console.log(`Verification ${verification_id} ${newStatus} by admin ${user.id}`);
