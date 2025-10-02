@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isCreator: boolean;
+  isAdmin: boolean;
   checkAuth: () => Promise<User | null>;
   signOut: () => Promise<void>;
   refreshCreatorStatus: () => Promise<void>;
@@ -18,6 +19,7 @@ export const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isCreator: false,
+  isAdmin: false,
   checkAuth: async () => null,
   signOut: async () => {},
   refreshCreatorStatus: async () => {},
@@ -28,6 +30,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
   const checkCreatorRole = async (userId: string) => {
     const { data } = await supabase
       .from("user_roles")
@@ -39,9 +43,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsCreator(!!data);
   };
 
+  const checkAdminRole = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    setIsAdmin(!!data);
+  };
+
   const refreshCreatorStatus = async () => {
     if (user) {
       await checkCreatorRole(user.id);
+      await checkAdminRole(user.id);
     }
   };
 
@@ -52,13 +68,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer creator role check
+        // Defer role checks
         if (session?.user) {
           setTimeout(() => {
             checkCreatorRole(session.user.id);
+            checkAdminRole(session.user.id);
           }, 0);
         } else {
           setIsCreator(false);
+          setIsAdmin(false);
         }
       }
     );
@@ -71,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session?.user) {
         setTimeout(() => {
           checkCreatorRole(session.user.id);
+          checkAdminRole(session.user.id);
         }, 0);
       }
       
@@ -92,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setIsCreator(false);
+    setIsAdmin(false);
   };
 
   return (
@@ -101,6 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         loading,
         isCreator,
+        isAdmin,
         checkAuth,
         signOut,
         refreshCreatorStatus,

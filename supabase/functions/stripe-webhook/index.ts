@@ -190,7 +190,7 @@ serve(async (req) => {
             });
 
             // Record platform revenue
-            const { error: revenueError } = await supabase
+            const { data: revenueData, error: revenueError } = await supabase
               .from("platform_revenue")
               .insert({
                 subscription_id: subData.id,
@@ -200,7 +200,9 @@ serve(async (req) => {
                 stripe_fee: stripeFee,
                 platform_commission: platformCommission,
                 creator_earnings: creatorEarnings
-              });
+              })
+              .select()
+              .single();
 
             if (revenueError) {
               logStep("Error recording platform revenue", { error: revenueError });

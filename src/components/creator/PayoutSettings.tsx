@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ExternalLink, CheckCircle, AlertCircle, DollarSign } from "lucide-react";
 
@@ -14,8 +15,13 @@ interface PayoutStatus {
   account_id?: string;
 }
 
+interface CreatorProfile {
+  id_verified: boolean;
+}
+
 const PayoutSettings = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [status, setStatus] = useState<PayoutStatus>({
@@ -23,10 +29,29 @@ const PayoutSettings = () => {
     onboarding_complete: false,
     payouts_enabled: false,
   });
+  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
 
   useEffect(() => {
     checkConnectStatus();
+    checkVerificationStatus();
   }, []);
+
+  const checkVerificationStatus = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("creator_profiles")
+        .select("id_verified")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      setCreatorProfile(data);
+    } catch (error) {
+      console.error("Error checking verification status:", error);
+    }
+  };
 
   const checkConnectStatus = async () => {
     try {
@@ -43,6 +68,15 @@ const PayoutSettings = () => {
   };
 
   const handleConnect = async () => {
+    if (!creatorProfile?.id_verified) {
+      toast({
+        title: "ID Verification Required",
+        description: "You must complete ID verification before setting up payouts",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-connect-account");
@@ -98,6 +132,17 @@ const PayoutSettings = () => {
       </div>
 
       <div className="space-y-4">
+        {/* ID Verification Warning */}
+        {!creatorProfile?.id_verified && (
+          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-sm font-medium text-destructive mb-2">⚠️ ID Verification Required</p>
+            <p className="text-sm text-muted-foreground">
+              You must complete identity verification before you can set up payouts. 
+              This is required for compliance and security purposes.
+            </p>
+          </div>
+        )}
+
         {/* Status Indicators */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
@@ -131,7 +176,7 @@ const PayoutSettings = () => {
           {!status.connected || !status.onboarding_complete ? (
             <Button
               onClick={handleConnect}
-              disabled={connecting}
+              disabled={connecting || !creatorProfile?.id_verified}
               className="w-full"
             >
               {connecting ? (

@@ -93,11 +93,8 @@ export default function CreatorVerifyIdentity() {
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("id-documents")
-      .getPublicUrl(fileName);
-
-    return publicUrl;
+    // Return the path, not a public URL (documents are private)
+    return fileName;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
