@@ -43,7 +43,7 @@ export default function AdminAuditLogs() {
       .from("audit_logs")
       .select(`
         *,
-        profiles:user_id (
+        profiles!audit_logs_user_id_fkey (
           display_name,
           email
         )
@@ -52,7 +52,7 @@ export default function AdminAuditLogs() {
       .limit(100);
 
     if (!error && data) {
-      setLogs(data);
+      setLogs(data as any);
     }
     setLoading(false);
   };

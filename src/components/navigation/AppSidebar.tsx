@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users, Home, User, LayoutDashboard, Gift, Settings, Shield, ShieldCheck, FileText } from "lucide-react";
+import { Heart, Sparkles, Users, Home, User, LayoutDashboard, Gift, Settings, Shield, ShieldCheck, FileText, ScrollText } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,6 +144,14 @@ export function AppSidebar() {
                       <NavLink to="/admin/content-moderation" className={getNavCls}>
                         <FileText className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
                         {open && <span>Content Moderation</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/admin/audit-logs" className={getNavCls}>
+                        <ScrollText className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
+                        {open && <span>Audit Logs</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

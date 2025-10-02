@@ -26,6 +26,7 @@ import CreatorFeed from "./pages/CreatorFeed";
 import AdminVerifications from "./pages/AdminVerifications";
 import AdminContentModeration from "./pages/AdminContentModeration";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminAuditLogs from "./pages/AdminAuditLogs";
 import SubscriberManagement from "./pages/SubscriberManagement";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Subscriptions from "./pages/Subscriptions";
@@ -89,6 +90,11 @@ const AppContent = () => {
           <Route path="/admin/content-moderation" element={
             <ProtectedRoute requireAdmin>
               <AdminContentModeration />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/audit-logs" element={
+            <ProtectedRoute requireAdmin>
+              <AdminAuditLogs />
             </ProtectedRoute>
           } />
                 <Route path="/subscriptions" element={<Subscriptions />} />
