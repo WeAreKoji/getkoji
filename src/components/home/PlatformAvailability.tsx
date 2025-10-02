@@ -16,17 +16,17 @@ export const PlatformAvailability = () => {
           </p>
         </div>
 
-        <Card className="max-w-4xl mx-auto p-6 sm:p-8 md:p-12 bg-card border-border">
+        <Card className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8 lg:p-12 bg-card border-border">
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
             <div>
-              <h4 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 text-foreground">
+              <h4 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3 text-foreground">
                 Download Koji App Now
               </h4>
-              <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+              <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 md:mb-6">
                 Get started in minutes. Create your profile, set your interests, and begin discovering 
                 authentic connections on the best app to make friends based on hobbies.
               </p>
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
+              <ul className="space-y-1.5 sm:space-y-2 md:space-y-3 text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 md:mb-8">
                 <li className="flex items-start gap-3">
                   <span className="text-primary mt-1">✓</span>
                   <span>Free to download and use</span>

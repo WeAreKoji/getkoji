@@ -46,12 +46,12 @@ export const SocialProof = () => {
           {stats.map((stat, index) => (
             <Card 
               key={index} 
-              className="p-4 sm:p-6 text-center bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
+              className="p-3 sm:p-4 md:p-6 text-center bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 mb-3 sm:mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 mb-2 sm:mb-3">
                 <stat.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-label={stat.label} />
               </div>
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
+              <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1 sm:mb-2">
                 {stat.value}
               </div>
               <div className="text-sm sm:text-base font-semibold text-foreground mb-1">

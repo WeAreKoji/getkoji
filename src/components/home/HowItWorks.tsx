@@ -40,19 +40,19 @@ export const HowItWorks = () => {
           How Koji Works: Swipe, Match, Connect
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {steps.map((step, index) => (
-            <Card key={index} className="p-6 md:p-8 text-center hover:shadow-lg transition-all duration-300 bg-card border-border">
-              <div className="mb-6 inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10">
+            <Card key={index} className="p-4 sm:p-6 md:p-8 text-center hover:shadow-lg transition-all duration-300 bg-card border-border">
+              <div className="mb-4 inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-primary/10">
                 <step.icon 
-                  className="w-8 h-8 md:w-10 md:h-10 text-primary" 
+                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" 
                   aria-label={step.alt}
                 />
               </div>
               <div className="mb-2 text-primary font-semibold text-sm">
                 Step {index + 1}
               </div>
-              <h4 className="text-xl md:text-2xl font-bold mb-4 text-foreground">
+              <h4 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 text-foreground">
                 {step.title}
               </h4>
               <p className="text-muted-foreground leading-relaxed">

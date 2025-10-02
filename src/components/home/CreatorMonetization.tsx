@@ -40,11 +40,11 @@ export const CreatorMonetization = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-10 sm:mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-10 sm:mb-12">
           {features.map((feature, index) => (
-            <Card key={index} className="p-6 bg-card border-border hover:border-primary/50 transition-all duration-300">
-              <feature.icon className="w-10 h-10 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-3 text-foreground">
+            <Card key={index} className="p-4 sm:p-6 bg-card border-border hover:border-primary/50 transition-all duration-300">
+              <feature.icon className="w-8 h-8 sm:w-10 sm:h-10 text-primary mb-3" />
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">
                 {feature.title}
               </h3>
               <p className="text-muted-foreground">
