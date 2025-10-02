@@ -178,12 +178,14 @@ serve(async (req) => {
             .single();
 
           if (subData?.creator_id) {
-            // Update total earnings (Stripe takes ~3% fee)
+            // Stripe takes ~3% fee, platform can take additional percentage
+            // For now: Creator gets 97% (100% - 3% Stripe fee)
             const creatorEarnings = invoice.amount_paid * 0.97 / 100; // Convert from cents
             await supabase.rpc("add_creator_earnings", {
               creator_user_id: subData.creator_id,
               amount: creatorEarnings
             });
+            logStep("Creator earnings updated", { creatorId: subData.creator_id, amount: creatorEarnings });
           }
         }
         break;
@@ -193,6 +195,35 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         logStep("Payment failed", { invoiceId: invoice.id });
         // Could send notification to user here
+        break;
+      }
+
+      case "account.updated": {
+        const account = event.data.object as Stripe.Account;
+        logStep("Connect account updated", { accountId: account.id });
+        
+        // Update creator profile with account status
+        const { data: creatorData } = await supabase
+          .from("creator_profiles")
+          .select("user_id")
+          .eq("stripe_account_id", account.id)
+          .single();
+
+        if (creatorData) {
+          await supabase
+            .from("creator_profiles")
+            .update({
+              stripe_onboarding_complete: account.details_submitted || false,
+              payouts_enabled: account.payouts_enabled || false,
+            })
+            .eq("user_id", creatorData.user_id);
+          
+          logStep("Creator profile updated with account status", { 
+            userId: creatorData.user_id,
+            onboardingComplete: account.details_submitted,
+            payoutsEnabled: account.payouts_enabled
+          });
+        }
         break;
       }
 

@@ -9,6 +9,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import SubscriptionPriceEditor from "@/components/creator/SubscriptionPriceEditor";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
+import PayoutSettings from "@/components/creator/PayoutSettings";
 
 interface CreatorStats {
   subscriberCount: number;
@@ -42,6 +43,23 @@ const CreatorDashboard = () => {
 
   useEffect(() => {
     checkAuthAndFetchData();
+    
+    // Handle Stripe Connect redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('connected') === 'true') {
+      toast({
+        title: "Connected!",
+        description: "Your Stripe account has been connected successfully.",
+      });
+      // Clean up URL
+      window.history.replaceState({}, '', '/creator/dashboard');
+    } else if (urlParams.get('refresh') === 'true') {
+      toast({
+        title: "Please try again",
+        description: "Complete the onboarding process to enable payouts.",
+      });
+      window.history.replaceState({}, '', '/creator/dashboard');
+    }
   }, []);
 
   const checkAuthAndFetchData = async () => {
@@ -313,6 +331,9 @@ const CreatorDashboard = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Payout Settings */}
+          <PayoutSettings />
 
           {/* Recent Posts */}
           {recentPosts.length > 0 && (
