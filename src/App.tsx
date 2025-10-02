@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useNative } from "@/hooks/useNative";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -29,12 +31,16 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+const AppContent = () => {
+  const { isNative } = useNative();
+
+  useEffect(() => {
+    // Native features are initialized automatically by useNative hook
+    console.log('App running on:', isNative ? 'Native Platform' : 'Web Browser');
+  }, [isNative]);
+
+  return (
+    <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
@@ -63,6 +69,15 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <AppContent />
     </TooltipProvider>
   </QueryClientProvider>
 );
