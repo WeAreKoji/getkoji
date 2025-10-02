@@ -15,10 +15,11 @@ interface Photo {
 interface PhotoUploadProps {
   photos: Photo[];
   onPhotosChange: (photos: Photo[]) => void;
+  userId: string;
   maxPhotos?: number;
 }
 
-const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 9 }: PhotoUploadProps) => {
+const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUploadProps) => {
   const { toast } = useToast();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
@@ -39,10 +40,10 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 9 }: PhotoUploadProps
     // Upload to Supabase Storage and get URLs
     const uploadPromises = Array.from(files).map(async (file, index) => {
       try {
-        // Generate unique filename
+        // Generate unique filename with correct userId path for RLS
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `temp/${fileName}`; // Using temp path, will be moved to userId path in ProfileEdit
+        const filePath = `${userId}/${fileName}`; // Use userId path to match RLS policy
 
         // Upload file
         const { error: uploadError } = await supabase.storage

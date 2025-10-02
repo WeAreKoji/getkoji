@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Users, FileText, DollarSign } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProfileStatsProps {
   userId: string;
@@ -18,6 +19,7 @@ interface Stats {
 export const ProfileStats = ({ userId, isCreator }: ProfileStatsProps) => {
   const [stats, setStats] = useState<Stats>({});
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchStats();
@@ -76,13 +78,13 @@ export const ProfileStats = ({ userId, isCreator }: ProfileStatsProps) => {
   ];
 
   return (
-    <Card className="p-4 shadow-sm">
-      <div className="grid grid-cols-3 gap-4">
+    <Card className={isMobile ? "p-3 shadow-sm" : "p-4 shadow-sm"}>
+      <div className={isMobile ? "grid grid-cols-3 gap-2" : "grid grid-cols-3 gap-4"}>
         {statItems.map((item) => (
           <div key={item.label} className="text-center">
-            <item.icon className={`w-5 h-5 mx-auto mb-1 ${item.color}`} />
-            <div className="text-2xl font-bold text-foreground">{item.value}</div>
-            <div className="text-xs text-muted-foreground">{item.label}</div>
+            <item.icon className={isMobile ? `w-4 h-4 mx-auto mb-1 ${item.color}` : `w-5 h-5 mx-auto mb-1 ${item.color}`} />
+            <div className={isMobile ? "text-lg font-bold text-foreground" : "text-2xl font-bold text-foreground"}>{item.value}</div>
+            <div className={isMobile ? "text-[10px] text-muted-foreground" : "text-xs text-muted-foreground"}>{item.label}</div>
           </div>
         ))}
       </div>

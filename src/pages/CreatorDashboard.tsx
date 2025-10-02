@@ -11,6 +11,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import SubscriptionPriceEditor from "@/components/creator/SubscriptionPriceEditor";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
 import PayoutSettings from "@/components/creator/PayoutSettings";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { SafeAreaView } from "@/components/layout/SafeAreaView";
 
 interface CreatorStats {
   subscriberCount: number;
@@ -69,6 +71,7 @@ interface RevenueData {
 const CreatorDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<CreatorStats | null>(null);
   const [chartData, setChartData] = useState<ChartData[]>([]);
@@ -320,22 +323,23 @@ const CreatorDashboard = () => {
   if (!stats) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="container max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link to="/discover" aria-label="Back to discover">
-                <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
-              </Link>
-              <h1 className="text-xl font-bold">Creator Dashboard</h1>
+    <SafeAreaView bottom={false}>
+      <div className="min-h-screen bg-background pb-20">
+        <div className={isMobile ? "w-full" : "container max-w-4xl mx-auto"}>
+          {/* Header */}
+          <div className={`sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 ${isMobile ? 'px-3 py-2.5' : 'px-4 py-3'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Link to="/discover" aria-label="Back to discover">
+                  <ArrowLeft className={isMobile ? "w-5 h-5 text-foreground hover:text-primary transition-colors" : "w-6 h-6 text-foreground hover:text-primary transition-colors"} />
+                </Link>
+                <h1 className={isMobile ? "text-base font-bold" : "text-xl font-bold"}>Creator Dashboard</h1>
+              </div>
+              <BarChart3 className={isMobile ? "w-5 h-5 text-primary" : "w-6 h-6 text-primary"} />
             </div>
-            <BarChart3 className="w-6 h-6 text-primary" />
           </div>
-        </div>
 
-        <div className="p-4 space-y-6">
+          <div className={isMobile ? "p-3 space-y-4" : "p-4 space-y-6"}>
           {/* Test Mode Banner */}
           {payoutInfo?.isTestMode && (
             <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950">
@@ -369,54 +373,54 @@ const CreatorDashboard = () => {
           </div>
           
           {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className={isMobile ? "grid grid-cols-2 gap-3" : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"}>
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Users className="w-4 h-4" />
+              <CardHeader className={isMobile ? "pb-1 p-3" : "pb-2"}>
+                <CardTitle className={isMobile ? "text-xs font-medium text-muted-foreground flex items-center gap-1.5" : "text-sm font-medium text-muted-foreground flex items-center gap-2"}>
+                  <Users className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
                   Subscribers
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.subscriberCount}</div>
+              <CardContent className={isMobile ? "p-3 pt-0" : ""}>
+                <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>{stats.subscriberCount}</div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Your Earnings
+              <CardHeader className={isMobile ? "pb-1 p-3" : "pb-2"}>
+                <CardTitle className={isMobile ? "text-xs font-medium text-muted-foreground flex items-center gap-1.5" : "text-sm font-medium text-muted-foreground flex items-center gap-2"}>
+                  <DollarSign className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
+                  Earnings
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">${stats.totalEarnings.toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground mt-1">Total lifetime</p>
+              <CardContent className={isMobile ? "p-3 pt-0" : ""}>
+                <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>${stats.totalEarnings.toFixed(2)}</div>
+                {!isMobile && <p className="text-xs text-muted-foreground mt-1">Total lifetime</p>}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
+              <CardHeader className={isMobile ? "pb-1 p-3" : "pb-2"}>
+                <CardTitle className={isMobile ? "text-xs font-medium text-muted-foreground flex items-center gap-1.5" : "text-sm font-medium text-muted-foreground flex items-center gap-2"}>
+                  <TrendingUp className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
                   MRR
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80).toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground mt-1">Monthly recurring</p>
+              <CardContent className={isMobile ? "p-3 pt-0" : ""}>
+                <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80).toFixed(2)}</div>
+                {!isMobile && <p className="text-xs text-muted-foreground mt-1">Monthly recurring</p>}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
+              <CardHeader className={isMobile ? "pb-1 p-3" : "pb-2"}>
+                <CardTitle className={isMobile ? "text-xs font-medium text-muted-foreground flex items-center gap-1.5" : "text-sm font-medium text-muted-foreground flex items-center gap-2"}>
+                  <FileText className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
                   Posts
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.postCount}</div>
+              <CardContent className={isMobile ? "p-3 pt-0" : ""}>
+                <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>{stats.postCount}</div>
               </CardContent>
             </Card>
           </div>
@@ -470,9 +474,9 @@ const CreatorDashboard = () => {
           )}
 
           {/* Enhanced Revenue Breakdown with Visual */}
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className={isMobile ? "space-y-4" : "grid md:grid-cols-2 gap-4"}>
             {/* Detailed Revenue Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className={isMobile ? "grid grid-cols-2 gap-3" : "grid grid-cols-1 sm:grid-cols-2 gap-4"}>
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -531,6 +535,7 @@ const CreatorDashboard = () => {
             </div>
 
             {/* Revenue Distribution Pie Chart */}
+            {!isMobile && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Revenue Distribution</CardTitle>
@@ -590,6 +595,7 @@ const CreatorDashboard = () => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+            )}
           </div>
 
           {/* Monthly Revenue Summary */}
@@ -632,13 +638,13 @@ const CreatorDashboard = () => {
           </Card>
 
           {/* Subscriber Growth Chart */}
-          {chartData.length > 0 && (
+          {chartData.length > 0 && !isMobile && (
             <Card>
               <CardHeader>
-                <CardTitle>Subscriber Growth (Last 30 Days)</CardTitle>
+                <CardTitle className={isMobile ? "text-sm" : ""}>Subscriber Growth (Last 30 Days)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200} className="text-xs sm:text-sm">
+                <ResponsiveContainer width="100%" height={isMobile ? 160 : 200} className="text-xs sm:text-sm">
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorSubscribers" x1="0" y1="0" x2="0" y2="1">
@@ -671,13 +677,13 @@ const CreatorDashboard = () => {
           )}
 
           {/* Revenue Chart */}
-          {revenueData.length > 0 && (
+          {revenueData.length > 0 && !isMobile && (
             <Card>
               <CardHeader>
-                <CardTitle>Revenue Trend (Last 30 Days)</CardTitle>
+                <CardTitle className={isMobile ? "text-sm" : ""}>Revenue Trend (Last 30 Days)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200} className="text-xs sm:text-sm">
+                <ResponsiveContainer width="100%" height={isMobile ? 160 : 200} className="text-xs sm:text-sm">
                   <LineChart data={revenueData}>
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -712,19 +718,19 @@ const CreatorDashboard = () => {
 
           {/* Quick Actions */}
           <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+            <CardHeader className={isMobile ? "p-4 pb-2" : ""}>
+              <CardTitle className={isMobile ? "text-base" : ""}>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button onClick={() => setShowPostDialog(true)} className="w-full" size="lg">
-                <Plus className="w-4 h-4 mr-2" />
+            <CardContent className={isMobile ? "p-4 pt-2 space-y-2" : "space-y-3"}>
+              <Button onClick={() => setShowPostDialog(true)} className="w-full" size={isMobile ? "default" : "lg"}>
+                <Plus className={isMobile ? "w-3.5 h-3.5 mr-2" : "w-4 h-4 mr-2"} />
                 Create New Post
               </Button>
               <Button
                 onClick={() => navigate(`/creator/${userId}`)}
                 variant="outline"
                 className="w-full"
-                size="lg"
+                size={isMobile ? "default" : "lg"}
               >
                 View My Feed
               </Button>
@@ -732,7 +738,7 @@ const CreatorDashboard = () => {
                 onClick={() => setShowPriceEditor(true)}
                 variant="outline"
                 className="w-full"
-                size="lg"
+                size={isMobile ? "default" : "lg"}
               >
                 Edit Subscription Price
               </Button>
@@ -782,6 +788,7 @@ const CreatorDashboard = () => {
           )}
         </div>
       </div>
+      </div>
 
       <BottomNav />
 
@@ -797,7 +804,7 @@ const CreatorDashboard = () => {
         onOpenChange={setShowPostDialog}
         onPostCreated={handlePostCreated}
       />
-    </div>
+    </SafeAreaView>
   );
 };
 

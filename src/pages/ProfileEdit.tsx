@@ -255,7 +255,7 @@ const ProfileEdit = () => {
           {/* Photos */}
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Photos</h3>
-            <PhotoUpload photos={photos} onPhotosChange={setPhotos} />
+            <PhotoUpload photos={photos} onPhotosChange={setPhotos} userId={userId || ""} />
           </Card>
 
           {/* Basic Info */}
