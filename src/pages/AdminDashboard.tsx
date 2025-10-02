@@ -7,6 +7,7 @@ import { Users, DollarSign, UserCheck, AlertCircle, FileText, TrendingUp } from 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { AdminStats } from "@/components/admin/AdminStats";
 
 interface DashboardStats {
   totalUsers: number;
@@ -146,25 +147,8 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Enhanced Stats with Real-time Updates */}
+      <AdminStats />
 
       {/* Action Required Alerts */}
       {alertCards.some(card => card.show) && (
@@ -208,6 +192,9 @@ export default function AdminDashboard() {
           </Button>
           <Button onClick={() => navigate('/admin/content-moderation')} variant="outline">
             Moderate Content
+          </Button>
+          <Button onClick={() => navigate('/admin/audit-logs')} variant="outline">
+            View Audit Logs
           </Button>
         </CardContent>
       </Card>
