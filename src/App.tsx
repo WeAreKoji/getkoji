@@ -61,6 +61,7 @@ const AppContent = () => {
                 <Route path="/chat/:matchId" element={<Chat />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:userId" element={<Profile />} />
+                <Route path="/@:userId" element={<Profile />} />
                 <Route path="/profile/edit" element={<ProfileEdit />} />
                 <Route path="/creator/apply" element={<CreatorApplication />} />
                 <Route path="/creator/setup" element={<CreatorSetup />} />
@@ -91,6 +92,7 @@ const AppContent = () => {
           <Route path="/chat/:matchId" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:userId" element={<Profile />} />
+          <Route path="/@:userId" element={<Profile />} />
           <Route path="/profile/edit" element={<ProfileEdit />} />
           <Route path="/creator/apply" element={<CreatorApplication />} />
           <Route path="/creator/setup" element={<CreatorSetup />} />

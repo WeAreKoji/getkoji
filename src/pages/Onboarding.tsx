@@ -16,6 +16,7 @@ interface OnboardingData {
   intent: UserIntent | null;
   selectedInterests: string[];
   displayName: string;
+  username: string;
   age: number;
   city: string;
   bio: string;
@@ -32,6 +33,7 @@ const Onboarding = () => {
     intent: null,
     selectedInterests: [],
     displayName: "",
+    username: "",
     age: 18,
     city: "",
     bio: "",
@@ -88,6 +90,8 @@ const Onboarding = () => {
           id: user.id,
           email: user.email!,
           display_name: completeData.displayName,
+          username: completeData.username || null,
+          username_updated_at: completeData.username ? new Date().toISOString() : null,
           age: completeData.age,
           city: completeData.city,
           bio: completeData.bio,
@@ -162,6 +166,7 @@ const Onboarding = () => {
           <ProfileSetup
             data={{
               displayName: data.displayName,
+              username: data.username,
               age: data.age,
               city: data.city,
               bio: data.bio,

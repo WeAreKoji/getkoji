@@ -20,6 +20,7 @@ import { format } from "date-fns";
 interface Profile {
   id: string;
   display_name: string;
+  username: string | null;
   age: number;
   city: string | null;
   bio: string | null;
@@ -64,8 +65,26 @@ const Profile = () => {
       return;
     }
 
+    // Resolve username to userId if username is provided
+    let profileId = userId;
+    if (userId && userId.startsWith('@')) {
+      const username = userId.substring(1);
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username)
+        .maybeSingle();
+      
+      if (profileData) {
+        profileId = profileData.id;
+      } else {
+        navigate("/discover");
+        return;
+      }
+    }
+
     // If no userId provided, show own profile
-    const profileId = userId || user.id;
+    profileId = profileId || user.id;
     setIsOwnProfile(profileId === user.id);
 
     // Check if user is a creator
@@ -171,6 +190,7 @@ const Profile = () => {
             isOwnProfile={isOwnProfile}
             isCreator={isCreator}
             userId={profile.id}
+            username={profile.username}
             displayName={profile.display_name}
           />
 
@@ -211,6 +231,8 @@ const Profile = () => {
                 {/* Info Bar with Member Since, Stats, and Action Button */}
                 <ProfileInfoBar
                   memberSince={memberSince}
+                  username={profile.username}
+                  userId={profile.id}
                   isCreator={isCreator}
                   stats={stats}
                   loading={statsLoading}

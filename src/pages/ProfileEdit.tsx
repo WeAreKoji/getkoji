@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoUpload from "@/components/profile/PhotoUpload";
+import { UsernameInput } from "@/components/profile/UsernameInput";
 
 interface Photo {
   id?: string;
@@ -32,6 +33,7 @@ const ProfileEdit = () => {
   const [userId, setUserId] = useState<string | null>(null);
 
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [age, setAge] = useState(18);
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
@@ -68,6 +70,7 @@ const ProfileEdit = () => {
 
       if (profile) {
         setDisplayName(profile.display_name);
+        setUsername(profile.username || "");
         setAge(profile.age);
         setCity(profile.city || "");
         setBio(profile.bio || "");
@@ -128,14 +131,22 @@ const ProfileEdit = () => {
 
     try {
       // Update profile
+      const updateData: any = {
+        display_name: displayName,
+        age,
+        city,
+        bio,
+      };
+      
+      // Only update username if it's changed
+      if (username) {
+        updateData.username = username;
+        updateData.username_updated_at = new Date().toISOString();
+      }
+
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({
-          display_name: displayName,
-          age,
-          city,
-          bio,
-        })
+        .update(updateData)
         .eq("id", userId);
 
       if (profileError) throw profileError;
@@ -271,6 +282,12 @@ const ProfileEdit = () => {
                 placeholder="Your name"
               />
             </div>
+
+            <UsernameInput 
+              value={username} 
+              onChange={setUsername}
+              currentUsername={username}
+            />
 
             <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
               <div className="space-y-2">

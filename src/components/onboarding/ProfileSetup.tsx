@@ -5,10 +5,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, User } from "lucide-react";
+import { UsernameInput } from "@/components/profile/UsernameInput";
 
 interface ProfileSetupProps {
   data: {
     displayName: string;
+    username: string;
     age: number;
     city: string;
     bio: string;
@@ -20,6 +22,7 @@ interface ProfileSetupProps {
 
 interface ProfileSetupData {
   displayName: string;
+  username: string;
   age: number;
   city: string;
   bio: string;
@@ -37,6 +40,12 @@ const ProfileSetup = ({ data, onComplete, loading }: ProfileSetupProps) => {
       newErrors.displayName = "Display name is required";
     } else if (formData.displayName.length < 2) {
       newErrors.displayName = "Display name must be at least 2 characters";
+    }
+
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
     }
 
     if (formData.age < 18) {
@@ -121,6 +130,11 @@ const ProfileSetup = ({ data, onComplete, loading }: ProfileSetupProps) => {
             <p className="text-sm text-destructive">{errors.displayName}</p>
           )}
         </div>
+
+        <UsernameInput 
+          value={formData.username} 
+          onChange={(username) => setFormData({ ...formData, username })}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

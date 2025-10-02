@@ -331,6 +331,8 @@ export type Database = {
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
           updated_at: string | null
+          username: string | null
+          username_updated_at: string | null
         }
         Insert: {
           age: number
@@ -343,6 +345,8 @@ export type Database = {
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
           updated_at?: string | null
+          username?: string | null
+          username_updated_at?: string | null
         }
         Update: {
           age?: number
@@ -355,6 +359,8 @@ export type Database = {
           id?: string
           intent?: Database["public"]["Enums"]["user_intent"]
           updated_at?: string | null
+          username?: string | null
+          username_updated_at?: string | null
         }
         Relationships: []
       }
@@ -522,6 +528,10 @@ export type Database = {
         Args: { amount: number; creator_user_id: string }
         Returns: undefined
       }
+      check_username_available: {
+        Args: { desired_username: string }
+        Returns: boolean
+      }
       decrement_subscriber_count: {
         Args: { creator_user_id: string }
         Returns: undefined
@@ -539,6 +549,8 @@ export type Database = {
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
           updated_at: string | null
+          username: string | null
+          username_updated_at: string | null
         }[]
       }
       has_role: {

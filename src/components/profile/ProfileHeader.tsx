@@ -16,24 +16,29 @@ interface ProfileHeaderProps {
   isOwnProfile: boolean;
   isCreator: boolean;
   userId: string;
+  username: string | null;
   displayName: string;
 }
 
-export const ProfileHeader = ({ isOwnProfile, isCreator, userId, displayName }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ isOwnProfile, isCreator, userId, username, displayName }: ProfileHeaderProps) => {
   const { toast } = useToast();
   const showShare = canShare();
 
   const handleShare = async () => {
+    const profileUrl = username 
+      ? `${window.location.origin}/@${username}`
+      : `${window.location.origin}/profile/${userId}`;
+    
     try {
       haptics.light();
       await shareContent({
         title: `Check out ${displayName} on Koji`,
         text: `I found ${displayName}'s profile on Koji!`,
-        url: `${window.location.origin}/profile/${userId}`,
+        url: profileUrl,
         dialogTitle: "Share Profile",
       });
     } catch (error) {
-      navigator.clipboard.writeText(`${window.location.origin}/profile/${userId}`);
+      navigator.clipboard.writeText(profileUrl);
       toast({
         title: "Copied to clipboard",
         description: "Profile link copied to clipboard",
