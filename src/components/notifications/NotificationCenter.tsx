@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -24,6 +25,7 @@ interface Notification {
 
 export const NotificationCenter = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -42,8 +44,16 @@ export const NotificationCenter = () => {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          fetchNotifications();
+        (payload) => {
+          const newNotification = payload.new as Notification;
+          setNotifications(prev => [newNotification, ...prev]);
+          setUnreadCount(prev => prev + 1);
+          
+          // Show toast for new notification
+          toast({
+            title: newNotification.title,
+            description: newNotification.message,
+          });
         }
       )
       .subscribe();
@@ -51,7 +61,7 @@ export const NotificationCenter = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, toast]);
 
   const fetchNotifications = async () => {
     if (!user) return;
