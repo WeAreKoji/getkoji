@@ -138,6 +138,17 @@ serve(async (req) => {
       }
     }
 
+    // Create in-app notification
+    await supabaseAdmin.rpc("create_notification", {
+      _user_id: verification.creator_id,
+      _type: "verification_update",
+      _title: approved ? "Verification Approved!" : "Verification Update Required",
+      _message: approved 
+        ? "Your creator verification has been approved. You can now access all creator features."
+        : `Your verification needs attention: ${rejection_reason || "Please review and resubmit your documents"}`,
+      _data: { verification_id, approved, rejection_reason }
+    });
+
     // Send email notification
     try {
       const resend = new Resend(Deno.env.get("RESEND_API_KEY"));

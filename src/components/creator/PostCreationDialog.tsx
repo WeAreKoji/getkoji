@@ -105,18 +105,36 @@ const PostCreationDialog = ({
         uploadedMediaUrl = publicUrl;
       }
 
-      const { error } = await supabase.from("creator_posts").insert({
+      const { data: postData, error } = await supabase.from("creator_posts").insert({
         creator_id: user.id,
         content,
         media_url: uploadedMediaUrl,
         media_type: mediaType,
-      });
+      }).select().single();
 
       if (error) throw error;
 
+      // Trigger notification for admins about new post for moderation
+      const { data: admins } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+
+      if (admins && admins.length > 0) {
+        for (const admin of admins) {
+          await supabase.rpc("create_notification", {
+            _user_id: admin.user_id,
+            _type: "post_moderation",
+            _title: "New Post Requires Moderation",
+            _message: `A creator has posted new content that needs review`,
+            _data: { post_id: postData.id, creator_id: user.id }
+          });
+        }
+      }
+
       toast({
         title: "Post created!",
-        description: "Your content has been published",
+        description: "Your content has been submitted for review",
       });
 
       // Clean up object URL

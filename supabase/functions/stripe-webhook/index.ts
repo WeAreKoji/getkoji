@@ -108,6 +108,26 @@ serve(async (req) => {
             logStep("Error updating subscriber count", { error: countError });
           }
 
+          // Create notification for creator
+          await supabase.rpc("create_notification", {
+            _user_id: creatorId,
+            _type: "new_subscriber",
+            _title: "New Subscriber!",
+            _message: "You have a new subscriber to your content",
+            _data: { subscriber_id: subscriberId, subscription_id: subscription.id }
+          });
+
+          // Send email notification
+          await supabase.functions.invoke("send-notification-email", {
+            body: {
+              userId: creatorId,
+              type: "new_subscriber",
+              title: "New Subscriber!",
+              message: "You have a new subscriber to your content",
+              data: { subscription_id: subscription.id }
+            }
+          });
+
           logStep("Subscription created successfully");
         }
         break;
@@ -116,6 +136,13 @@ serve(async (req) => {
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         logStep("Subscription updated", { subscriptionId: subscription.id, status: subscription.status });
+
+        // Get subscription data for notifications
+        const { data: subData } = await supabase
+          .from("subscriptions")
+          .select("subscriber_id, creator_id")
+          .eq("stripe_subscription_id", subscription.id)
+          .single();
 
         const { error } = await supabase
           .from("subscriptions")
@@ -127,6 +154,27 @@ serve(async (req) => {
 
         if (error) {
           logStep("Error updating subscription", { error });
+        }
+
+        // Notify about renewal or status change
+        if (subData && subscription.status === "active") {
+          await supabase.rpc("create_notification", {
+            _user_id: subData.subscriber_id,
+            _type: "subscription_renewal",
+            _title: "Subscription Renewed",
+            _message: "Your subscription has been renewed successfully",
+            _data: { subscription_id: subscription.id, expires_at: new Date(subscription.current_period_end * 1000).toISOString() }
+          });
+
+          await supabase.functions.invoke("send-notification-email", {
+            body: {
+              userId: subData.subscriber_id,
+              type: "subscription_renewal",
+              title: "Subscription Renewed",
+              message: "Your subscription has been renewed successfully",
+              data: { expires_at: new Date(subscription.current_period_end * 1000).toISOString() }
+            }
+          });
         }
         break;
       }
@@ -255,6 +303,25 @@ serve(async (req) => {
                 if (failedTransferError) {
                   logStep("ERROR logging failed transfer", { error: failedTransferError });
                 }
+
+                // Notify creator about failed transfer
+                await supabase.rpc("create_notification", {
+                  _user_id: subData.creator_id,
+                  _type: "failed_transfer",
+                  _title: "Transfer Failed",
+                  _message: `A transfer of $${creatorEarnings.toFixed(2)} failed. Please check your payout settings.`,
+                  _data: { amount: creatorEarnings, error: transferError.message }
+                });
+
+                await supabase.functions.invoke("send-notification-email", {
+                  body: {
+                    userId: subData.creator_id,
+                    type: "failed_transfer",
+                    title: "Transfer Failed",
+                    message: `A transfer of $${creatorEarnings.toFixed(2)} failed. Please check your payout settings and Stripe Connect account.`,
+                    data: { amount: creatorEarnings, invoice_id: invoice.id }
+                  }
+                });
               }
             } else {
               logStep("Skipping transfer - Stripe Connect not enabled", {
@@ -346,7 +413,35 @@ serve(async (req) => {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         logStep("Payment failed", { invoiceId: invoice.id });
-        // Could send notification to user here
+        
+        // Get subscription and notify subscriber
+        if (invoice.subscription) {
+          const { data: subData } = await supabase
+            .from("subscriptions")
+            .select("subscriber_id, creator_id")
+            .eq("stripe_subscription_id", invoice.subscription as string)
+            .single();
+
+          if (subData) {
+            await supabase.rpc("create_notification", {
+              _user_id: subData.subscriber_id,
+              _type: "payment_failed",
+              _title: "Payment Failed",
+              _message: "Your subscription payment failed. Please update your payment method.",
+              _data: { invoice_id: invoice.id }
+            });
+
+            await supabase.functions.invoke("send-notification-email", {
+              body: {
+                userId: subData.subscriber_id,
+                type: "payment_failed",
+                title: "Payment Failed",
+                message: "Your subscription payment failed. Please update your payment method to continue your subscription.",
+                data: { invoice_id: invoice.id }
+              }
+            });
+          }
+        }
         break;
       }
 
