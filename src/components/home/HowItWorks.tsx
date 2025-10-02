@@ -1,0 +1,73 @@
+import { Heart, Users, MessageCircle } from "lucide-react";
+import { Card } from "@/components/ui/card";
+
+export const HowItWorks = () => {
+  const steps = [
+    {
+      icon: Heart,
+      title: "Create Your Profile",
+      description: "Add your interests, photos, and what you're looking for - whether that's finding new friends, dating, or discovering creators to support.",
+      alt: "Create interest-based profile on Koji app"
+    },
+    {
+      icon: Users,
+      title: "Swipe to Connect",
+      description: "Browse through like-minded people and creators who share your passions. Our interest-based social network helps you find authentic connections.",
+      alt: "Swipe to connect with users on Koji social discovery platform"
+    },
+    {
+      icon: MessageCircle,
+      title: "Chat & Support",
+      description: "Start conversations with your matches or subscribe to exclusive content from creators. Build your online community platform experience.",
+      alt: "Chat and support creators on Koji app"
+    }
+  ];
+
+  return (
+    <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-background to-secondary/5">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+            Discover Your Community & Next Favorite Creator
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+            Koji is the social discovery platform where you can find new friends, explore dating based on interests, 
+            and connect with creators who inspire you. Available on iOS and Android.
+          </p>
+        </div>
+
+        <h3 className="text-2xl md:text-3xl font-semibold text-center mb-10 text-foreground">
+          How Koji Works: Swipe, Match, Connect
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {steps.map((step, index) => (
+            <Card key={index} className="p-6 md:p-8 text-center hover:shadow-lg transition-all duration-300 bg-card border-border">
+              <div className="mb-6 inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10">
+                <step.icon 
+                  className="w-8 h-8 md:w-10 md:h-10 text-primary" 
+                  aria-label={step.alt}
+                />
+              </div>
+              <div className="mb-2 text-primary font-semibold text-sm">
+                Step {index + 1}
+              </div>
+              <h4 className="text-xl md:text-2xl font-bold mb-4 text-foreground">
+                {step.title}
+              </h4>
+              <p className="text-muted-foreground leading-relaxed">
+                {step.description}
+              </p>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <p className="text-muted-foreground mb-6">
+            Join thousands discovering authentic connections in our community building app
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+};

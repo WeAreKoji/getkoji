@@ -1,7 +1,8 @@
 {
   "name": "Koji - Social Discovery & Creator Platform",
   "short_name": "Koji",
-  "description": "Discover, connect, and support. Koji is the social discovery platform where authentic connections meet creator monetization.",
+  "description": "Social discovery app for authentic connections. Find new friends, explore dating based on interests, and support creators with exclusive content. Available on iOS & Android.",
+  "keywords": ["social discovery", "creator monetization", "find friends", "dating app", "support creators", "exclusive content", "community building"]
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a0f28",
