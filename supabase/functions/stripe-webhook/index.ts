@@ -178,17 +178,16 @@ serve(async (req) => {
             .single();
 
           if (subData?.creator_id) {
-            // Revenue split: 20% platform commission
-            const PLATFORM_COMMISSION_RATE = 0.20;
-            
-            const grossAmount = invoice.total / 100; // What customer paid (cents to dollars)
-            const amountPaid = invoice.amount_paid / 100; // What we received after Stripe fees
-            const stripeFee = grossAmount - amountPaid; // Stripe's cut
-            const platformCommission = grossAmount * PLATFORM_COMMISSION_RATE; // 20% of gross
-            const creatorEarnings = grossAmount - stripeFee - platformCommission; // Remainder to creator
+            // CORRECTED Revenue split calculation
+            const grossAmount = invoice.total / 100; // Total invoice (before Stripe fee)
+            const amountPaid = invoice.amount_paid / 100; // Amount after Stripe fee
+            const stripeFee = grossAmount - amountPaid; // Actual Stripe fee deducted
+            const platformCommission = amountPaid * 0.20; // 20% of net amount
+            const creatorEarnings = amountPaid * 0.80; // 80% of net amount
 
             logStep("Revenue split calculated", { 
-              gross: grossAmount, 
+              grossAmount, 
+              amountPaid,
               stripeFee, 
               platformCommission, 
               creatorEarnings 
@@ -209,6 +208,39 @@ serve(async (req) => {
 
             if (revenueError) {
               logStep("Error recording platform revenue", { error: revenueError });
+            }
+
+            // Get creator's Stripe Connect account
+            const { data: creatorProfile } = await supabase
+              .from("creator_profiles")
+              .select("stripe_account_id, payouts_enabled")
+              .eq("user_id", subData.creator_id)
+              .single();
+
+            // Transfer funds to creator if Stripe Connect is enabled
+            if (creatorProfile?.stripe_account_id && creatorProfile?.payouts_enabled) {
+              try {
+                const transfer = await stripe.transfers.create({
+                  amount: Math.round(creatorEarnings * 100), // Convert to cents
+                  currency: invoice.currency,
+                  destination: creatorProfile.stripe_account_id,
+                  transfer_group: subscription.id,
+                  description: `Subscription payment for invoice ${invoice.id}`,
+                  metadata: {
+                    creator_id: subData.creator_id,
+                    invoice_id: invoice.id,
+                    subscription_id: subscription.id,
+                  },
+                });
+                logStep("Transfer created successfully", { transferId: transfer.id, amount: creatorEarnings });
+              } catch (transferError: any) {
+                logStep("ERROR creating transfer", { error: transferError.message });
+              }
+            } else {
+              logStep("Skipping transfer - Stripe Connect not enabled", {
+                hasStripeAccount: !!creatorProfile?.stripe_account_id,
+                payoutsEnabled: creatorProfile?.payouts_enabled
+              });
             }
 
             // Add earnings to creator profile

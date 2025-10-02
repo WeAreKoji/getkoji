@@ -40,10 +40,23 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceId, creatorId } = await req.json();
-    if (!priceId) throw new Error("Price ID is required");
+    const { creatorId } = await req.json();
     if (!creatorId) throw new Error("Creator ID is required");
-    logStep("Request parameters", { priceId, creatorId });
+    logStep("Request parameters", { creatorId });
+
+    // Fetch creator's dynamic price ID
+    const { data: creatorProfile, error: profileError } = await supabaseClient
+      .from("creator_profiles")
+      .select("stripe_price_id")
+      .eq("user_id", creatorId)
+      .single();
+
+    if (profileError || !creatorProfile?.stripe_price_id) {
+      throw new Error("Creator price not found. Please contact the creator.");
+    }
+
+    const priceId = creatorProfile.stripe_price_id;
+    logStep("Retrieved dynamic price", { priceId });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 

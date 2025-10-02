@@ -88,14 +88,32 @@ const CreatorSetup = () => {
       const tier = SUBSCRIPTION_TIERS.find((t) => t.priceId === selectedTier);
       if (!tier) throw new Error("Invalid tier selected");
 
-      const { error } = await supabase
+      // First create the creator profile
+      const { error: profileError } = await supabase
         .from("creator_profiles")
         .insert({
           user_id: user.id,
           subscription_price: tier.amount,
         });
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Then create Stripe product and price
+      const { error: productError } = await supabase.functions.invoke(
+        "create-creator-product",
+        {
+          body: { subscriptionPrice: tier.amount },
+        }
+      );
+
+      if (productError) {
+        console.error("Error creating Stripe product:", productError);
+        toast({
+          title: "Warning",
+          description: "Profile created but Stripe setup incomplete. You can set it up later.",
+          variant: "default",
+        });
+      }
 
       toast({
         title: "Creator profile created! 🎉",

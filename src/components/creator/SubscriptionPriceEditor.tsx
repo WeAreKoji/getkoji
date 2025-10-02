@@ -44,17 +44,36 @@ const SubscriptionPriceEditor = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase
+      const newPrice = Number(selectedPrice);
+
+      // Update creator profile
+      const { error: updateError } = await supabase
         .from("creator_profiles")
-        .update({ subscription_price: Number(selectedPrice) })
+        .update({ subscription_price: newPrice })
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      toast({
-        title: "Price Updated",
-        description: "Your subscription price has been updated successfully",
-      });
+      // Create new Stripe product and price
+      const { error: productError } = await supabase.functions.invoke(
+        "create-creator-product",
+        {
+          body: { subscriptionPrice: newPrice },
+        }
+      );
+
+      if (productError) {
+        console.error("Error creating Stripe product:", productError);
+        toast({
+          title: "Warning",
+          description: "Price updated but Stripe setup incomplete. New subscribers may not work until resolved.",
+        });
+      } else {
+        toast({
+          title: "Price Updated",
+          description: "Your subscription price and Stripe product have been updated successfully",
+        });
+      }
 
       onPriceUpdated();
     } catch (error: any) {

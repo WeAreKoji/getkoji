@@ -231,11 +231,12 @@ const CreatorDashboard = () => {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
-                  Total Earnings
+                  Your Earnings
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${stats.totalEarnings.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">80% of revenue</p>
               </CardContent>
             </Card>
 
@@ -263,6 +264,41 @@ const CreatorDashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Revenue Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Monthly Subscription</span>
+                <span className="font-semibold">${stats.subscriptionPrice.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">× {stats.subscriberCount} subscribers</span>
+                <span className="font-semibold">${(stats.subscriptionPrice * stats.subscriberCount).toFixed(2)}</span>
+              </div>
+              <div className="border-t pt-3 space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Gross Revenue (100%)</span>
+                  <span>${(stats.subscriptionPrice * stats.subscriberCount).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Stripe Fees (~3%)</span>
+                  <span className="text-red-500">-${(stats.subscriptionPrice * stats.subscriberCount * 0.03).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Platform Fee (20%)</span>
+                  <span className="text-red-500">-${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.20).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center font-bold text-primary border-t pt-2">
+                  <span>Your Earnings (80%)</span>
+                  <span>${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80).toFixed(2)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Subscriber Growth Chart */}
           {chartData.length > 0 && (

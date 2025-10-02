@@ -58,12 +58,6 @@ const CreatorFeed = () => {
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const SUBSCRIPTION_TIERS = [
-    { priceId: "price_1SDisJEQjcZdgqoDhPvzRh33", amount: 5 },
-    { priceId: "price_1SDishEQjcZdgqoD97tJt5so", amount: 10 },
-    { priceId: "price_1SDitLEQjcZdgqoDVwE2qkUl", amount: 20 },
-  ];
-
   useEffect(() => {
     if (creatorId) {
       fetchCreatorData();
@@ -160,15 +154,8 @@ const CreatorFeed = () => {
     setSubscribing(true);
 
     try {
-      const tier = SUBSCRIPTION_TIERS.find(
-        (t) => t.amount === creatorProfile.subscription_price
-      );
-
-      if (!tier) throw new Error("Invalid subscription tier");
-
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
-          priceId: tier.priceId,
           creatorId: creatorId,
         },
       });
