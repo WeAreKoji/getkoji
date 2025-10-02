@@ -1,24 +1,27 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 interface RateLimitConfig {
   maxAttempts: number;
   windowMinutes: number;
   identifier: string; // user_id, ip, or combined
 }
 
+interface RateLimitRecord {
+  id: string;
+  identifier: string;
+  attempts: number;
+  window_start: string;
+  created_at: string;
+}
+
 export async function checkRateLimit(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   config: RateLimitConfig
 ): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
   const now = new Date();
   const windowStart = new Date(now.getTime() - config.windowMinutes * 60 * 1000);
 
-  // Create a rate_limits table entry or check existing
-  const tableName = "rate_limits";
-  
   // Try to get existing rate limit record
   const { data: existing, error: fetchError } = await supabase
-    .from(tableName)
+    .from("rate_limits")
     .select("*")
     .eq("identifier", config.identifier)
     .gte("window_start", windowStart.toISOString())
@@ -34,10 +37,12 @@ export async function checkRateLimit(
     };
   }
 
-  if (!existing) {
+  const typedExisting = existing as RateLimitRecord | null;
+
+  if (!typedExisting) {
     // Create new rate limit entry
     const { error: insertError } = await supabase
-      .from(tableName)
+      .from("rate_limits")
       .insert({
         identifier: config.identifier,
         attempts: 1,
@@ -61,19 +66,19 @@ export async function checkRateLimit(
   }
 
   // Check if limit exceeded
-  if (existing.attempts >= config.maxAttempts) {
+  if (typedExisting.attempts >= config.maxAttempts) {
     return {
       allowed: false,
       remaining: 0,
-      resetAt: new Date(new Date(existing.window_start).getTime() + config.windowMinutes * 60 * 1000),
+      resetAt: new Date(new Date(typedExisting.window_start).getTime() + config.windowMinutes * 60 * 1000),
     };
   }
 
   // Increment attempts
   const { error: updateError } = await supabase
-    .from(tableName)
-    .update({ attempts: existing.attempts + 1 })
-    .eq("id", existing.id);
+    .from("rate_limits")
+    .update({ attempts: typedExisting.attempts + 1 })
+    .eq("id", typedExisting.id);
 
   if (updateError) {
     console.error("Rate limit update error:", updateError);
@@ -81,7 +86,7 @@ export async function checkRateLimit(
 
   return {
     allowed: true,
-    remaining: config.maxAttempts - (existing.attempts + 1),
-    resetAt: new Date(new Date(existing.window_start).getTime() + config.windowMinutes * 60 * 1000),
+    remaining: config.maxAttempts - (typedExisting.attempts + 1),
+    resetAt: new Date(new Date(typedExisting.window_start).getTime() + config.windowMinutes * 60 * 1000),
   };
 }

@@ -793,6 +793,30 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          attempts: number
+          created_at: string | null
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string | null
+          id?: string
+          identifier: string
+          window_start: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string | null
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string
@@ -1172,6 +1196,10 @@ export type Database = {
       check_username_available: {
         Args: { desired_username: string }
         Returns: boolean
+      }
+      cleanup_old_rate_limits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       complete_referral: {
         Args: { referral_uuid: string }
