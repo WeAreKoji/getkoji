@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logError } from "@/lib/error-logger";
 
 interface Props {
   children: ReactNode;
@@ -24,10 +25,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    logError(error, 'ErrorBoundary');
     
-    // Log to external service if needed
-    // logErrorToService(error, errorInfo);
+    // Log error info in development
+    if (process.env.NODE_ENV === 'development') {
+      console.info('Error Info:', errorInfo);
+    }
   }
 
   private handleReset = () => {

@@ -2,6 +2,7 @@ import { Component, ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logError } from "@/lib/error-logger";
 
 interface Props {
   children: ReactNode;
@@ -38,7 +39,11 @@ export class RetryBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error("RetryBoundary caught error:", error, errorInfo);
+    logError(error, 'RetryBoundary');
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.info('Error Info:', errorInfo);
+    }
   }
 
   handleRetry = () => {
