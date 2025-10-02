@@ -102,6 +102,16 @@ export default function AdminContentModeration() {
         variant: "destructive",
       });
     } else {
+      // Log admin action
+      await supabase.rpc("log_admin_action", {
+        _action: approved ? "approve_post" : "reject_post",
+        _resource_type: "creator_post",
+        _resource_id: postId,
+        _details: {
+          moderation_reason: reason || null
+        }
+      });
+
       toast({
         title: "Success",
         description: `Post ${approved ? "approved" : "rejected"} successfully`,

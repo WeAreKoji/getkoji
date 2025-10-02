@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { checkRateLimit } from "../_shared/rate-limiter.ts";
+import { sanitizeText } from "../_shared/input-sanitizer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,6 +75,9 @@ serve(async (req) => {
       );
     }
 
+    // Sanitize rejection reason if provided
+    const sanitizedRejectionReason = rejection_reason ? sanitizeText(rejection_reason) : null;
+
     // Get the verification record
     const { data: verification, error: verificationError } = await supabaseClient
       .from("creator_id_verification")
@@ -111,7 +115,7 @@ serve(async (req) => {
         status: newStatus,
         reviewed_at: now,
         reviewed_by: user.id,
-        rejection_reason: approved ? null : rejection_reason,
+        rejection_reason: approved ? null : sanitizedRejectionReason,
       })
       .eq("id", verification_id);
 
@@ -122,6 +126,17 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Log admin action
+    await supabaseAdmin.rpc("log_admin_action", {
+      _action: approved ? "approve_verification" : "reject_verification",
+      _resource_type: "creator_id_verification",
+      _resource_id: verification_id,
+      _details: {
+        creator_id: verification.creator_id,
+        rejection_reason: sanitizedRejectionReason
+      }
+    });
 
     // If approved, update creator profile
     if (approved) {
