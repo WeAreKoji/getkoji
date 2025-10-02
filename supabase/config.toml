@@ -20,3 +20,6 @@ verify_jwt = true
 
 [functions.create-creator-product]
 verify_jwt = true
+
+[functions.get-payout-info]
+verify_jwt = true

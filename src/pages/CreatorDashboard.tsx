@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, Loader2, Plus, DollarSign, Users, FileText, BarChart3, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, DollarSign, Users, FileText, BarChart3, AlertTriangle, Download, ExternalLink, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
 import SubscriptionPriceEditor from "@/components/creator/SubscriptionPriceEditor";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
 import PayoutSettings from "@/components/creator/PayoutSettings";
@@ -40,14 +40,42 @@ interface FailedTransfer {
   created_at: string;
 }
 
+interface PayoutInfo {
+  connected: boolean;
+  isTestMode?: boolean;
+  balance?: {
+    available: number;
+    pending: number;
+    currency: string;
+  };
+  nextPayout?: {
+    amount: number;
+    arrivalDate: string;
+    status: string;
+  };
+  payoutSchedule?: {
+    interval: string;
+    delayDays: number;
+  };
+  dashboardUrl?: string;
+}
+
+interface RevenueData {
+  date: string;
+  revenue: number;
+  subscribers: number;
+}
+
 const CreatorDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<CreatorStats | null>(null);
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
   const [failedTransfers, setFailedTransfers] = useState<FailedTransfer[]>([]);
+  const [payoutInfo, setPayoutInfo] = useState<PayoutInfo | null>(null);
   const [showPriceEditor, setShowPriceEditor] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -187,6 +215,47 @@ const CreatorDashboard = () => {
         .limit(5);
       
       setFailedTransfers(failedTransfersData || []);
+
+      // Fetch revenue data from platform_revenue (last 30 days)
+      const { data: revenueRecords } = await supabase
+        .from("platform_revenue")
+        .select("created_at, creator_earnings")
+        .eq("creator_id", creatorId)
+        .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: true });
+
+      // Group revenue by date
+      const revenueMap = new Map<string, { revenue: number; count: number }>();
+      revenueRecords?.forEach((record) => {
+        const date = new Date(record.created_at).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+        const existing = revenueMap.get(date) || { revenue: 0, count: 0 };
+        revenueMap.set(date, {
+          revenue: existing.revenue + Number(record.creator_earnings),
+          count: existing.count + 1,
+        });
+      });
+
+      const revenueChartData: RevenueData[] = Array.from(revenueMap.entries()).map(
+        ([date, data]) => ({
+          date,
+          revenue: data.revenue,
+          subscribers: data.count,
+        })
+      );
+
+      setRevenueData(revenueChartData);
+
+      // Fetch payout info
+      const { data: payoutData, error: payoutError } = await supabase.functions.invoke(
+        "get-payout-info"
+      );
+
+      if (!payoutError && payoutData) {
+        setPayoutInfo(payoutData);
+      }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -206,6 +275,38 @@ const CreatorDashboard = () => {
     if (userId) {
       await fetchDashboardData(userId);
     }
+  };
+
+  const exportToCSV = () => {
+    if (!stats) return;
+
+    const mrr = stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80;
+    const csvData = [
+      ["Metric", "Value"],
+      ["Subscribers", stats.subscriberCount],
+      ["Subscription Price", `$${stats.subscriptionPrice.toFixed(2)}`],
+      ["Total Earnings", `$${stats.totalEarnings.toFixed(2)}`],
+      ["Monthly Recurring Revenue (MRR)", `$${mrr.toFixed(2)}`],
+      ["Posts", stats.postCount],
+      ["", ""],
+      ["Revenue History", ""],
+      ["Date", "Revenue", "Subscribers"],
+      ...revenueData.map(d => [d.date, `$${d.revenue.toFixed(2)}`, d.subscribers]),
+    ];
+
+    const csv = csvData.map(row => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `creator-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Complete",
+      description: "Your analytics have been exported to CSV",
+    });
   };
 
   if (loading) {
@@ -235,6 +336,17 @@ const CreatorDashboard = () => {
         </div>
 
         <div className="p-4 space-y-6">
+          {/* Test Mode Banner */}
+          {payoutInfo?.isTestMode && (
+            <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950">
+              <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertTitle className="text-orange-600 dark:text-orange-400">Test Mode Active</AlertTitle>
+              <AlertDescription className="text-orange-600 dark:text-orange-400">
+                You're using Stripe in test mode. Transactions won't process real payments.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Failed Transfers Alert */}
           {failedTransfers.length > 0 && (
             <Alert variant="destructive">
@@ -247,6 +359,14 @@ const CreatorDashboard = () => {
               </AlertDescription>
             </Alert>
           )}
+          
+          {/* Export Button */}
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={exportToCSV}>
+              <Download className="w-4 h-4 mr-2" />
+              Export Analytics
+            </Button>
+          </div>
           
           {/* Metrics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -278,12 +398,13 @@ const CreatorDashboard = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Price
+                  <TrendingUp className="w-4 h-4" />
+                  MRR
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${stats.subscriptionPrice}/mo</div>
+                <div className="text-2xl font-bold">${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80).toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground mt-1">Monthly recurring</p>
               </CardContent>
             </Card>
 
@@ -299,6 +420,54 @@ const CreatorDashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Payout Info Card */}
+          {payoutInfo?.connected && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Payout Information</span>
+                  {payoutInfo.dashboardUrl && (
+                    <Button variant="ghost" size="sm" asChild>
+                      <a href={payoutInfo.dashboardUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Stripe Dashboard
+                      </a>
+                    </Button>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Available Balance</p>
+                    <p className="text-2xl font-bold text-primary">${payoutInfo.balance?.available.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pending Balance</p>
+                    <p className="text-2xl font-bold">${payoutInfo.balance?.pending.toFixed(2)}</p>
+                  </div>
+                </div>
+                {payoutInfo.nextPayout && (
+                  <div className="pt-3 border-t">
+                    <p className="text-sm text-muted-foreground mb-1">Next Payout</p>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">${payoutInfo.nextPayout.amount.toFixed(2)}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(payoutInfo.nextPayout.arrivalDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {payoutInfo.payoutSchedule && (
+                  <p className="text-xs text-muted-foreground">
+                    Payout schedule: {payoutInfo.payoutSchedule.interval} 
+                    {payoutInfo.payoutSchedule.delayDays ? ` (${payoutInfo.payoutSchedule.delayDays} day delay)` : ''}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Enhanced Revenue Breakdown with Visual */}
           <div className="grid md:grid-cols-2 gap-4">
@@ -490,6 +659,46 @@ const CreatorDashboard = () => {
                       strokeWidth={2}
                     />
                   </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Revenue Chart */}
+          {revenueData.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue Trend (Last 30 Days)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={revenueData}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip
+                      formatter={(value: number) => `$${value.toFixed(2)}`}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={3}
+                      dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
