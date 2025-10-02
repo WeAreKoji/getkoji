@@ -34,7 +34,10 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
 
   return (
     <>
-      <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-primary/20 to-secondary/20">
+      <div className={cn(
+        "relative w-full bg-gradient-to-br from-primary/20 to-secondary/20",
+        isMobile ? "aspect-[3/4]" : "aspect-[21/9] max-h-[500px]"
+      )}>
         {/* Main Photo */}
         {mainPhoto ? (
           <img

@@ -151,7 +151,7 @@ const Profile = () => {
           />
 
           {/* Content */}
-          <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-2xl mx-auto px-6 py-6 space-y-4"}>
+          <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-6xl mx-auto px-6 py-8 space-y-6"}>
             {/* Stats - Only for creators */}
             {isCreator && <ProfileStats userId={profile.id} isCreator={isCreator} />}
 

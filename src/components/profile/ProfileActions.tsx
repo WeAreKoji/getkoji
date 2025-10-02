@@ -1,5 +1,6 @@
 import { MessageCircle, Heart, Share2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,7 @@ interface ProfileActionsProps {
 export const ProfileActions = ({ userId, displayName }: ProfileActionsProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const showShare = canShare();
 
   const handleMessage = () => {
@@ -61,14 +63,14 @@ export const ProfileActions = ({ userId, displayName }: ProfileActionsProps) => 
   };
 
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className={isMobile ? "grid grid-cols-4 gap-2" : "grid grid-cols-4 gap-4"}>
       {/* Primary Action - Message */}
       <Button
         size="lg"
-        className="col-span-2 h-12 text-base font-semibold shadow-md"
+        className={isMobile ? "col-span-2 h-12 text-base font-semibold shadow-md" : "col-span-2 h-14 text-lg font-semibold shadow-md"}
         onClick={handleMessage}
       >
-        <MessageCircle className="w-5 h-5 mr-2" />
+        <MessageCircle className={isMobile ? "w-5 h-5 mr-2" : "w-6 h-6 mr-2"} />
         Message
       </Button>
 
@@ -76,17 +78,17 @@ export const ProfileActions = ({ userId, displayName }: ProfileActionsProps) => 
       <Button
         variant="outline"
         size="lg"
-        className="h-12 border-2"
+        className={isMobile ? "h-12 border-2" : "h-14 border-2"}
         onClick={handleLike}
       >
-        <Heart className="w-5 h-5" />
+        <Heart className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
       </Button>
 
       {/* More Actions */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="lg" className="h-12 border-2">
-            <MoreVertical className="w-5 h-5" />
+          <Button variant="outline" size="lg" className={isMobile ? "h-12 border-2" : "h-14 border-2"}>
+            <MoreVertical className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48 bg-popover">
