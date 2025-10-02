@@ -54,6 +54,18 @@ const CreatorFeed = () => {
     }
   }, [creatorId]);
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      toast({
+        title: "Welcome!",
+        description: "Your subscription is now active. Enjoy exclusive content!",
+      });
+      checkSubscription();
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   const fetchCreatorData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
