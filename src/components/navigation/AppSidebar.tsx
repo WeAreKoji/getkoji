@@ -76,13 +76,13 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto">
           <SidebarGroup>
-            <SidebarGroupLabel className="px-4 py-4 flex items-center justify-center">
+            <div className={open ? "px-4 py-4 pb-6 flex items-center" : "px-4 py-4 pb-6 flex items-center justify-center"}>
               <img 
                 src={logo} 
                 alt="Koji" 
                 className={open ? "h-10 w-auto" : "h-8 w-8"}
               />
-            </SidebarGroupLabel>
+            </div>
             <SidebarGroupContent>
               <SidebarMenu>
                 {mainItems.map((item) => (
