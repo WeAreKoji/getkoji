@@ -7,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, Loader2, Plus, DollarSign, Users, FileText, BarChart3, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import SubscriptionPriceEditor from "@/components/creator/SubscriptionPriceEditor";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
 import PayoutSettings from "@/components/creator/PayoutSettings";
@@ -271,7 +271,7 @@ const CreatorDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${stats.totalEarnings.toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground mt-1">80% of revenue</p>
+                <p className="text-xs text-muted-foreground mt-1">Total lifetime</p>
               </CardContent>
             </Card>
 
@@ -300,35 +300,156 @@ const CreatorDashboard = () => {
             </Card>
           </div>
 
-          {/* Revenue Breakdown */}
+          {/* Enhanced Revenue Breakdown with Visual */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Detailed Revenue Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-muted-foreground">
+                    Gross Revenue
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold text-foreground">
+                    ${(stats.subscriptionPrice * stats.subscriberCount).toFixed(2)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">100% of subscriptions</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-muted-foreground">
+                    Stripe Fees
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold text-destructive">
+                    -${(stats.subscriptionPrice * stats.subscriberCount * 0.03).toFixed(2)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">~3% processing</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-muted-foreground">
+                    Platform Commission
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold text-destructive">
+                    -${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.20).toFixed(2)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">20% of net revenue</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-muted-foreground">
+                    Your Monthly Earnings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold text-primary">
+                    ${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80).toFixed(2)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">80% of net revenue</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Revenue Distribution Pie Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Revenue Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { 
+                          name: "Your Earnings", 
+                          value: parseFloat((stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80).toFixed(2)),
+                          color: "hsl(var(--primary))"
+                        },
+                        { 
+                          name: "Platform Fee", 
+                          value: parseFloat((stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.20).toFixed(2)),
+                          color: "hsl(var(--muted-foreground))"
+                        },
+                        { 
+                          name: "Stripe Fees", 
+                          value: parseFloat((stats.subscriptionPrice * stats.subscriberCount * 0.03).toFixed(2)),
+                          color: "hsl(var(--destructive))"
+                        }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {[0, 1, 2].map((index) => (
+                        <Cell key={`cell-${index}`} fill={
+                          index === 0 ? "hsl(var(--primary))" :
+                          index === 1 ? "hsl(var(--muted-foreground))" :
+                          "hsl(var(--destructive))"
+                        } />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => `$${value.toFixed(2)}`}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Monthly Revenue Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Revenue Breakdown</CardTitle>
+              <CardTitle>Monthly Revenue Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Monthly Subscription</span>
+                <span className="text-sm text-muted-foreground">Subscription Price</span>
                 <span className="font-semibold">${stats.subscriptionPrice.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">× {stats.subscriberCount} subscribers</span>
-                <span className="font-semibold">${(stats.subscriptionPrice * stats.subscriberCount).toFixed(2)}</span>
+                <span className="text-sm text-muted-foreground">× Active Subscribers</span>
+                <span className="font-semibold">× {stats.subscriberCount}</span>
               </div>
               <div className="border-t pt-3 space-y-2">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Gross Revenue (100%)</span>
-                  <span>${(stats.subscriptionPrice * stats.subscriberCount).toFixed(2)}</span>
+                  <span className="font-medium">${(stats.subscriptionPrice * stats.subscriberCount).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Stripe Fees (~3%)</span>
-                  <span className="text-red-500">-${(stats.subscriptionPrice * stats.subscriberCount * 0.03).toFixed(2)}</span>
+                  <span className="text-destructive font-medium">-${(stats.subscriptionPrice * stats.subscriberCount * 0.03).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Platform Fee (20%)</span>
-                  <span className="text-red-500">-${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.20).toFixed(2)}</span>
+                  <span className="text-muted-foreground">Net After Stripe</span>
+                  <span className="font-medium">${(stats.subscriptionPrice * stats.subscriberCount * 0.97).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center font-bold text-primary border-t pt-2">
-                  <span>Your Earnings (80%)</span>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Platform Commission (20%)</span>
+                  <span className="text-destructive font-medium">-${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.20).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center font-bold text-primary border-t pt-2 mt-2">
+                  <span>Your Monthly Earnings (80%)</span>
                   <span>${(stats.subscriptionPrice * stats.subscriberCount * 0.97 * 0.80).toFixed(2)}</span>
                 </div>
               </div>

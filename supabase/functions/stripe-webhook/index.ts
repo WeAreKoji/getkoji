@@ -32,19 +32,15 @@ serve(async (req) => {
     const body = await req.text();
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     
+    // ENFORCE webhook signature verification for security
     if (!webhookSecret) {
-      logStep("WARNING: No webhook secret set, skipping signature verification");
+      logStep("ERROR: STRIPE_WEBHOOK_SECRET not configured");
+      throw new Error("Webhook secret must be configured. Set STRIPE_WEBHOOK_SECRET in your Supabase secrets.");
     }
 
-    let event: Stripe.Event;
-    
-    if (webhookSecret) {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      logStep("Webhook signature verified", { type: event.type });
-    } else {
-      event = JSON.parse(body);
-      logStep("Processing webhook without signature verification", { type: event.type });
-    }
+    // Verify the webhook signature
+    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    logStep("Webhook signature verified", { type: event.type });
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -281,6 +277,60 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         logStep("Payment failed", { invoiceId: invoice.id });
         // Could send notification to user here
+        break;
+      }
+
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        logStep("Charge refunded", { chargeId: charge.id, amount: charge.amount_refunded });
+
+        // Find the original platform_revenue record
+        const { data: revenueData } = await supabase
+          .from("platform_revenue")
+          .select("*")
+          .eq("invoice_id", charge.invoice as string)
+          .single();
+
+        if (revenueData) {
+          const refundAmount = charge.amount_refunded / 100;
+          const refundProportion = refundAmount / revenueData.gross_amount;
+          
+          // Calculate refund amounts
+          const refundedStripeFee = revenueData.stripe_fee * refundProportion;
+          const refundedCommission = revenueData.platform_commission * refundProportion;
+          const refundedCreatorEarnings = revenueData.creator_earnings * refundProportion;
+
+          logStep("Refund breakdown calculated", {
+            refundAmount,
+            refundedCommission,
+            refundedCreatorEarnings
+          });
+
+          // Record the refund as negative revenue
+          const { error: refundError } = await supabase
+            .from("platform_revenue")
+            .insert({
+              subscription_id: revenueData.subscription_id,
+              invoice_id: charge.invoice as string,
+              creator_id: revenueData.creator_id,
+              gross_amount: -refundAmount,
+              stripe_fee: -refundedStripeFee,
+              platform_commission: -refundedCommission,
+              creator_earnings: -refundedCreatorEarnings
+            });
+
+          if (refundError) {
+            logStep("Error recording refund", { error: refundError });
+          }
+
+          // Subtract from creator's total earnings
+          await supabase.rpc("add_creator_earnings", {
+            creator_user_id: revenueData.creator_id,
+            amount: -refundedCreatorEarnings
+          });
+
+          logStep("Refund processed successfully");
+        }
         break;
       }
 
