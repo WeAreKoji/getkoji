@@ -263,7 +263,7 @@ const CreatorFeed = () => {
         {/* Header */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3">
           <div className="flex items-center justify-between">
-            <Link to="/discover">
+            <Link to="/discover" aria-label="Back to discover">
               <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
             </Link>
             {isOwnProfile && (

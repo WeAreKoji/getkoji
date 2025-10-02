@@ -242,7 +242,7 @@ const ProfileEdit = () => {
       <div className="container max-w-2xl mx-auto">
         {/* Header */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3 flex items-center justify-between">
-          <Link to={`/profile/${userId}`}>
+          <Link to={`/profile/${userId}`} aria-label="Back to profile">
             <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
           </Link>
           <h1 className="font-semibold">Edit Profile</h1>

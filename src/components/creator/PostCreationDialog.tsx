@@ -173,6 +173,7 @@ const PostCreationDialog = ({
                   size="icon"
                   className="absolute top-2 right-2"
                   onClick={handleRemoveMedia}
+                  aria-label="Remove media"
                 >
                   <X className="w-4 h-4" />
                 </Button>

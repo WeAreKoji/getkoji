@@ -42,6 +42,7 @@ const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
         size="icon"
         disabled={!message.trim() || disabled}
         className="shrink-0"
+        aria-label="Send message"
       >
         <Send className="w-4 h-4" />
       </Button>

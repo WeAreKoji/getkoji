@@ -166,7 +166,7 @@ const Chat = () => {
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
       <div className="bg-card border-b border-border px-4 py-3 flex items-center gap-3">
-        <Link to="/matches">
+        <Link to="/matches" aria-label="Back to matches">
           <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
         </Link>
         <Avatar className="w-10 h-10">

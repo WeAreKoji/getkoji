@@ -124,7 +124,7 @@ const Discover = () => {
       <div className="container mx-auto max-w-md">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gradient-hero">Koji</h1>
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
+          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
@@ -153,10 +153,10 @@ const Discover = () => {
           </div>
 
           <div className="p-6 flex justify-center gap-6">
-            <Button size="icon" variant="swipe" className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10" onClick={() => handleSwipe(false)}>
+            <Button size="icon" variant="swipe" className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10" onClick={() => handleSwipe(false)} aria-label="Reject profile">
               <X className="w-8 h-8 text-destructive" />
             </Button>
-            <Button size="icon" variant="swipe" className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10" onClick={() => handleSwipe(true)}>
+            <Button size="icon" variant="swipe" className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10" onClick={() => handleSwipe(true)} aria-label="Like profile">
               <Heart className="w-8 h-8 text-primary" />
             </Button>
           </div>

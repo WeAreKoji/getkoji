@@ -136,8 +136,9 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 9 }: PhotoUploadProps
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 w-9 h-9 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => handleRemove(index)}
+                  aria-label="Remove photo"
                 >
                   <X className="w-4 h-4" />
                 </Button>

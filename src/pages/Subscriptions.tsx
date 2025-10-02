@@ -127,7 +127,7 @@ const Subscriptions = () => {
         {/* Header */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-4">
           <div className="flex items-center gap-4">
-            <Link to="/profile">
+            <Link to="/profile" aria-label="Back to profile">
               <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
             </Link>
             <h1 className="text-xl font-semibold">My Subscriptions</h1>
