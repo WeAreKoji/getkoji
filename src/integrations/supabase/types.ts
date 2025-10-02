@@ -14,16 +14,408 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      creator_posts: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          creator_id: string
+          id: string
+          media_type: string | null
+          media_url: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_posts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          subscriber_count: number | null
+          subscription_price: number
+          total_earnings: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          subscriber_count?: number | null
+          subscription_price: number
+          total_earnings?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          subscriber_count?: number | null
+          subscription_price?: number
+          total_earnings?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interests: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          id: string
+          matched_at: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          id?: string
+          matched_at?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          id?: string
+          matched_at?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_scanned: boolean | null
+          match_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_scanned?: boolean | null
+          match_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_scanned?: boolean | null
+          match_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_photos: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_index: number
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_index: number
+          photo_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_index?: number
+          photo_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_photos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          age: number
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string | null
+          display_name: string
+          email: string
+          id: string
+          intent: Database["public"]["Enums"]["user_intent"]
+          updated_at: string | null
+        }
+        Insert: {
+          age: number
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          display_name: string
+          email: string
+          id: string
+          intent: Database["public"]["Enums"]["user_intent"]
+          updated_at?: string | null
+        }
+        Update: {
+          age?: number
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          display_name?: string
+          email?: string
+          id?: string
+          intent?: Database["public"]["Enums"]["user_intent"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          creator_id: string
+          expires_at: string | null
+          id: string
+          started_at: string | null
+          status: string | null
+          subscriber_id: string
+        }
+        Insert: {
+          creator_id: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          subscriber_id: string
+        }
+        Update: {
+          creator_id?: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swipes: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_like: boolean
+          swiped_id: string
+          swiper_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_like: boolean
+          swiped_id: string
+          swiper_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_like?: boolean
+          swiped_id?: string
+          swiper_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swipes_swiped_id_fkey"
+            columns: ["swiped_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swipes_swiper_id_fkey"
+            columns: ["swiper_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_interests: {
+        Row: {
+          created_at: string | null
+          id: string
+          interest_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interest_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interest_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_interests_interest_id_fkey"
+            columns: ["interest_id"]
+            isOneToOne: false
+            referencedRelation: "interests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_intent: "support_creators" | "make_friends" | "open_to_dating"
+      user_role: "user" | "creator" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +542,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_intent: ["support_creators", "make_friends", "open_to_dating"],
+      user_role: ["user", "creator", "admin"],
+    },
   },
 } as const
