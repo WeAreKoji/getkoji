@@ -80,7 +80,7 @@ serve(async (req) => {
           }
 
           const subscriberId = userData.id;
-          const creatorId = session.metadata?.creatorId;
+          const creatorId = session.metadata?.creator_id;
 
           if (!creatorId) {
             throw new Error("No creator ID in session metadata");

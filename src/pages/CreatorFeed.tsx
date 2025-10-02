@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Plus, Lock } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Lock, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
@@ -41,6 +41,7 @@ const CreatorFeed = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
+  const [managingPortal, setManagingPortal] = useState(false);
 
   const SUBSCRIPTION_TIERS = [
     { priceId: "price_1SDisJEQjcZdgqoDhPvzRh33", amount: 5 },
@@ -178,6 +179,27 @@ const CreatorFeed = () => {
     fetchCreatorData();
   };
 
+  const handleManageSubscription = async () => {
+    setManagingPortal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+
+      if (error) throw error;
+
+      if (data.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to open customer portal",
+        variant: "destructive",
+      });
+    } finally {
+      setManagingPortal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -244,6 +266,30 @@ const CreatorFeed = () => {
               <p className="text-sm text-muted-foreground">
                 Subscribe to see exclusive content from {profile.display_name}
               </p>
+            </div>
+          )}
+
+          {isSubscribed && !isOwnProfile && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <Button
+                onClick={handleManageSubscription}
+                disabled={managingPortal}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                {managingPortal ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Opening...
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Manage Subscription
+                  </>
+                )}
+              </Button>
             </div>
           )}
         </Card>
