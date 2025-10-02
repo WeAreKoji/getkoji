@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Heart, MessageCircle, User, Sparkles, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const BottomNav = () => {
   const location = useLocation();
@@ -61,6 +62,9 @@ const BottomNav = () => {
             </Link>
           );
         })}
+        <div className="flex flex-col items-center justify-center flex-1 h-full">
+          <NotificationCenter />
+        </div>
       </div>
     </nav>
   );

@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "npm:resend@4.0.0";
-import { renderAsync } from "npm:@react-email/components@0.0.22";
-import React from "npm:react@18.3.1";
-import { VerificationApprovedEmail } from "../_shared/email-templates/verification-approved.tsx";
-import { VerificationRejectedEmail } from "../_shared/email-templates/verification-rejected.tsx";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -136,20 +132,23 @@ serve(async (req) => {
         .single();
 
       if (profile && profile.email) {
-        const appUrl = Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovable.app") || "https://yourapp.lovable.app";
-        
-        const emailHtml = await renderAsync(
-          approved
-            ? React.createElement(VerificationApprovedEmail, {
-                displayName: profile.display_name,
-                appUrl,
-              })
-            : React.createElement(VerificationRejectedEmail, {
-                displayName: profile.display_name,
-                rejectionReason: rejection_reason || "Please review and resubmit your documents",
-                appUrl,
-              })
-        );
+        const emailHtml = approved
+          ? `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #10b981;">Congratulations, ${profile.display_name}! 🎉</h2>
+              <p>Your creator verification has been approved!</p>
+              <p>You can now access all creator features and start earning.</p>
+            </div>
+          `
+          : `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #ef4444;">Verification Update Required</h2>
+              <p>Hello ${profile.display_name},</p>
+              <p>Your verification submission needs attention:</p>
+              <p><strong>${rejection_reason || "Please review and resubmit your documents"}</strong></p>
+              <p>Please resubmit your verification with the necessary corrections.</p>
+            </div>
+          `;
 
         await resend.emails.send({
           from: "Koji <onboarding@resend.dev>",

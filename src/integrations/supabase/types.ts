@@ -89,6 +89,8 @@ export type Database = {
           moderated_by: string | null
           moderation_reason: string | null
           moderation_status: string | null
+          scheduled_publish_at: string | null
+          status: string | null
         }
         Insert: {
           content?: string | null
@@ -101,6 +103,8 @@ export type Database = {
           moderated_by?: string | null
           moderation_reason?: string | null
           moderation_status?: string | null
+          scheduled_publish_at?: string | null
+          status?: string | null
         }
         Update: {
           content?: string | null
@@ -113,6 +117,8 @@ export type Database = {
           moderated_by?: string | null
           moderation_reason?: string | null
           moderation_status?: string | null
+          scheduled_publish_at?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -331,6 +337,59 @@ export type Database = {
         }
         Relationships: []
       }
+      disputes: {
+        Row: {
+          amount: number
+          created_at: string | null
+          creator_id: string
+          evidence: Json | null
+          id: string
+          reason: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          status: string | null
+          stripe_dispute_id: string | null
+          subscriber_id: string
+          subscription_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          creator_id: string
+          evidence?: Json | null
+          id?: string
+          reason: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          stripe_dispute_id?: string | null
+          subscriber_id: string
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          creator_id?: string
+          evidence?: Json | null
+          id?: string
+          reason?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          stripe_dispute_id?: string | null
+          subscriber_id?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       failed_transfers: {
         Row: {
           amount: number
@@ -474,6 +533,120 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moderation_notes: {
+        Row: {
+          created_at: string | null
+          id: string
+          moderator_id: string
+          note: string
+          post_id: string | null
+          verification_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          moderator_id: string
+          note: string
+          post_id?: string | null
+          verification_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          moderator_id?: string
+          note?: string
+          post_id?: string | null
+          verification_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_notes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "creator_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_notes_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "creator_id_verification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          email_failed_transfer: boolean | null
+          email_new_subscriber: boolean | null
+          email_post_moderation: boolean | null
+          email_subscription_renewal: boolean | null
+          email_verification_update: boolean | null
+          id: string
+          in_app_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_failed_transfer?: boolean | null
+          email_new_subscriber?: boolean | null
+          email_post_moderation?: boolean | null
+          email_subscription_renewal?: boolean | null
+          email_verification_update?: boolean | null
+          id?: string
+          in_app_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_failed_transfer?: boolean | null
+          email_new_subscriber?: boolean | null
+          email_post_moderation?: boolean | null
+          email_subscription_renewal?: boolean | null
+          email_verification_update?: boolean | null
+          id?: string
+          in_app_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       platform_revenue: {
         Row: {
@@ -759,6 +932,47 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriber_analytics: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          id: string
+          last_payment_at: string | null
+          subscriber_id: string
+          subscription_id: string | null
+          subscription_started_at: string | null
+          total_paid: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          last_payment_at?: string | null
+          subscriber_id: string
+          subscription_id?: string | null
+          subscription_started_at?: string | null
+          total_paid?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          last_payment_at?: string | null
+          subscriber_id?: string
+          subscription_id?: string | null
+          subscription_started_at?: string | null
+          total_paid?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriber_analytics_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           creator_id: string
@@ -963,6 +1177,16 @@ export type Database = {
         Args: { referral_uuid: string }
         Returns: undefined
       }
+      create_notification: {
+        Args: {
+          _data?: Json
+          _message: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: string
+      }
       decrement_subscriber_count: {
         Args: { creator_user_id: string }
         Returns: undefined
@@ -1025,6 +1249,10 @@ export type Database = {
       process_referral_payout: {
         Args: { referrer_user_id: string }
         Returns: string
+      }
+      publish_scheduled_posts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       request_creator_role: {
         Args: { application_text: string }

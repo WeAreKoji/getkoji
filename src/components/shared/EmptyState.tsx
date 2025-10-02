@@ -1,0 +1,35 @@
+import { ReactNode } from "react";
+import { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface EmptyStateProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  children?: ReactNode;
+}
+
+export const EmptyState = ({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+  children
+}: EmptyStateProps) => {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
+      <div className="rounded-full bg-muted p-6 mb-4">
+        <Icon className="h-12 w-12 text-muted-foreground" />
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      {actionLabel && onAction && (
+        <Button onClick={onAction}>{actionLabel}</Button>
+      )}
+      {children}
+    </div>
+  );
+};

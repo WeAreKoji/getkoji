@@ -29,3 +29,15 @@ verify_jwt = true
 
 [functions.retry-failed-transfers]
 verify_jwt = false
+
+[functions.send-notification-email]
+verify_jwt = false
+
+[functions.publish-scheduled-posts]
+verify_jwt = false
+
+[functions.review-id-verification]
+verify_jwt = true
+
+[functions.send-verification-email]
+verify_jwt = false

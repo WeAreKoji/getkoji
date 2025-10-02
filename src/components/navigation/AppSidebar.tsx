@@ -125,6 +125,14 @@ export function AppSidebar() {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
+                      <NavLink to="/admin/dashboard" className={getNavCls}>
+                        <LayoutDashboard className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
+                        {open && <span>Dashboard</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
                       <NavLink to="/admin/verifications" className={getNavCls}>
                         <ShieldCheck className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
                         {open && <span>ID Verifications</span>}
