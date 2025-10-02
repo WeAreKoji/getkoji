@@ -24,23 +24,23 @@ export const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-background to-secondary/5">
+    <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-background to-secondary/5">
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+        <div className="text-center mb-10 sm:mb-12 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-foreground">
             Discover Your Community & Next Favorite Creator
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             Koji is the social discovery platform where you can find new friends, explore dating based on interests, 
             and connect with creators who inspire you. Available on iOS and Android.
           </p>
         </div>
 
-        <h3 className="text-2xl md:text-3xl font-semibold text-center mb-10 text-foreground">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-8 sm:mb-10 text-foreground px-4">
           How Koji Works: Swipe, Match, Connect
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {steps.map((step, index) => (
             <Card key={index} className="p-6 md:p-8 text-center hover:shadow-lg transition-all duration-300 bg-card border-border">
               <div className="mb-6 inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10">

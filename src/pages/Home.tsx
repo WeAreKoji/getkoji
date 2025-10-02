@@ -17,7 +17,7 @@ const Home = () => {
     <main className="min-h-screen">
       {/* Hero Section */}
       <header 
-        className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden"
+        className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-16 sm:py-20 overflow-hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: "cover",
@@ -35,11 +35,11 @@ const Home = () => {
             />
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 leading-tight">
             Koji: Your Hub for Authentic Connections and Creator Support
           </h1>
           
-          <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             The social discovery platform where interest-based connections meet creator monetization. 
             Find new friends, explore dating, and support creators. Available on iOS & Android.
           </p>
@@ -87,20 +87,20 @@ const Home = () => {
       </div>
 
       {/* Features Section - Enhanced with Keywords */}
-      <section className="py-16 md:py-24 px-4 bg-background">
+      <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-background">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-foreground">
               Why Choose Koji?
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
               More than just a social app - Koji is your gateway to meaningful connections and creative support
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {/* Discover Card */}
-            <article className="group p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+            <article className="group p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
               <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
                 💝
               </div>
@@ -125,7 +125,7 @@ const Home = () => {
             </article>
 
             {/* Connect Card */}
-            <article className="group p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+            <article className="group p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
               <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
                 👥
               </div>
@@ -150,7 +150,7 @@ const Home = () => {
             </article>
 
             {/* Support Card */}
-            <article className="group p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+            <article className="group p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-card to-card/50 border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
               <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
                 ✨
               </div>
@@ -190,19 +190,19 @@ const Home = () => {
       <PlatformAvailability />
 
       {/* Trust & Safety Section */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-secondary/5 to-background">
+      <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-secondary/5 to-background">
         <div className="container mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
-            <Shield className="w-10 h-10 text-primary" aria-label="Koji app safety and security features" />
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 mb-4 sm:mb-6">
+            <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-primary" aria-label="Koji app safety and security features" />
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-foreground">
             Trust & Safety First
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Your safety is our priority. Koji is a secure platform to meet like-minded people with robust 
             verification and moderation systems to ensure a safe, welcoming community building app experience.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
             <div className="p-4">
               <CheckCircle className="w-8 h-8 text-primary mx-auto mb-3" />
               <h3 className="font-semibold text-foreground mb-2">ID Verification</h3>
@@ -226,12 +226,12 @@ const Home = () => {
       <FAQ />
 
       {/* Final CTA Section */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-primary/5 to-secondary/5">
+      <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-primary/5 to-secondary/5">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-foreground">
             Start Your Koji Journey
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Join the social discovery platform trusted by thousands. Download Koji app now and discover 
             authentic connections while supporting creators who share your passions.
           </p>
@@ -257,19 +257,19 @@ const Home = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-card border-t border-border py-12 px-4">
+      <footer className="bg-card border-t border-border py-8 sm:py-12 px-4 sm:px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
+            <div className="sm:col-span-2 lg:col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 <img 
                   src={logo}
                   alt="Koji - Social discovery and creator monetization" 
-                  className="w-10 h-10"
+                  className="w-8 h-8 sm:w-10 sm:h-10"
                 />
-                <span className="text-xl font-bold text-foreground">Koji</span>
+                <span className="text-lg sm:text-xl font-bold text-foreground">Koji</span>
               </div>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-sm sm:text-base text-muted-foreground mb-4">
                 The social discovery platform where authentic connections meet creator monetization. 
                 Find new friends, explore dating, and support independent creators on iOS & Android.
               </p>
@@ -305,7 +305,7 @@ const Home = () => {
             </nav>
           </div>
           
-          <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
+          <div className="border-t border-border pt-6 sm:pt-8 text-center text-xs sm:text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} Koji - Connect, Create & Support. All rights reserved.</p>
             <p className="mt-2">Social discovery platform | Creator monetization app | iOS & Android</p>
           </div>
