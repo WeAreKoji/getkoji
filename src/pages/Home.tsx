@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, Users, Sparkles, Shield, ArrowRight } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
+import logo from "@/assets/logo.png";
 
 const Home = () => {
   return (
@@ -21,6 +22,13 @@ const Home = () => {
         
         <div className="relative z-10 container mx-auto px-4 py-20 text-center">
           <div className="animate-fade-in-up">
+            <div className="flex justify-center mb-6">
+              <img 
+                src={logo} 
+                alt="Koji" 
+                className="h-24 md:h-32 w-auto"
+              />
+            </div>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 text-white">
               Welcome to <span className="text-gradient-secondary">Koji</span>
             </h1>
@@ -147,7 +155,11 @@ const Home = () => {
       {/* Footer */}
       <footer className="py-12 bg-foreground text-background">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4">Koji</h3>
+          <img 
+            src={logo} 
+            alt="Koji" 
+            className="h-12 w-auto mx-auto mb-4"
+          />
           <p className="text-background/70 mb-6">
             Authentic connections. Real value.
           </p>

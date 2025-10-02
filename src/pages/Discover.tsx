@@ -9,6 +9,7 @@ import SwipeableCard from "@/components/discover/SwipeableCard";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { haptics } from "@/lib/native";
 import { useIsMobile } from "@/hooks/use-mobile";
+import logo from "@/assets/logo.png";
 interface Profile {
   id: string;
   display_name: string;
@@ -130,7 +131,11 @@ const Discover = () => {
       <div className={isMobile ? "min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4 pb-24" : "min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4"}>
         <div className="container mx-auto max-w-md">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gradient-hero">Koji</h1>
+            <img 
+              src={logo} 
+              alt="Koji" 
+              className="h-10 w-auto"
+            />
             <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
               <LogOut className="w-5 h-5" />
             </Button>

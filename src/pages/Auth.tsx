@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
+import logo from "@/assets/logo.png";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -87,9 +88,11 @@ const Auth = () => {
 
         <Card className="p-8 shadow-xl">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">
-              <span className="text-gradient-hero">Koji</span>
-            </h1>
+            <img 
+              src={logo} 
+              alt="Koji" 
+              className="h-16 w-auto mx-auto mb-4"
+            />
             <p className="text-muted-foreground">
               {isLogin ? "Welcome back!" : "Create your account"}
             </p>

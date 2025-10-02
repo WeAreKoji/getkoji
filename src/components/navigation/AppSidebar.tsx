@@ -2,6 +2,7 @@ import { Heart, Sparkles, Users, MessageCircle, User, LayoutDashboard } from "lu
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/logo.png";
 
 import {
   Sidebar,
@@ -57,8 +58,12 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-lg font-bold px-4 py-4">
-            Koji
+          <SidebarGroupLabel className="px-4 py-4 flex items-center justify-center">
+            <img 
+              src={logo} 
+              alt="Koji" 
+              className={open ? "h-10 w-auto" : "h-8 w-8"}
+            />
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
