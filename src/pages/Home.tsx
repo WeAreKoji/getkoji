@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, Users, Sparkles, Shield, ArrowRight } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
+import BottomNav from "@/components/navigation/BottomNav";
 
 const Home = () => {
   return (
@@ -162,6 +163,8 @@ const Home = () => {
           </p>
         </div>
       </footer>
+      
+      <BottomNav />
     </div>
   );
 };
