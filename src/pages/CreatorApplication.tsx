@@ -80,10 +80,10 @@ const CreatorApplication = () => {
 
       toast({
         title: "Application approved! 🎉",
-        description: "You're now a creator. Set up your profile!",
+        description: "Next step: Verify your identity to become a creator.",
       });
 
-      navigate("/creator/setup");
+      navigate("/creator/verify-identity");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -182,8 +182,7 @@ const CreatorApplication = () => {
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              For MVP: Applications are auto-approved. You'll be redirected to set up
-              your creator profile.
+              For MVP: Applications are auto-approved. Next, you'll verify your identity before setting up your profile.
             </p>
           </form>
         </Card>

@@ -20,6 +20,7 @@ import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
 import CreatorApplication from "./pages/CreatorApplication";
+import CreatorVerifyIdentity from "./pages/CreatorVerifyIdentity";
 import CreatorSetup from "./pages/CreatorSetup";
 import CreatorFeed from "./pages/CreatorFeed";
 import Subscriptions from "./pages/Subscriptions";
@@ -67,6 +68,7 @@ const AppContent = () => {
                 <Route path="/@:userId" element={<Profile />} />
                 <Route path="/profile/edit" element={<ProfileEdit />} />
                 <Route path="/creator/apply" element={<CreatorApplication />} />
+                <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} />
                 <Route path="/creator/setup" element={<CreatorSetup />} />
                 <Route path="/creator/:creatorId" element={<CreatorFeed />} />
                 <Route path="/subscriptions" element={<Subscriptions />} />
@@ -101,6 +103,7 @@ const AppContent = () => {
           <Route path="/@:userId" element={<Profile />} />
           <Route path="/profile/edit" element={<ProfileEdit />} />
           <Route path="/creator/apply" element={<CreatorApplication />} />
+          <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} />
           <Route path="/creator/setup" element={<CreatorSetup />} />
           <Route path="/creator/:creatorId" element={<CreatorFeed />} />
           <Route path="/subscriptions" element={<Subscriptions />} />

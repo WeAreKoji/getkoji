@@ -39,6 +39,18 @@ const CreatorSetup = () => {
         return;
       }
 
+      // Check ID verification status
+      const { data: verification } = await supabase
+        .from("creator_id_verification")
+        .select("status")
+        .eq("creator_id", user.id)
+        .maybeSingle();
+
+      if (!verification || verification.status !== "approved") {
+        navigate("/creator/verify-identity");
+        return;
+      }
+
       // Check if already set up
       const { data: profile } = await supabase
         .from("creator_profiles")

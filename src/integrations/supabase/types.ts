@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      creator_id_verification: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          date_of_birth: string
+          document_back_url: string | null
+          document_front_url: string
+          document_number: string
+          document_type: string
+          full_name: string
+          id: string
+          ip_address: unknown | null
+          issuing_country: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_url: string
+          status: Database["public"]["Enums"]["verification_status"]
+          submitted_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          date_of_birth: string
+          document_back_url?: string | null
+          document_front_url: string
+          document_number: string
+          document_type: string
+          full_name: string
+          id?: string
+          ip_address?: unknown | null
+          issuing_country: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url: string
+          status?: Database["public"]["Enums"]["verification_status"]
+          submitted_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          date_of_birth?: string
+          document_back_url?: string | null
+          document_front_url?: string
+          document_number?: string
+          document_type?: string
+          full_name?: string
+          id?: string
+          ip_address?: unknown | null
+          issuing_country?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string
+          status?: Database["public"]["Enums"]["verification_status"]
+          submitted_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       creator_posts: {
         Row: {
           content: string | null
@@ -53,6 +116,8 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          id_verification_date: string | null
+          id_verified: boolean | null
           payouts_enabled: boolean | null
           stripe_account_id: string | null
           stripe_onboarding_complete: boolean | null
@@ -66,6 +131,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          id_verification_date?: string | null
+          id_verified?: boolean | null
           payouts_enabled?: boolean | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean | null
@@ -79,6 +146,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          id_verification_date?: string | null
+          id_verified?: boolean | null
           payouts_enabled?: boolean | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean | null
@@ -931,6 +1000,7 @@ export type Database = {
     Enums: {
       user_intent: "support_creators" | "make_friends" | "open_to_dating"
       user_role: "user" | "creator" | "admin"
+      verification_status: "pending" | "under_review" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1060,6 +1130,7 @@ export const Constants = {
     Enums: {
       user_intent: ["support_creators", "make_friends", "open_to_dating"],
       user_role: ["user", "creator", "admin"],
+      verification_status: ["pending", "under_review", "approved", "rejected"],
     },
   },
 } as const
