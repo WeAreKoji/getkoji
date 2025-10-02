@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Loader2, Edit, LayoutDashboard, CreditCard } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
-import PhotoGrid from "@/components/profile/PhotoGrid";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ProfileHero } from "@/components/profile/ProfileHero";
+import { ProfileStats } from "@/components/profile/ProfileStats";
+import { ProfileActions } from "@/components/profile/ProfileActions";
+import { ProfileInfo } from "@/components/profile/ProfileInfo";
+import { PageTransition } from "@/components/transitions/PageTransition";
+import { Link } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -123,91 +127,52 @@ const Profile = () => {
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="container max-w-2xl mx-auto">
+    <PageTransition>
+      <div className="min-h-screen bg-background pb-20">
         {/* Header */}
-        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3 flex items-center justify-between">
-          <Link to="/discover" aria-label="Back to discover">
-            <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
-          </Link>
-          {isOwnProfile && (
-            <div className="flex gap-2">
-              <Link to="/subscriptions">
-                <Button variant="ghost" size="sm">
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Subscriptions
-                </Button>
-              </Link>
-              {isCreator && (
-                <Link to="/creator/dashboard">
-                  <Button variant="ghost" size="sm">
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
-              )}
-              <Link to="/profile/edit">
-                <Button variant="ghost" size="sm">
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-              </Link>
-            </div>
+        <ProfileHeader
+          isOwnProfile={isOwnProfile}
+          isCreator={isCreator}
+          userId={profile.id}
+          displayName={profile.display_name}
+        />
+
+        {/* Hero Section with Photos */}
+        <ProfileHero
+          photos={photos}
+          displayName={profile.display_name}
+          age={profile.age}
+          city={profile.city}
+          isCreator={isCreator}
+        />
+
+        {/* Content */}
+        <div className="container max-w-2xl mx-auto px-4 py-6 space-y-4">
+          {/* Stats - Only for creators */}
+          {isCreator && <ProfileStats userId={profile.id} isCreator={isCreator} />}
+
+          {/* Action Buttons - Only for viewing others' profiles */}
+          {!isOwnProfile && (
+            <ProfileActions userId={profile.id} displayName={profile.display_name} />
           )}
+
+          {/* Edit Button - Only for own profile */}
+          {isOwnProfile && (
+            <Link to="/profile/edit" className="block">
+              <Button size="lg" className="w-full h-12 text-base font-semibold shadow-md">
+                <Edit className="w-5 h-5 mr-2" />
+                Edit Profile
+              </Button>
+            </Link>
+          )}
+
+          {/* Profile Info */}
+          <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
         </div>
 
-        <div className="px-4 py-6 space-y-6">
-          {/* Photos */}
-          <Card className="p-4">
-            <PhotoGrid photos={photos} />
-          </Card>
-
-          {/* Info */}
-          <Card className="p-6 space-y-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-1">
-                {profile.display_name}, {profile.age}
-              </h1>
-              {profile.city && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  <span>{profile.city}</span>
-                </div>
-              )}
-            </div>
-
-            {profile.bio && (
-              <div>
-                <h3 className="font-semibold mb-2">About</h3>
-                <p className="text-muted-foreground">{profile.bio}</p>
-              </div>
-            )}
-
-            <div>
-              <h3 className="font-semibold mb-2">Intent</h3>
-              <Badge variant="secondary">
-                {profile.intent.replace(/_/g, " ")}
-              </Badge>
-            </div>
-
-            {interests.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Interests</h3>
-                <div className="flex flex-wrap gap-2">
-                  {interests.map((interest) => (
-                    <Badge key={interest.id} variant="outline">
-                      {interest.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Card>
-        </div>
+        <BottomNav />
       </div>
-
-      <BottomNav />
-    </div>
+    </PageTransition>
   );
 };
 
