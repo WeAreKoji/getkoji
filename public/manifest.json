@@ -1,0 +1,19 @@
+{
+  "name": "Koji - Social Discovery & Creator Platform",
+  "short_name": "Koji",
+  "description": "Discover, connect, and support. Koji is the social discovery platform where authentic connections meet creator monetization.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a0f28",
+  "theme_color": "#6d28d9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["social", "lifestyle"],
+  "screenshots": []
+}

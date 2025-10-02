@@ -2,6 +2,7 @@ import { createContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useNativeInit } from "@/hooks/useNativeInit";
 
 interface AuthContextType {
   user: User | null;
@@ -28,6 +29,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
+
+  // Initialize native features
+  useNativeInit();
 
   const checkCreatorRole = async (userId: string) => {
     const { data } = await supabase

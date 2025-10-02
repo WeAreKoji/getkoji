@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Keyboard } from '@capacitor/keyboard';
+import { SplashScreen } from '@capacitor/splash-screen';
 
 /**
  * Utility functions for native mobile features
@@ -159,6 +160,15 @@ export const keyboard = {
  */
 export const initializeNativeFeatures = async (isDark: boolean) => {
   if (!isNativePlatform()) return;
+
+  // Hide splash screen with animation
+  try {
+    await SplashScreen.hide({
+      fadeOutDuration: 300,
+    });
+  } catch (error) {
+    console.error("Error hiding splash screen:", error);
+  }
 
   // Set status bar style based on theme
   if (isDark) {

@@ -9,6 +9,20 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: true,
+      launchFadeOutDuration: 300,
+      backgroundColor: "#1a0f28",
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: false,
+      androidSpinnerStyle: "large",
+      iosSpinnerStyle: "small",
+      spinnerColor: "#6d28d9",
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
     StatusBar: {
       style: 'dark',
       backgroundColor: '#1a0f28'
@@ -17,6 +31,9 @@ const config: CapacitorConfig = {
       resize: 'native',
       style: 'dark',
       resizeOnFullScreen: true
+    },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"]
     }
   }
 };
