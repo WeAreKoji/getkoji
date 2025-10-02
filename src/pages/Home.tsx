@@ -21,10 +21,10 @@ const Home = () => {
         
         <div className="relative z-10 container mx-auto px-4 py-20 text-center">
           <div className="animate-fade-in-up">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 text-white">
               Welcome to <span className="text-gradient-secondary">Koji</span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto">
               Where authentic connections meet creator economy. 
               Discover, connect, and support the people who inspire you.
             </p>
@@ -125,10 +125,10 @@ const Home = () => {
       <section className="py-20 bg-gradient-to-r from-primary via-secondary to-accent relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-white">
             Ready to Find Your Tribe?
           </h2>
-          <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl mb-8 text-white/90 max-w-2xl mx-auto">
             Join thousands discovering meaningful connections on Koji today.
           </p>
           <Button 
@@ -151,7 +151,7 @@ const Home = () => {
           <p className="text-background/70 mb-6">
             Authentic connections. Real value.
           </p>
-          <div className="flex justify-center gap-6 text-sm">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm">
             <Link to="/privacy" className="hover:text-background/70 transition-colors">Privacy</Link>
             <Link to="/terms" className="hover:text-background/70 transition-colors">Terms</Link>
             <Link to="/community" className="hover:text-background/70 transition-colors">Community Guidelines</Link>
