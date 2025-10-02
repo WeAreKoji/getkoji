@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Loader2, Edit, LayoutDashboard } from "lucide-react";
+import { ArrowLeft, MapPin, Loader2, Edit, LayoutDashboard, CreditCard } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import PhotoGrid from "@/components/profile/PhotoGrid";
 
@@ -132,6 +132,12 @@ const Profile = () => {
           </Link>
           {isOwnProfile && (
             <div className="flex gap-2">
+              <Link to="/subscriptions">
+                <Button variant="ghost" size="sm">
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Subscriptions
+                </Button>
+              </Link>
               {isCreator && (
                 <Link to="/creator/dashboard">
                   <Button variant="ghost" size="sm">
@@ -143,7 +149,7 @@ const Profile = () => {
               <Link to="/profile/edit">
                 <Button variant="ghost" size="sm">
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit Profile
+                  Edit
                 </Button>
               </Link>
             </div>

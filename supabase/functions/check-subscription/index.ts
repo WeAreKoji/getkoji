@@ -45,32 +45,21 @@ serve(async (req) => {
     if (!creatorId) throw new Error("Creator ID is required");
     logStep("Creator ID provided", { creatorId });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    // Check database for active subscription
+    const { data: subscription, error: subError } = await supabaseClient
+      .from("subscriptions")
+      .select("*")
+      .eq("subscriber_id", user.id)
+      .eq("creator_id", creatorId)
+      .eq("status", "active")
+      .maybeSingle();
 
-    if (customers.data.length === 0) {
-      logStep("No customer found, user not subscribed");
-      return new Response(JSON.stringify({ subscribed: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+    if (subError) {
+      logStep("Database error checking subscription", { error: subError });
+      throw subError;
     }
 
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
-
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 100,
-    });
-
-    // Check if any active subscription matches the creator
-    const hasActiveSub = subscriptions.data.some((sub: any) => {
-      const metadata = sub.metadata || {};
-      return metadata.creator_id === creatorId;
-    });
-
+    const hasActiveSub = !!subscription;
     logStep("Subscription check complete", { hasActiveSub, creatorId });
 
     return new Response(JSON.stringify({ subscribed: hasActiveSub }), {

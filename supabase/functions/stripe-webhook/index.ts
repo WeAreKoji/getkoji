@@ -92,6 +92,7 @@ serve(async (req) => {
             .insert({
               subscriber_id: subscriberId,
               creator_id: creatorId,
+              stripe_subscription_id: subscription.id,
               status: "active",
               expires_at: new Date(subscription.current_period_end * 1000).toISOString(),
             });
@@ -126,7 +127,7 @@ serve(async (req) => {
             status: subscription.status,
             expires_at: new Date(subscription.current_period_end * 1000).toISOString(),
           })
-          .eq("id", subscription.id);
+          .eq("stripe_subscription_id", subscription.id);
 
         if (error) {
           logStep("Error updating subscription", { error });
@@ -142,13 +143,13 @@ serve(async (req) => {
         const { data: subData } = await supabase
           .from("subscriptions")
           .select("creator_id")
-          .eq("id", subscription.id)
+          .eq("stripe_subscription_id", subscription.id)
           .single();
 
         const { error } = await supabase
           .from("subscriptions")
           .update({ status: "cancelled" })
-          .eq("id", subscription.id);
+          .eq("stripe_subscription_id", subscription.id);
 
         if (error) {
           logStep("Error cancelling subscription", { error });
@@ -173,7 +174,7 @@ serve(async (req) => {
           const { data: subData } = await supabase
             .from("subscriptions")
             .select("creator_id")
-            .eq("id", subscription.id)
+            .eq("stripe_subscription_id", subscription.id)
             .single();
 
           if (subData?.creator_id) {

@@ -261,6 +261,7 @@ export type Database = {
           id: string
           started_at: string | null
           status: string | null
+          stripe_subscription_id: string | null
           subscriber_id: string
         }
         Insert: {
@@ -269,6 +270,7 @@ export type Database = {
           id?: string
           started_at?: string | null
           status?: string | null
+          stripe_subscription_id?: string | null
           subscriber_id: string
         }
         Update: {
@@ -277,6 +279,7 @@ export type Database = {
           id?: string
           started_at?: string | null
           status?: string | null
+          stripe_subscription_id?: string | null
           subscriber_id?: string
         }
         Relationships: [

@@ -19,6 +19,11 @@ import Subscriptions from "./pages/Subscriptions";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import SubscriptionCancelled from "./pages/SubscriptionCancelled";
 import CreatorDashboard from "./pages/CreatorDashboard";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Community from "./pages/Community";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +52,11 @@ const App = () => (
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
           <Route path="/creator/dashboard" element={<CreatorDashboard />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/support" element={<Support />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
