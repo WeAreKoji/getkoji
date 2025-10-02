@@ -33,6 +33,7 @@ import Community from "./pages/Community";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import Referrals from "./pages/Referrals";
+import KojiConnect from "./pages/KojiConnect";
 import PrivacySettings from "./pages/PrivacySettings";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const AppContent = () => {
                 <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
                 <Route path="/creator/dashboard" element={<CreatorDashboard />} />
                 <Route path="/referrals" element={<Referrals />} />
+                <Route path="/koji-connect" element={<KojiConnect />} />
                 <Route path="/settings/privacy" element={<PrivacySettings />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/privacy" element={<Privacy />} />
@@ -106,6 +108,7 @@ const AppContent = () => {
           <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
           <Route path="/creator/dashboard" element={<CreatorDashboard />} />
           <Route path="/referrals" element={<Referrals />} />
+          <Route path="/koji-connect" element={<KojiConnect />} />
           <Route path="/settings/privacy" element={<PrivacySettings />} />
           <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />

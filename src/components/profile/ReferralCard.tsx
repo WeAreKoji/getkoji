@@ -12,6 +12,8 @@ interface ReferralCardProps {
 export const ReferralCard = ({ userId }: ReferralCardProps) => {
   const [referralCount, setReferralCount] = useState(0);
   const [credits, setCredits] = useState(0);
+  const [creatorReferrals, setCreatorReferrals] = useState(0);
+  const [commissionEarned, setCommissionEarned] = useState(0);
 
   useEffect(() => {
     fetchReferralData();
@@ -30,8 +32,15 @@ export const ReferralCard = ({ userId }: ReferralCardProps) => {
       .eq("user_id", userId)
       .maybeSingle();
 
+    const { data: creatorRefs } = await supabase
+      .from("creator_referrals")
+      .select("total_commission_earned")
+      .eq("referrer_id", userId);
+
     setReferralCount(referrals?.length || 0);
     setCredits(creditsData?.balance || 0);
+    setCreatorReferrals(creatorRefs?.length || 0);
+    setCommissionEarned(creatorRefs?.reduce((sum, r) => sum + Number(r.total_commission_earned), 0) || 0);
   };
 
   return (
@@ -48,13 +57,32 @@ export const ReferralCard = ({ userId }: ReferralCardProps) => {
           <p className="text-sm text-muted-foreground">
             Available credits: <span className="font-bold text-foreground">{credits}</span>
           </p>
+          {creatorReferrals > 0 && (
+            <>
+              <p className="text-sm text-muted-foreground mt-2">
+                Creator referrals: <span className="font-bold text-foreground">{creatorReferrals}</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Commission earned: <span className="font-bold text-foreground">${commissionEarned.toFixed(2)}</span>
+              </p>
+            </>
+          )}
         </div>
-        <Link to="/referrals">
-          <Button variant="outline" size="sm">
-            View Details
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
+        <div className="flex flex-col gap-2">
+          <Link to="/referrals">
+            <Button variant="outline" size="sm" className="w-full">
+              View Details
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+          {creatorReferrals > 0 && (
+            <Link to="/koji-connect">
+              <Button variant="ghost" size="sm" className="w-full text-xs">
+                Koji Connect
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
     </Card>
   );

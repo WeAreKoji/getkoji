@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import BottomNav from "@/components/navigation/BottomNav";
+import { KojiConnectCard } from "@/components/referrals/KojiConnectCard";
 
 interface ReferralStats {
   totalReferrals: number;
@@ -16,6 +17,12 @@ interface ReferralStats {
   pendingReferrals: number;
   totalRewards: number;
   availableCredits: number;
+}
+
+interface CreatorStats {
+  activeReferrals: number;
+  totalCommission: number;
+  pendingCommission: number;
 }
 
 const Referrals = () => {
@@ -31,6 +38,11 @@ const Referrals = () => {
     pendingReferrals: 0,
     totalRewards: 0,
     availableCredits: 0,
+  });
+  const [creatorStats, setCreatorStats] = useState<CreatorStats>({
+    activeReferrals: 0,
+    totalCommission: 0,
+    pendingCommission: 0,
   });
 
   useEffect(() => {
@@ -94,12 +106,30 @@ const Referrals = () => {
         .eq("user_id", userId)
         .maybeSingle();
 
+      // Get creator referral stats
+      const { data: creatorReferrals } = await supabase
+        .from("creator_referrals")
+        .select("status, total_commission_earned")
+        .eq("referrer_id", userId);
+
+      const { data: pendingCommissions } = await supabase
+        .from("creator_referral_commissions")
+        .select("commission_amount, creator_referral_id")
+        .is("included_in_payout_id", null)
+        .in("creator_referral_id", creatorReferrals?.map(r => (r as any).id) || []);
+
       setStats({
         totalReferrals: referrals?.length || 0,
         completedReferrals: referrals?.filter(r => r.status === "completed").length || 0,
         pendingReferrals: referrals?.filter(r => r.status === "pending").length || 0,
         totalRewards: rewards?.reduce((sum, r) => sum + Number(r.amount), 0) || 0,
         availableCredits: credits?.balance || 0,
+      });
+
+      setCreatorStats({
+        activeReferrals: creatorReferrals?.filter(r => r.status === "active").length || 0,
+        totalCommission: creatorReferrals?.reduce((sum, r) => sum + Number(r.total_commission_earned), 0) || 0,
+        pendingCommission: pendingCommissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0,
       });
     } catch (error) {
       console.error("Error fetching referral data:", error);
@@ -149,6 +179,17 @@ const Referrals = () => {
               Invite friends and earn rewards together
             </p>
           </div>
+
+          {/* Koji Connect Card */}
+          {creatorStats.activeReferrals > 0 && (
+            <div className="mb-6">
+              <KojiConnectCard 
+                activeReferrals={creatorStats.activeReferrals}
+                totalCommission={creatorStats.totalCommission}
+                pendingCommission={creatorStats.pendingCommission}
+              />
+            </div>
+          )}
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

@@ -99,6 +99,157 @@ export type Database = {
           },
         ]
       }
+      creator_referral_commissions: {
+        Row: {
+          commission_amount: number
+          commission_date: string | null
+          created_at: string | null
+          creator_earnings_amount: number
+          creator_referral_id: string
+          id: string
+          included_in_payout_id: string | null
+          invoice_id: string
+          platform_revenue_id: string | null
+          subscription_id: string | null
+        }
+        Insert: {
+          commission_amount: number
+          commission_date?: string | null
+          created_at?: string | null
+          creator_earnings_amount: number
+          creator_referral_id: string
+          id?: string
+          included_in_payout_id?: string | null
+          invoice_id: string
+          platform_revenue_id?: string | null
+          subscription_id?: string | null
+        }
+        Update: {
+          commission_amount?: number
+          commission_date?: string | null
+          created_at?: string | null
+          creator_earnings_amount?: number
+          creator_referral_id?: string
+          id?: string
+          included_in_payout_id?: string | null
+          invoice_id?: string
+          platform_revenue_id?: string | null
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_referral_commissions_creator_referral_id_fkey"
+            columns: ["creator_referral_id"]
+            isOneToOne: false
+            referencedRelation: "creator_referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_referral_commissions_platform_revenue_id_fkey"
+            columns: ["platform_revenue_id"]
+            isOneToOne: false
+            referencedRelation: "platform_revenue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_referral_commissions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_referral_payouts: {
+        Row: {
+          amount: number
+          commission_ids: Json | null
+          created_at: string | null
+          currency: string
+          id: string
+          minimum_threshold_met_at: string | null
+          payout_method: string | null
+          processed_at: string | null
+          referrer_id: string
+          status: string
+          stripe_transfer_id: string | null
+        }
+        Insert: {
+          amount: number
+          commission_ids?: Json | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          minimum_threshold_met_at?: string | null
+          payout_method?: string | null
+          processed_at?: string | null
+          referrer_id: string
+          status?: string
+          stripe_transfer_id?: string | null
+        }
+        Update: {
+          amount?: number
+          commission_ids?: Json | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          minimum_threshold_met_at?: string | null
+          payout_method?: string | null
+          processed_at?: string | null
+          referrer_id?: string
+          status?: string
+          stripe_transfer_id?: string | null
+        }
+        Relationships: []
+      }
+      creator_referrals: {
+        Row: {
+          activated_at: string | null
+          commission_duration_months: number
+          commission_percentage: number
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          last_commission_date: string | null
+          referral_code: string
+          referred_creator_id: string
+          referrer_id: string
+          status: string
+          total_commission_earned: number | null
+          total_earnings_tracked: number | null
+        }
+        Insert: {
+          activated_at?: string | null
+          commission_duration_months?: number
+          commission_percentage?: number
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          last_commission_date?: string | null
+          referral_code: string
+          referred_creator_id: string
+          referrer_id: string
+          status?: string
+          total_commission_earned?: number | null
+          total_earnings_tracked?: number | null
+        }
+        Update: {
+          activated_at?: string | null
+          commission_duration_months?: number
+          commission_percentage?: number
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          last_commission_date?: string | null
+          referral_code?: string
+          referred_creator_id?: string
+          referrer_id?: string
+          status?: string
+          total_commission_earned?: number | null
+          total_earnings_tracked?: number | null
+        }
+        Relationships: []
+      }
       failed_transfers: {
         Row: {
           amount: number
@@ -393,21 +544,68 @@ export type Database = {
           code: string
           created_at: string | null
           id: string
+          is_active: boolean | null
+          referral_type: string | null
           user_id: string
         }
         Insert: {
           code: string
           created_at?: string | null
           id?: string
+          is_active?: boolean | null
+          referral_type?: string | null
           user_id: string
         }
         Update: {
           code?: string
           created_at?: string | null
           id?: string
+          is_active?: boolean | null
+          referral_type?: string | null
           user_id?: string
         }
         Relationships: []
+      }
+      referral_fraud_checks: {
+        Row: {
+          created_at: string | null
+          device_fingerprint: string | null
+          flag_reason: string | null
+          flagged: boolean | null
+          id: string
+          ip_address: string | null
+          referral_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_fingerprint?: string | null
+          flag_reason?: string | null
+          flagged?: boolean | null
+          id?: string
+          ip_address?: string | null
+          referral_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_fingerprint?: string | null
+          flag_reason?: string | null
+          flagged?: boolean | null
+          id?: string
+          ip_address?: string | null
+          referral_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_fraud_checks_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "creator_referrals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_rewards: {
         Row: {
@@ -664,8 +862,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_creator_referral: {
+        Args: { referral_id: string }
+        Returns: undefined
+      }
       add_creator_earnings: {
         Args: { amount: number; creator_user_id: string }
+        Returns: undefined
+      }
+      check_expired_referrals: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       check_username_available: {
@@ -712,6 +918,10 @@ export type Database = {
       increment_subscriber_count: {
         Args: { creator_user_id: string }
         Returns: undefined
+      }
+      process_referral_payout: {
+        Args: { referrer_user_id: string }
+        Returns: string
       }
       request_creator_role: {
         Args: { application_text: string }

@@ -268,6 +268,74 @@ serve(async (req) => {
             });
             
             logStep("Creator earnings updated", { creatorId: subData.creator_id, amount: creatorEarnings });
+
+            // Check for active creator referral and calculate commission
+            const { data: activeReferral } = await supabase
+              .from("creator_referrals")
+              .select("*")
+              .eq("referred_creator_id", subData.creator_id)
+              .eq("status", "active")
+              .gt("expires_at", new Date().toISOString())
+              .maybeSingle();
+
+            if (activeReferral) {
+              const commissionAmount = creatorEarnings * (activeReferral.commission_percentage / 100);
+              
+              logStep("Creator referral found, calculating commission", {
+                referralId: activeReferral.id,
+                creatorEarnings,
+                commissionPercentage: activeReferral.commission_percentage,
+                commissionAmount
+              });
+
+              // Insert commission record
+              const { error: commissionError } = await supabase
+                .from("creator_referral_commissions")
+                .insert({
+                  creator_referral_id: activeReferral.id,
+                  platform_revenue_id: revenueData.id,
+                  creator_earnings_amount: creatorEarnings,
+                  commission_amount: commissionAmount,
+                  invoice_id: invoice.id,
+                  subscription_id: subData.id,
+                });
+
+              if (commissionError) {
+                logStep("ERROR inserting commission", { error: commissionError });
+              } else {
+                // Update referral totals
+                await supabase
+                  .from("creator_referrals")
+                  .update({
+                    total_earnings_tracked: activeReferral.total_earnings_tracked + creatorEarnings,
+                    total_commission_earned: activeReferral.total_commission_earned + commissionAmount,
+                    last_commission_date: new Date().toISOString(),
+                  })
+                  .eq("id", activeReferral.id);
+
+                // Check if payout threshold is met
+                const { data: referrerCommissions } = await supabase
+                  .from("creator_referral_commissions")
+                  .select("commission_amount")
+                  .eq("creator_referral_id", activeReferral.id)
+                  .is("included_in_payout_id", null);
+
+                const totalUnpaid = referrerCommissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0;
+
+                logStep("Referral commission processed", { 
+                  commissionAmount, 
+                  totalUnpaid,
+                  thresholdMet: totalUnpaid >= 25 
+                });
+
+                if (totalUnpaid >= 25) {
+                  await supabase.rpc("process_referral_payout", { 
+                    referrer_user_id: activeReferral.referrer_id 
+                  });
+                  logStep("Referral payout threshold met, payout created");
+                }
+              }
+            }
           }
         }
         break;
