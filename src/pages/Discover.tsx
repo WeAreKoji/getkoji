@@ -8,6 +8,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import SwipeableCard from "@/components/discover/SwipeableCard";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { haptics } from "@/lib/native";
+import { useIsMobile } from "@/hooks/use-mobile";
 interface Profile {
   id: string;
   display_name: string;
@@ -23,6 +24,7 @@ const Discover = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     toast
   } = useToast();
@@ -99,16 +101,16 @@ const Discover = () => {
   };
   const currentProfile = profiles[currentIndex];
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 pb-24">
+    return <div className={isMobile ? "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 pb-24" : "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5"}>
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Loading profiles...</p>
         </div>
-        <BottomNav />
+        {isMobile && <BottomNav />}
       </div>;
   }
   if (!currentProfile) {
-    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4 pb-24">
+    return <div className={isMobile ? "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4 pb-24" : "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4"}>
         <div className="text-center max-w-md">
           <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary animate-pulse" />
           <h2 className="text-2xl font-bold mb-2">You're Early! 🎉</h2>
@@ -120,12 +122,12 @@ const Discover = () => {
           </p>
           
         </div>
-        <BottomNav />
+        {isMobile && <BottomNav />}
       </div>;
   }
   return (
     <PageTransition>
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4 pb-24">
+      <div className={isMobile ? "min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4 pb-24" : "min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4"}>
         <div className="container mx-auto max-w-md">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gradient-hero">Koji</h1>
@@ -141,7 +143,7 @@ const Discover = () => {
           </p>
         </div>
         
-        <BottomNav />
+        {isMobile && <BottomNav />}
       </div>
     </PageTransition>
   );

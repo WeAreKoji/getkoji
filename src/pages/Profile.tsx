@@ -131,8 +131,8 @@ const Profile = () => {
 
   return (
     <PageTransition>
-      <SafeAreaView bottom={false}>
-        <div className="min-h-screen bg-background pb-20">
+      <SafeAreaView bottom={isMobile}>
+        <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
           {/* Header */}
           <ProfileHeader
             isOwnProfile={isOwnProfile}
@@ -174,7 +174,7 @@ const Profile = () => {
             <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
           </div>
 
-          <BottomNav />
+          {isMobile && <BottomNav />}
         </div>
       </SafeAreaView>
     </PageTransition>

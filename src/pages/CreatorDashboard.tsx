@@ -790,7 +790,7 @@ const CreatorDashboard = () => {
       </div>
       </div>
 
-      <BottomNav />
+      {isMobile && <BottomNav />}
 
       <SubscriptionPriceEditor
         open={showPriceEditor}

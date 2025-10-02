@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import MatchCard from "@/components/matches/MatchCard";
 import BottomNav from "@/components/navigation/BottomNav";
 import { Loader2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { SafeAreaView } from "@/components/layout/SafeAreaView";
 
 interface Match {
   id: string;
@@ -32,6 +34,7 @@ interface MatchWithProfile {
 
 const Matches = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [matches, setMatches] = useState<MatchWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -108,33 +111,35 @@ const Matches = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="container max-w-2xl mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold mb-6">Matches</h1>
+    <SafeAreaView bottom={isMobile}>
+      <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
+        <div className={isMobile ? "px-4 py-4" : "container max-w-4xl mx-auto px-6 py-8"}>
+          <h1 className={isMobile ? "text-2xl font-bold mb-4" : "text-3xl font-bold mb-6"}>Matches</h1>
 
-        {matches.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No matches yet</p>
-            <p className="text-sm text-muted-foreground">
-              Keep swiping to find your matches!
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {matches.map(({ match, profile, lastMessage }) => (
-              <MatchCard
-                key={match.id}
-                matchId={match.id}
-                profile={profile}
-                lastMessage={lastMessage}
-              />
-            ))}
-          </div>
-        )}
+          {matches.length === 0 ? (
+            <div className={isMobile ? "text-center py-8" : "text-center py-12"}>
+              <p className={isMobile ? "text-muted-foreground mb-2 text-sm" : "text-muted-foreground mb-4"}>No matches yet</p>
+              <p className="text-sm text-muted-foreground">
+                Keep swiping to find your matches!
+              </p>
+            </div>
+          ) : (
+            <div className={isMobile ? "space-y-2" : "space-y-3"}>
+              {matches.map(({ match, profile, lastMessage }) => (
+                <MatchCard
+                  key={match.id}
+                  matchId={match.id}
+                  profile={profile}
+                  lastMessage={lastMessage}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {isMobile && <BottomNav />}
       </div>
-
-      <BottomNav />
-    </div>
+    </SafeAreaView>
   );
 };
 

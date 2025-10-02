@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Users } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Creator {
   id: string;
@@ -24,6 +25,7 @@ const Creators = () => {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,24 +61,25 @@ const Creators = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className={isMobile ? "min-h-screen bg-background flex items-center justify-center pb-20" : "min-h-screen bg-background flex items-center justify-center"}>
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        {isMobile && <BottomNav />}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
       <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-foreground">Creators</h1>
-          <p className="text-sm text-muted-foreground">
+        <div className={isMobile ? "max-w-lg mx-auto px-4 py-4" : "container max-w-4xl mx-auto px-6 py-4"}>
+          <h1 className={isMobile ? "text-2xl font-bold text-foreground" : "text-3xl font-bold text-foreground"}>Creators</h1>
+          <p className={isMobile ? "text-sm text-muted-foreground" : "text-base text-muted-foreground"}>
             Discover exclusive content
           </p>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
+      <main className={isMobile ? "max-w-lg mx-auto px-4 py-6 space-y-4" : "container max-w-4xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-4"}>
         {creators.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
@@ -93,14 +96,14 @@ const Creators = () => {
             >
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <Avatar className="w-16 h-16">
+                  <Avatar className={isMobile ? "w-16 h-16" : "w-20 h-20"}>
                     <AvatarImage src={creator.profile.avatar_url || undefined} />
                     <AvatarFallback>
                       {creator.profile.display_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg text-foreground">
+                    <h3 className={isMobile ? "font-semibold text-lg text-foreground" : "font-semibold text-xl text-foreground"}>
                       {creator.profile.display_name}
                     </h3>
                     {creator.profile.bio && (
@@ -125,7 +128,7 @@ const Creators = () => {
         )}
       </main>
 
-      <BottomNav />
+      {isMobile && <BottomNav />}
     </div>
   );
 };

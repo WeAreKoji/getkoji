@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { User } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MatchCardProps {
   matchId: string;
@@ -18,6 +19,8 @@ interface MatchCardProps {
 }
 
 const MatchCard = ({ matchId, profile, lastMessage }: MatchCardProps) => {
+  const isMobile = useIsMobile();
+  
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -33,20 +36,20 @@ const MatchCard = ({ matchId, profile, lastMessage }: MatchCardProps) => {
 
   return (
     <Link to={`/chat/${matchId}`}>
-      <Card className="p-4 hover:bg-accent transition-colors cursor-pointer">
-        <div className="flex items-center gap-4">
-          <Avatar className="w-16 h-16">
+      <Card className={isMobile ? "p-3 hover:bg-accent transition-colors cursor-pointer" : "p-4 hover:bg-accent transition-colors cursor-pointer"}>
+        <div className={isMobile ? "flex items-center gap-3" : "flex items-center gap-4"}>
+          <Avatar className={isMobile ? "w-12 h-12" : "w-16 h-16"}>
             <AvatarImage src={profile.avatar_url || undefined} />
             <AvatarFallback className="bg-primary/10">
-              <User className="w-8 h-8 text-primary" />
+              <User className={isMobile ? "w-6 h-6 text-primary" : "w-8 h-8 text-primary"} />
             </AvatarFallback>
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg">{profile.display_name}</h3>
+            <h3 className={isMobile ? "font-semibold text-base" : "font-semibold text-lg"}>{profile.display_name}</h3>
             {lastMessage ? (
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm text-muted-foreground truncate">
+                <p className={isMobile ? "text-xs text-muted-foreground truncate" : "text-sm text-muted-foreground truncate"}>
                   {lastMessage.content}
                 </p>
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -54,7 +57,7 @@ const MatchCard = ({ matchId, profile, lastMessage }: MatchCardProps) => {
                 </span>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className={isMobile ? "text-xs text-muted-foreground" : "text-sm text-muted-foreground"}>
                 Start a conversation
               </p>
             )}
