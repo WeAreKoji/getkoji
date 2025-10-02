@@ -27,7 +27,6 @@ const Discover = () => {
 
   useEffect(() => {
     checkUser();
-    loadProfiles();
   }, []);
 
   const checkUser = async () => {
@@ -36,14 +35,16 @@ const Discover = () => {
       navigate("/auth");
     } else {
       setUser(user);
+      // Load profiles after user is set
+      await loadProfiles(user.id);
     }
   };
 
-  const loadProfiles = async () => {
+  const loadProfiles = async (userId: string) => {
     try {
       // Use RPC function for smart filtering (excludes own profile and already swiped)
       const { data, error } = await supabase.rpc("get_discover_profiles", {
-        user_id: user?.id || null,
+        user_id: userId,
         max_count: 10,
       });
 
