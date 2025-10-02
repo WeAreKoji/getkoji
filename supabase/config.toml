@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.send-verification-email]
 verify_jwt = false
+
+[functions.validate-upload]
+verify_jwt = true
