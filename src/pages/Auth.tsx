@@ -29,11 +29,25 @@ const Auth = () => {
 
         if (error) throw error;
 
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
-        navigate("/discover");
+        // Check if user has completed onboarding
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (profile) {
+            toast({
+              title: "Welcome back!",
+              description: "Successfully signed in.",
+            });
+            navigate("/discover");
+          } else {
+            navigate("/onboarding");
+          }
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -47,8 +61,9 @@ const Auth = () => {
 
         toast({
           title: "Account created!",
-          description: "Please check your email to verify your account.",
+          description: "Complete your profile to get started.",
         });
+        navigate("/onboarding");
       }
     } catch (error: any) {
       toast({

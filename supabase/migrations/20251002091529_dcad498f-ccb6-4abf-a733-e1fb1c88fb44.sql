@@ -1,0 +1,122 @@
+-- Seed interests table with diverse categories
+INSERT INTO public.interests (name, category) VALUES
+  -- Fitness & Sports (10)
+  ('Yoga', 'fitness'),
+  ('CrossFit', 'fitness'),
+  ('Running', 'fitness'),
+  ('Hiking', 'fitness'),
+  ('Swimming', 'fitness'),
+  ('Basketball', 'fitness'),
+  ('Soccer', 'fitness'),
+  ('Tennis', 'fitness'),
+  ('Martial Arts', 'fitness'),
+  ('Rock Climbing', 'fitness'),
+  
+  -- Music (10)
+  ('Pop Music', 'music'),
+  ('Rock Music', 'music'),
+  ('Hip Hop', 'music'),
+  ('Electronic Music', 'music'),
+  ('Jazz', 'music'),
+  ('Classical Music', 'music'),
+  ('Indie Music', 'music'),
+  ('R&B', 'music'),
+  ('Country Music', 'music'),
+  ('Live Concerts', 'music'),
+  
+  -- Arts & Creativity (10)
+  ('Painting', 'arts'),
+  ('Photography', 'arts'),
+  ('Drawing', 'arts'),
+  ('Sculpture', 'arts'),
+  ('Writing', 'arts'),
+  ('Poetry', 'arts'),
+  ('Dance', 'arts'),
+  ('Theater', 'arts'),
+  ('Film Making', 'arts'),
+  ('Crafts', 'arts'),
+  
+  -- Technology (10)
+  ('Coding', 'technology'),
+  ('Gaming', 'technology'),
+  ('AI & Machine Learning', 'technology'),
+  ('Crypto & Web3', 'technology'),
+  ('Gadgets', 'technology'),
+  ('Virtual Reality', 'technology'),
+  ('App Development', 'technology'),
+  ('Robotics', 'technology'),
+  ('Cybersecurity', 'technology'),
+  ('Tech Startups', 'technology'),
+  
+  -- Food & Drink (10)
+  ('Cooking', 'food'),
+  ('Baking', 'food'),
+  ('Wine Tasting', 'food'),
+  ('Craft Beer', 'food'),
+  ('Coffee', 'food'),
+  ('Vegetarian', 'food'),
+  ('Vegan', 'food'),
+  ('Fine Dining', 'food'),
+  ('Street Food', 'food'),
+  ('Food Blogging', 'food'),
+  
+  -- Travel & Adventure (10)
+  ('Backpacking', 'travel'),
+  ('Beach Vacations', 'travel'),
+  ('City Breaks', 'travel'),
+  ('Camping', 'travel'),
+  ('Road Trips', 'travel'),
+  ('Luxury Travel', 'travel'),
+  ('Solo Travel', 'travel'),
+  ('Cultural Tourism', 'travel'),
+  ('Adventure Sports', 'travel'),
+  ('Van Life', 'travel'),
+  
+  -- Entertainment (10)
+  ('Movies', 'entertainment'),
+  ('TV Series', 'entertainment'),
+  ('Anime', 'entertainment'),
+  ('Stand-up Comedy', 'entertainment'),
+  ('Podcasts', 'entertainment'),
+  ('Board Games', 'entertainment'),
+  ('Card Games', 'entertainment'),
+  ('Escape Rooms', 'entertainment'),
+  ('Karaoke', 'entertainment'),
+  ('Trivia Nights', 'entertainment'),
+  
+  -- Lifestyle (10)
+  ('Fashion', 'lifestyle'),
+  ('Beauty & Skincare', 'lifestyle'),
+  ('Interior Design', 'lifestyle'),
+  ('Gardening', 'lifestyle'),
+  ('Meditation', 'lifestyle'),
+  ('Mindfulness', 'lifestyle'),
+  ('Sustainability', 'lifestyle'),
+  ('Minimalism', 'lifestyle'),
+  ('Astrology', 'lifestyle'),
+  ('Self Improvement', 'lifestyle'),
+  
+  -- Outdoor & Nature (10)
+  ('Nature Walks', 'outdoor'),
+  ('Bird Watching', 'outdoor'),
+  ('Fishing', 'outdoor'),
+  ('Kayaking', 'outdoor'),
+  ('Surfing', 'outdoor'),
+  ('Skiing', 'outdoor'),
+  ('Snowboarding', 'outdoor'),
+  ('Mountain Biking', 'outdoor'),
+  ('Wildlife Photography', 'outdoor'),
+  ('Stargazing', 'outdoor'),
+  
+  -- Social & Community (10)
+  ('Volunteering', 'social'),
+  ('Animal Rescue', 'social'),
+  ('Environmental Activism', 'social'),
+  ('Networking Events', 'social'),
+  ('Book Clubs', 'social'),
+  ('Language Exchange', 'social'),
+  ('Mentorship', 'social'),
+  ('Public Speaking', 'social'),
+  ('Community Building', 'social'),
+  ('Charity Work', 'social')
+ON CONFLICT (name) DO NOTHING;
