@@ -416,6 +416,21 @@ export type Database = {
         Args: { creator_user_id: string }
         Returns: undefined
       }
+      get_discover_profiles: {
+        Args: { max_count?: number; user_id: string }
+        Returns: {
+          age: number
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string | null
+          display_name: string
+          email: string
+          id: string
+          intent: Database["public"]["Enums"]["user_intent"]
+          updated_at: string | null
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -130,6 +131,12 @@ const Auth = () => {
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
           </form>
+
+          {isLogin && (
+            <div className="mt-4 text-center">
+              <PasswordResetDialog />
+            </div>
+          )}
 
           <div className="mt-6 text-center text-sm">
             <button

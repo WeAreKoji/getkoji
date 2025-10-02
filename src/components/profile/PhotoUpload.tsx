@@ -3,6 +3,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Camera, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Photo {
   id?: string;
@@ -21,7 +22,7 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 9 }: PhotoUploadProps
   const { toast } = useToast();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
@@ -35,22 +36,47 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 9 }: PhotoUploadProps
       return;
     }
 
-    const newPhotos: Photo[] = [];
-    Array.from(files).forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPhotos.push({
-          photo_url: reader.result as string,
+    // Upload to Supabase Storage and get URLs
+    const uploadPromises = Array.from(files).map(async (file, index) => {
+      try {
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `temp/${fileName}`; // Using temp path, will be moved to userId path in ProfileEdit
+
+        // Upload file
+        const { error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('profile-photos')
+          .getPublicUrl(filePath);
+
+        return {
+          photo_url: publicUrl,
           order_index: photos.length + index,
           isNew: true,
+          tempPath: filePath, // Store temp path for cleanup
+        };
+      } catch (error: any) {
+        toast({
+          title: "Upload failed",
+          description: error.message,
+          variant: "destructive",
         });
-
-        if (newPhotos.length === files.length) {
-          onPhotosChange([...photos, ...newPhotos]);
-        }
-      };
-      reader.readAsDataURL(file);
+        return null;
+      }
     });
+
+    const uploadedPhotos = (await Promise.all(uploadPromises)).filter(Boolean) as Photo[];
+    
+    if (uploadedPhotos.length > 0) {
+      onPhotosChange([...photos, ...uploadedPhotos]);
+    }
   };
 
   const handleRemove = (index: number) => {

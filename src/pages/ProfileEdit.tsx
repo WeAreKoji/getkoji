@@ -140,9 +140,33 @@ const ProfileEdit = () => {
 
       if (profileError) throw profileError;
 
-      // Delete old photos
-      const oldPhotoIds = photos.filter((p) => p.id && !p.isNew).map((p) => p.id!);
+      // Handle photo updates with storage cleanup
+      const oldPhotos = photos.filter((p) => p.id && !p.isNew);
+      const oldPhotoIds = oldPhotos.map((p) => p.id!);
+      
+      // Delete old photos from storage and database
       if (oldPhotoIds.length > 0) {
+        // Get old photo URLs to delete from storage
+        const { data: oldPhotoData } = await supabase
+          .from("profile_photos")
+          .select("photo_url")
+          .in("id", oldPhotoIds);
+
+        if (oldPhotoData) {
+          // Extract paths from URLs and delete from storage
+          const filePaths = oldPhotoData
+            .map((p) => {
+              const url = new URL(p.photo_url);
+              return url.pathname.split('/profile-photos/')[1];
+            })
+            .filter(Boolean);
+
+          if (filePaths.length > 0) {
+            await supabase.storage.from("profile-photos").remove(filePaths);
+          }
+        }
+
+        // Delete from database
         await supabase.from("profile_photos").delete().in("id", oldPhotoIds);
       }
 

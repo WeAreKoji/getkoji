@@ -41,10 +41,11 @@ const Discover = () => {
 
   const loadProfiles = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .limit(10);
+      // Use RPC function for smart filtering (excludes own profile and already swiped)
+      const { data, error } = await supabase.rpc("get_discover_profiles", {
+        user_id: user?.id || null,
+        max_count: 10,
+      });
 
       if (error) throw error;
       setProfiles(data || []);
