@@ -7,6 +7,7 @@ import { Sparkles, LogOut } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import SwipeableCard from "@/components/discover/SwipeableCard";
 import { PageTransition } from "@/components/transitions/PageTransition";
+import { ProfileCardSkeleton } from "@/components/shared/SkeletonLoader";
 import { haptics } from "@/lib/native";
 import { useIsMobile } from "@/hooks/use-mobile";
 import logo from "@/assets/logo.png";
@@ -103,10 +104,7 @@ const Discover = () => {
   const currentProfile = profiles[currentIndex];
   if (loading) {
     return <div className={isMobile ? "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 pb-24" : "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5"}>
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading profiles...</p>
-        </div>
+        <ProfileCardSkeleton />
         {isMobile && <BottomNav />}
       </div>;
   }

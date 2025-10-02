@@ -12,6 +12,7 @@ import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { RouteErrorBoundary } from "@/components/shared/RouteErrorBoundary";
 
 // Eager load critical pages
 import Home from "./pages/Home";
@@ -71,128 +72,128 @@ const AppContent = () => {
                 </div>
               </div>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/discover" element={<Discover />} />
-                <Route path="/creators" element={<Creators />} />
-                <Route path="/matches" element={<Matches />} />
-                <Route path="/chat/:matchId" element={<Chat />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/profile/:userId" element={<Profile />} />
-                <Route path="/@:userId" element={<Profile />} />
-                <Route path="/profile/edit" element={<ProfileEdit />} />
-                <Route path="/creator/apply" element={<CreatorApplication />} />
-                <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} />
-                <Route path="/creator/setup" element={<CreatorSetup />} />
-                <Route path="/creator/:creatorId" element={<CreatorFeed />} />
+                <Route path="/" element={<Home />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/auth" element={<Auth />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/reset-password" element={<ResetPassword />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/onboarding" element={<Onboarding />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/discover" element={<Discover />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/creators" element={<Creators />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/matches" element={<Matches />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/chat/:matchId" element={<Chat />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/profile" element={<Profile />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/profile/:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/@:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/profile/edit" element={<ProfileEdit />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/creator/apply" element={<CreatorApplication />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/creator/setup" element={<CreatorSetup />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/creator/:creatorId" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/dashboard" element={
             <ProtectedRoute requireAdmin>
               <AdminDashboard />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/verifications" element={
             <ProtectedRoute requireAdmin>
               <AdminVerifications />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/content-moderation" element={
             <ProtectedRoute requireAdmin>
               <AdminContentModeration />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/audit-logs" element={
             <ProtectedRoute requireAdmin>
               <AdminAuditLogs />
             </ProtectedRoute>
-          } />
-                <Route path="/subscriptions" element={<Subscriptions />} />
-                <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-                <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
+          } errorElement={<RouteErrorBoundary />} />
+                <Route path="/subscriptions" element={<Subscriptions />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/subscription-success" element={<SubscriptionSuccess />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} errorElement={<RouteErrorBoundary />} />
           <Route path="/creator/dashboard" element={
             <ProtectedRoute requireCreator>
               <CreatorDashboard />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/creator/subscribers" element={
             <ProtectedRoute requireCreator>
               <SubscriberManagement />
             </ProtectedRoute>
-          } />
-                <Route path="/referrals" element={<Referrals />} />
-                <Route path="/koji-connect" element={<KojiConnect />} />
-                <Route path="/settings/privacy" element={<PrivacySettings />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="*" element={<NotFound />} />
+          } errorElement={<RouteErrorBoundary />} />
+                <Route path="/referrals" element={<Referrals />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/koji-connect" element={<KojiConnect />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/settings/privacy" element={<PrivacySettings />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/about" element={<About />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/privacy" element={<Privacy />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/terms" element={<Terms />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/community" element={<Community />} errorElement={<RouteErrorBoundary />} />
+                <Route path="/support" element={<Support />} errorElement={<RouteErrorBoundary />} />
+                <Route path="*" element={<NotFound />} errorElement={<RouteErrorBoundary />} />
               </Routes>
             </main>
           </div>
         </SidebarProvider>
       ) : (
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/discover" element={<Discover />} />
-          <Route path="/creators" element={<Creators />} />
-          <Route path="/matches" element={<Matches />} />
-          <Route path="/chat/:matchId" element={<Chat />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/:userId" element={<Profile />} />
-          <Route path="/@:userId" element={<Profile />} />
-          <Route path="/profile/edit" element={<ProfileEdit />} />
-          <Route path="/creator/apply" element={<CreatorApplication />} />
-          <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} />
-          <Route path="/creator/setup" element={<CreatorSetup />} />
-          <Route path="/creator/:creatorId" element={<CreatorFeed />} />
+          <Route path="/" element={<Home />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/auth" element={<Auth />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/reset-password" element={<ResetPassword />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/onboarding" element={<Onboarding />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/discover" element={<Discover />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/creators" element={<Creators />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/matches" element={<Matches />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/chat/:matchId" element={<Chat />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/profile" element={<Profile />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/profile/:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/@:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/profile/edit" element={<ProfileEdit />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/creator/apply" element={<CreatorApplication />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/creator/setup" element={<CreatorSetup />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/creator/:creatorId" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/dashboard" element={
             <ProtectedRoute requireAdmin>
               <AdminDashboard />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/verifications" element={
             <ProtectedRoute requireAdmin>
               <AdminVerifications />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/content-moderation" element={
             <ProtectedRoute requireAdmin>
               <AdminContentModeration />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/admin/audit-logs" element={
             <ProtectedRoute requireAdmin>
               <AdminAuditLogs />
             </ProtectedRoute>
-          } />
-          <Route path="/subscriptions" element={<Subscriptions />} />
-          <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-          <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
+          } errorElement={<RouteErrorBoundary />} />
+          <Route path="/subscriptions" element={<Subscriptions />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/subscription-success" element={<SubscriptionSuccess />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} errorElement={<RouteErrorBoundary />} />
           <Route path="/creator/dashboard" element={
             <ProtectedRoute requireCreator>
               <CreatorDashboard />
             </ProtectedRoute>
-          } />
+          } errorElement={<RouteErrorBoundary />} />
           <Route path="/creator/subscribers" element={
             <ProtectedRoute requireCreator>
               <SubscriberManagement />
             </ProtectedRoute>
-          } />
-          <Route path="/referrals" element={<Referrals />} />
-          <Route path="/koji-connect" element={<KojiConnect />} />
-          <Route path="/settings/privacy" element={<PrivacySettings />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="*" element={<NotFound />} />
+          } errorElement={<RouteErrorBoundary />} />
+          <Route path="/referrals" element={<Referrals />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/koji-connect" element={<KojiConnect />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/settings/privacy" element={<PrivacySettings />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/about" element={<About />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/privacy" element={<Privacy />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/terms" element={<Terms />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/community" element={<Community />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/support" element={<Support />} errorElement={<RouteErrorBoundary />} />
+          <Route path="*" element={<NotFound />} errorElement={<RouteErrorBoundary />} />
         </Routes>
       )}
     </Suspense>

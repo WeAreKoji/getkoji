@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Camera, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { validateFile } from "@/lib/upload-validation";
+import { ClientRateLimiter } from "@/lib/rate-limit-client";
+import { logError } from "@/lib/error-logger";
 
 interface Photo {
   id?: string;
@@ -37,9 +40,37 @@ const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUpl
       return;
     }
 
+    // Check rate limit - 5 uploads per 15 minutes
+    const rateLimit = ClientRateLimiter.checkLimit({
+      key: `photo_upload_${userId}`,
+      maxAttempts: 5,
+      windowMinutes: 15,
+    });
+
+    if (!rateLimit.allowed) {
+      const waitTime = ClientRateLimiter.getRemainingTime(`photo_upload_${userId}`, 15);
+      toast({
+        title: "Upload limit reached",
+        description: `Please wait ${Math.ceil(waitTime / 60)} minutes before uploading more photos`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Upload to Supabase Storage and get URLs
     const uploadPromises = Array.from(files).map(async (file, index) => {
       try {
+        // Validate file before upload
+        const validation = await validateFile(file, 'profile-photos');
+        if (!validation.valid) {
+          toast({
+            title: "Invalid file",
+            description: validation.error,
+            variant: "destructive",
+          });
+          return null;
+        }
+
         // Generate unique filename with correct userId path for RLS
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -64,9 +95,10 @@ const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUpl
           tempPath: filePath, // Store temp path for cleanup
         };
       } catch (error: any) {
+        const sanitized = logError(error, 'PhotoUpload.handleFileSelect');
         toast({
           title: "Upload failed",
-          description: error.message,
+          description: sanitized.message,
           variant: "destructive",
         });
         return null;

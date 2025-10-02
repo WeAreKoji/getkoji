@@ -71,6 +71,7 @@ export type Database = {
           id: string
           ip_address: unknown | null
           issuing_country: string
+          last_document_access: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -91,6 +92,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           issuing_country: string
+          last_document_access?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -111,6 +113,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           issuing_country?: string
+          last_document_access?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1233,6 +1236,10 @@ export type Database = {
         Args: { amount: number; creator_user_id: string }
         Returns: undefined
       }
+      can_view_email: {
+        Args: { profile_user_id: string }
+        Returns: boolean
+      }
       check_expired_referrals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1293,6 +1300,10 @@ export type Database = {
           rejected_posts: number
           total_posts: number
         }[]
+      }
+      get_signed_document_url: {
+        Args: { bucket_name: string; expires_in?: number; file_path: string }
+        Returns: string
       }
       get_verification_stats: {
         Args: Record<PropertyKey, never>
