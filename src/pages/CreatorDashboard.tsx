@@ -369,7 +369,7 @@ const CreatorDashboard = () => {
           </div>
           
           {/* Metrics Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -472,7 +472,7 @@ const CreatorDashboard = () => {
           {/* Enhanced Revenue Breakdown with Visual */}
           <div className="grid md:grid-cols-2 gap-4">
             {/* Detailed Revenue Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -536,7 +536,7 @@ const CreatorDashboard = () => {
                 <CardTitle className="text-sm">Revenue Distribution</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={180} className="text-xs sm:text-sm">
                   <PieChart>
                     <Pie
                       data={[
@@ -558,11 +558,11 @@ const CreatorDashboard = () => {
                       ]}
                       cx="50%"
                       cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
+                      innerRadius={40}
+                      outerRadius={70}
                       paddingAngle={2}
                       dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={false}
                     >
                       {[0, 1, 2].map((index) => (
                         <Cell key={`cell-${index}`} fill={
@@ -572,6 +572,12 @@ const CreatorDashboard = () => {
                         } />
                       ))}
                     </Pie>
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconSize={10}
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
                     <Tooltip 
                       formatter={(value: number) => `$${value.toFixed(2)}`}
                       contentStyle={{
@@ -632,7 +638,7 @@ const CreatorDashboard = () => {
                 <CardTitle>Subscriber Growth (Last 30 Days)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={200} className="text-xs sm:text-sm">
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorSubscribers" x1="0" y1="0" x2="0" y2="1">
@@ -671,7 +677,7 @@ const CreatorDashboard = () => {
                 <CardTitle>Revenue Trend (Last 30 Days)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={200} className="text-xs sm:text-sm">
                   <LineChart data={revenueData}>
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
