@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users, Home, User, LayoutDashboard, Gift } from "lucide-react";
+import { Heart, Sparkles, Users, Home, User, LayoutDashboard, Gift, Settings, Shield, ShieldCheck, FileText } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +31,7 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [isCreator, setIsCreator] = useState(false);
   const [profile, setProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
 
@@ -110,6 +110,32 @@ export function AppSidebar() {
                       <NavLink to="/creator/dashboard" className={getNavCls}>
                         <LayoutDashboard className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
                         {open && <span>Dashboard</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+
+          {isAdmin && (
+            <SidebarGroup className="mt-2">
+              <SidebarGroupLabel className="px-4">Admin</SidebarGroupLabel>
+              <SidebarGroupContent className="space-y-1">
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/admin/verifications" className={getNavCls}>
+                        <ShieldCheck className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
+                        {open && <span>ID Verifications</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/admin/content-moderation" className={getNavCls}>
+                        <FileText className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
+                        {open && <span>Content Moderation</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

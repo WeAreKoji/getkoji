@@ -940,24 +940,7 @@ export type Database = {
       }
     }
     Views: {
-      admin_moderation_stats: {
-        Row: {
-          approved_posts: number | null
-          pending_posts: number | null
-          rejected_posts: number | null
-          total_posts: number | null
-        }
-        Relationships: []
-      }
-      admin_verification_stats: {
-        Row: {
-          approved_verifications: number | null
-          pending_verifications: number | null
-          rejected_verifications: number | null
-          total_verifications: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       activate_creator_referral: {
@@ -1004,6 +987,24 @@ export type Database = {
           updated_at: string | null
           username: string | null
           username_updated_at: string | null
+        }[]
+      }
+      get_moderation_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approved_posts: number
+          pending_posts: number
+          rejected_posts: number
+          total_posts: number
+        }[]
+      }
+      get_verification_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approved_verifications: number
+          pending_verifications: number
+          rejected_verifications: number
+          total_verifications: number
         }[]
       }
       has_role: {

@@ -11,6 +11,9 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import SubscriptionPriceEditor from "@/components/creator/SubscriptionPriceEditor";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
 import PayoutSettings from "@/components/creator/PayoutSettings";
+import { VerificationStatusBanner } from "@/components/creator/VerificationStatusBanner";
+import { VerificationGate } from "@/components/creator/VerificationGate";
+import { EnhancedPayoutDisplay } from "@/components/creator/EnhancedPayoutDisplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 
@@ -340,6 +343,8 @@ const CreatorDashboard = () => {
           </div>
 
           <div className={isMobile ? "p-3 space-y-4" : "p-4 space-y-6"}>
+          {userId && <VerificationStatusBanner userId={userId} />}
+          
           {/* Test Mode Banner */}
           {payoutInfo?.isTestMode && (
             <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950">
@@ -746,7 +751,18 @@ const CreatorDashboard = () => {
           </Card>
 
           {/* Payout Settings */}
-          <PayoutSettings />
+          {userId && (
+            <>
+              <VerificationGate userId={userId} feature="payout settings">
+                <PayoutSettings />
+              </VerificationGate>
+
+              {/* Enhanced Payout Display */}
+              <VerificationGate userId={userId} feature="payout tracking">
+                <EnhancedPayoutDisplay creatorId={userId} />
+              </VerificationGate>
+            </>
+          )}
 
           {/* Recent Posts */}
           {recentPosts.length > 0 && (

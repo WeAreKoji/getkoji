@@ -24,6 +24,7 @@ import CreatorVerifyIdentity from "./pages/CreatorVerifyIdentity";
 import CreatorSetup from "./pages/CreatorSetup";
 import CreatorFeed from "./pages/CreatorFeed";
 import AdminVerifications from "./pages/AdminVerifications";
+import AdminContentModeration from "./pages/AdminContentModeration";
 import Subscriptions from "./pages/Subscriptions";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import SubscriptionCancelled from "./pages/SubscriptionCancelled";
@@ -72,7 +73,8 @@ const AppContent = () => {
                 <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} />
                 <Route path="/creator/setup" element={<CreatorSetup />} />
                 <Route path="/creator/:creatorId" element={<CreatorFeed />} />
-                <Route path="/admin/verifications" element={<AdminVerifications />} />
+            <Route path="/admin/verifications" element={<AdminVerifications />} />
+            <Route path="/admin/content-moderation" element={<AdminContentModeration />} />
                 <Route path="/subscriptions" element={<Subscriptions />} />
                 <Route path="/subscription-success" element={<SubscriptionSuccess />} />
                 <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
