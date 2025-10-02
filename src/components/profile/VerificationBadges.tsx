@@ -1,24 +1,57 @@
-import { BadgeCheck, Mail, Phone, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BadgeCheck, Mail, Phone, Camera, ShieldCheck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface VerificationBadgesProps {
+  userId?: string;
   emailVerified?: boolean;
   phoneVerified?: boolean;
   photoVerified?: boolean;
   isCreator?: boolean;
+  idVerified?: boolean; // Allow manual override
   size?: "sm" | "md" | "lg";
   className?: string;
 }
 
 export const VerificationBadges = ({
+  userId,
   emailVerified = false,
   phoneVerified = false,
   photoVerified = false,
   isCreator = false,
+  idVerified,
   size = "md",
   className
 }: VerificationBadgesProps) => {
+  const [actualIdVerified, setActualIdVerified] = useState(idVerified);
+
+  useEffect(() => {
+    // If idVerified prop is provided, use it
+    if (idVerified !== undefined) {
+      setActualIdVerified(idVerified);
+      return;
+    }
+
+    // If userId is provided and isCreator, fetch id_verified status
+    if (userId && isCreator) {
+      const fetchVerificationStatus = async () => {
+        const { data, error } = await supabase
+          .from("creator_profiles")
+          .select("id_verified")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (!error && data) {
+          setActualIdVerified(data.id_verified);
+        }
+      };
+
+      fetchVerificationStatus();
+    }
+  }, [userId, isCreator, idVerified]);
+
   const sizeClasses = {
     sm: "w-3.5 h-3.5",
     md: "w-4 h-4",
@@ -35,6 +68,12 @@ export const VerificationBadges = ({
       color: "text-primary"
     },
     { 
+      verified: actualIdVerified && isCreator, 
+      icon: ShieldCheck, 
+      label: "ID Verified",
+      color: "text-green-500"
+    },
+    { 
       verified: emailVerified, 
       icon: Mail, 
       label: "Email Verified",
@@ -44,7 +83,7 @@ export const VerificationBadges = ({
       verified: phoneVerified, 
       icon: Phone, 
       label: "Phone Verified",
-      color: "text-green-500"
+      color: "text-orange-500"
     },
     { 
       verified: photoVerified, 

@@ -68,6 +68,7 @@ export default function CreatorVerifyIdentity() {
 
       if (verification) {
         setVerificationStatus(verification.status);
+        setVerificationData(verification);
         if (verification.status === "approved") {
           navigate("/creator/setup");
           return;
@@ -80,7 +81,63 @@ export default function CreatorVerifyIdentity() {
     }
   };
 
+  const handleResubmit = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("creator_id_verification")
+        .delete()
+        .eq("creator_id", user.id);
+
+      if (error) throw error;
+
+      setVerificationStatus(null);
+      setVerificationData(null);
+      setCurrentStep(1);
+      
+      toast({
+        title: "Ready to resubmit",
+        description: "Please submit your verification again.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to prepare resubmission",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const validateFile = (file: File): boolean => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload JPG, PNG, or PDF files only",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: "File too large",
+        description: "Files must be under 10MB",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const uploadFile = async (file: File, path: string): Promise<string> => {
+    // Validate file before upload
+    if (!validateFile(file)) {
+      throw new Error("File validation failed");
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
@@ -213,15 +270,21 @@ export default function CreatorVerifyIdentity() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {verificationData?.rejection_reason && (
+                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm font-medium text-destructive mb-2">Rejection Reason:</p>
+                  <p className="text-sm text-muted-foreground">{verificationData.rejection_reason}</p>
+                </div>
+              )}
               <p className="text-muted-foreground">
-                Please contact support for more information or to resubmit your verification.
+                You can resubmit your verification with corrected documents.
               </p>
               <div className="flex gap-2">
-                <Button onClick={() => navigate("/support")}>
-                  Contact Support
+                <Button onClick={handleResubmit}>
+                  Resubmit Verification
                 </Button>
-                <Button onClick={() => navigate("/discover")} variant="outline">
-                  Back to Discover
+                <Button onClick={() => navigate("/support")} variant="outline">
+                  Contact Support
                 </Button>
               </div>
             </CardContent>
