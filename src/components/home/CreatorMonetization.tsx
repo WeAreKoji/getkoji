@@ -74,7 +74,7 @@ export const CreatorMonetization = () => {
             <Button 
               variant="outline" 
               size="lg"
-              onClick={() => navigate("/creator-application")}
+              onClick={() => navigate("/creator/apply")}
               className="text-base"
             >
               Become a Koji Creator
