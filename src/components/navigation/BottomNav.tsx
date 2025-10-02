@@ -1,29 +1,10 @@
-import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Heart, MessageCircle, User, Sparkles, LayoutDashboard } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const BottomNav = () => {
   const location = useLocation();
-  const [isCreator, setIsCreator] = useState(false);
-
-  useEffect(() => {
-    checkCreatorRole();
-  }, []);
-
-  const checkCreatorRole = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "creator")
-      .single();
-
-    setIsCreator(!!data);
-  };
+  const { isCreator } = useAuth();
 
   const baseNavItems = [
     {
