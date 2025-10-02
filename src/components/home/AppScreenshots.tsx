@@ -25,21 +25,21 @@ export const AppScreenshots = () => {
   ];
 
   return (
-    <section className="py-16 md:py-24 px-4 bg-background">
+    <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-4 bg-background">
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+        <div className="text-center mb-6 sm:mb-8 md:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-foreground">
             See Koji in Action
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             Experience the social discovery platform that's changing how people connect and support creators
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {screenshots.map((screenshot, index) => (
-            <Card key={index} className="p-6 bg-card border-border h-full">
-              <div className="aspect-[9/16] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+            <Card key={index} className="p-4 sm:p-6 bg-card border-border h-full">
+              <div className="aspect-[9/16] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl mb-3 flex items-center justify-center relative overflow-hidden">
                 <img 
                   src="/logo.png" 
                   alt={screenshot.alt}
@@ -47,7 +47,7 @@ export const AppScreenshots = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">
+              <h3 className="text-lg sm:text-xl font-semibold mb-1.5 sm:mb-2 text-foreground">
                 {screenshot.title}
               </h3>
               <p className="text-muted-foreground text-sm">
