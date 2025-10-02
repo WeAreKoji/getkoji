@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, Heart, MessageCircle, TrendingUp } from "lucide-react";
+import { LoadingCard } from "@/components/shared/LoadingCard";
+import { RetryBoundary } from "@/components/shared/RetryBoundary";
 
 interface ProfileAnalyticsProps {
   userId: string;
@@ -71,20 +72,12 @@ export const ProfileAnalytics = ({ userId }: ProfileAnalyticsProps) => {
   };
 
   if (loading) {
-    return (
-      <Card className="p-6">
-        <h3 className="font-semibold mb-4">Profile Insights</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-20" />
-          ))}
-        </div>
-      </Card>
-    );
+    return <LoadingCard showHeader={true} rows={4} />;
   }
 
   return (
-    <Card className="p-6">
+    <RetryBoundary>
+      <Card className="p-6">
       <h3 className="font-semibold mb-4">Profile Insights</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="space-y-2">
@@ -120,5 +113,6 @@ export const ProfileAnalytics = ({ userId }: ProfileAnalyticsProps) => {
         </div>
       </div>
     </Card>
+    </RetryBoundary>
   );
 };

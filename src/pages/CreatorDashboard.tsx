@@ -16,6 +16,8 @@ import { VerificationGate } from "@/components/creator/VerificationGate";
 import { EnhancedPayoutDisplay } from "@/components/creator/EnhancedPayoutDisplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { RetryBoundary } from "@/components/shared/RetryBoundary";
 
 interface CreatorStats {
   subscriberCount: number;
@@ -318,7 +320,7 @@ const CreatorDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <LoadingSpinner size="lg" text="Loading your dashboard..." />
       </div>
     );
   }
@@ -326,8 +328,9 @@ const CreatorDashboard = () => {
   if (!stats) return null;
 
   return (
-    <SafeAreaView bottom={false}>
-      <div className="min-h-screen bg-background pb-20">
+    <RetryBoundary>
+      <SafeAreaView bottom={false}>
+        <div className="min-h-screen bg-background pb-20">
         <div className={isMobile ? "w-full" : "container max-w-4xl mx-auto"}>
           {/* Header */}
           <div className={`sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 ${isMobile ? 'px-3 py-2.5' : 'px-4 py-3'}`}>
@@ -821,6 +824,7 @@ const CreatorDashboard = () => {
         onPostCreated={handlePostCreated}
       />
     </SafeAreaView>
+    </RetryBoundary>
   );
 };
 
