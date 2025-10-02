@@ -192,6 +192,50 @@ export type Database = {
           },
         ]
       }
+      platform_revenue: {
+        Row: {
+          created_at: string | null
+          creator_earnings: number
+          creator_id: string
+          gross_amount: number
+          id: string
+          invoice_id: string
+          platform_commission: number
+          stripe_fee: number
+          subscription_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_earnings: number
+          creator_id: string
+          gross_amount: number
+          id?: string
+          invoice_id: string
+          platform_commission: number
+          stripe_fee: number
+          subscription_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_earnings?: number
+          creator_id?: string
+          gross_amount?: number
+          id?: string
+          invoice_id?: string
+          platform_commission?: number
+          stripe_fee?: number
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_revenue_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_photos: {
         Row: {
           created_at: string | null

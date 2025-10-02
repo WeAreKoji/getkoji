@@ -168,23 +168,55 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         logStep("Payment succeeded", { invoiceId: invoice.id, amount: invoice.amount_paid });
         
-        // Track earnings
-        if (invoice.subscription && invoice.amount_paid) {
+        // Track earnings with 20% platform commission
+        if (invoice.subscription && invoice.amount_paid && invoice.total) {
           const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
           const { data: subData } = await supabase
             .from("subscriptions")
-            .select("creator_id")
+            .select("id, creator_id")
             .eq("stripe_subscription_id", subscription.id)
             .single();
 
           if (subData?.creator_id) {
-            // Stripe takes ~3% fee, platform can take additional percentage
-            // For now: Creator gets 97% (100% - 3% Stripe fee)
-            const creatorEarnings = invoice.amount_paid * 0.97 / 100; // Convert from cents
+            // Revenue split: 20% platform commission
+            const PLATFORM_COMMISSION_RATE = 0.20;
+            
+            const grossAmount = invoice.total / 100; // What customer paid (cents to dollars)
+            const amountPaid = invoice.amount_paid / 100; // What we received after Stripe fees
+            const stripeFee = grossAmount - amountPaid; // Stripe's cut
+            const platformCommission = grossAmount * PLATFORM_COMMISSION_RATE; // 20% of gross
+            const creatorEarnings = grossAmount - stripeFee - platformCommission; // Remainder to creator
+
+            logStep("Revenue split calculated", { 
+              gross: grossAmount, 
+              stripeFee, 
+              platformCommission, 
+              creatorEarnings 
+            });
+
+            // Record platform revenue
+            const { error: revenueError } = await supabase
+              .from("platform_revenue")
+              .insert({
+                subscription_id: subData.id,
+                invoice_id: invoice.id,
+                creator_id: subData.creator_id,
+                gross_amount: grossAmount,
+                stripe_fee: stripeFee,
+                platform_commission: platformCommission,
+                creator_earnings: creatorEarnings
+              });
+
+            if (revenueError) {
+              logStep("Error recording platform revenue", { error: revenueError });
+            }
+
+            // Add earnings to creator profile
             await supabase.rpc("add_creator_earnings", {
               creator_user_id: subData.creator_id,
               amount: creatorEarnings
             });
+            
             logStep("Creator earnings updated", { creatorId: subData.creator_id, amount: creatorEarnings });
           }
         }
