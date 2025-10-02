@@ -43,25 +43,25 @@ export const FAQ = () => {
   ];
 
   return (
-    <section className="py-16 md:py-24 px-4 bg-secondary/5">
+    <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-secondary/5">
       <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+        <div className="text-center mb-8 sm:mb-10 md:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-foreground">
             Frequently Asked Questions
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground px-4">
             Everything you need to know about Koji's social discovery and creator platform
           </p>
         </div>
 
-        <Card className="p-6 md:p-8 bg-card border-border">
+        <Card className="p-4 sm:p-6 md:p-8 bg-card border-border">
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                <AccordionTrigger className="text-left text-sm sm:text-base md:text-lg font-semibold">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -69,8 +69,8 @@ export const FAQ = () => {
           </Accordion>
         </Card>
 
-        <div className="mt-8 text-center">
-          <p className="text-muted-foreground">
+        <div className="mt-6 sm:mt-8 text-center px-4">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Still have questions?{" "}
             <a href="/support" className="text-primary hover:underline font-medium">
               Contact our support team
