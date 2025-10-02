@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
 import PostEditDialog from "@/components/creator/PostEditDialog";
+import { logError } from "@/lib/error-logger";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -129,7 +130,7 @@ const CreatorFeed = () => {
 
       setPosts(postsData || []);
     } catch (error) {
-      console.error("Error fetching creator data:", error);
+      logError(error, 'CreatorFeed.fetchCreatorData');
     } finally {
       setLoading(false);
     }
@@ -144,7 +145,7 @@ const CreatorFeed = () => {
       if (error) throw error;
       setIsSubscribed(data.subscribed);
     } catch (error) {
-      console.error("Error checking subscription:", error);
+      logError(error, 'CreatorFeed.checkSubscription');
     }
   };
 

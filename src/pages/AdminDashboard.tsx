@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AdminStats } from "@/components/admin/AdminStats";
+import { logError } from "@/lib/error-logger";
 
 interface DashboardStats {
   totalUsers: number;
@@ -62,7 +63,7 @@ export default function AdminDashboard() {
         monthlyRevenue: 0, // TODO: Calculate from actual revenue data
       });
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
+      logError(error, 'AdminDashboard.fetchDashboardStats');
     } finally {
       setLoading(false);
     }

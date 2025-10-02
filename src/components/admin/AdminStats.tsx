@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, DollarSign, FileText, AlertTriangle, TrendingUp, Shield } from "lucide-react";
 import { performanceMonitor } from "@/lib/performance-monitor";
+import { logError } from "@/lib/error-logger";
 
 interface AdminStats {
   totalUsers: number;
@@ -132,7 +133,7 @@ export const AdminStats = () => {
           userGrowth,
         });
       } catch (error) {
-        console.error("Error fetching admin stats:", error);
+        logError(error, 'AdminStats.fetchStats');
       } finally {
         setLoading(false);
       }

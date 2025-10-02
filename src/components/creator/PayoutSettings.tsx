@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ExternalLink, CheckCircle, AlertCircle, DollarSign } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface PayoutStatus {
   connected: boolean;
@@ -49,7 +50,7 @@ const PayoutSettings = () => {
       if (error) throw error;
       setCreatorProfile(data);
     } catch (error) {
-      console.error("Error checking verification status:", error);
+      logError(error, 'PayoutSettings.checkVerificationStatus');
     }
   };
 
@@ -61,7 +62,7 @@ const PayoutSettings = () => {
       if (error) throw error;
       setStatus(data);
     } catch (error: any) {
-      console.error("Error checking Connect status:", error);
+      logError(error, 'PayoutSettings.checkConnectStatus');
     } finally {
       setLoading(false);
     }

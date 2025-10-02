@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle, Loader2, Eye, Calendar, User } from "lucide-react";
+import { logError, getUserFriendlyError } from "@/lib/error-logger";
 
 interface Verification {
   id: string;
@@ -78,10 +79,10 @@ export default function AdminVerifications() {
       .order("submitted_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching verifications:", error);
+      logError(error, 'AdminVerifications.fetchVerifications');
       toast({
         title: "Error",
-        description: "Failed to load verifications.",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     } else {
@@ -98,7 +99,7 @@ export default function AdminVerifications() {
       .createSignedUrl(path, 3600); // 1 hour expiry
 
     if (error) {
-      console.error("Error getting signed URL:", error);
+      logError(error, 'AdminVerifications.getSignedUrl');
       return null;
     }
 

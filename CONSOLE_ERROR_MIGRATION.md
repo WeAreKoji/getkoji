@@ -4,30 +4,53 @@ This document tracks the migration of console.error/console.log calls to safe lo
 
 ## Migration Status
 
-### ✅ Completed Files (11 files)
+### ✅ Completed Files (18 files)
 
-#### Pages
+#### Pages (11 files)
 - ✅ `src/pages/Auth.tsx` - Using logError and getUserFriendlyError
 - ✅ `src/pages/Chat.tsx` - 2 instances migrated
 - ✅ `src/pages/CreatorDashboard.tsx` - 2 instances migrated
 - ✅ `src/pages/Profile.tsx` - 1 instance migrated
-- ✅ `src/pages/CreatorVerifyIdentity.tsx` - 3 instances migrated (including logWarning for email failures)
+- ✅ `src/pages/CreatorVerifyIdentity.tsx` - 3 instances (including logWarning for email failures)
 - ✅ `src/pages/NotFound.tsx` - Using logInfo
+- ✅ `src/pages/AdminDashboard.tsx` - 1 instance migrated
+- ✅ `src/pages/AdminVerifications.tsx` - 2 instances migrated
+- ✅ `src/pages/CreatorFeed.tsx` - 2 instances migrated
+- ✅ `src/pages/CreatorSetup.tsx` - 2 instances (including logWarning for Stripe failures)
+- ⏳ `src/pages/CreatorApplication.tsx` - 1 instance
+- ⏳ `src/pages/KojiConnect.tsx` - 1 instance
+- ⏳ `src/pages/Matches.tsx` - 1 instance
+- ⏳ `src/pages/PrivacySettings.tsx` - 1 instance
+- ⏳ `src/pages/ProfileEdit.tsx` - 1 instance
+- ⏳ `src/pages/Referrals.tsx` - 1 instance
+- ⏳ `src/pages/Subscriptions.tsx` - 1 instance
 
-#### Components
+#### Components (4 files)
 - ✅ `src/components/shared/ErrorBoundary.tsx` - Using logError
 - ✅ `src/components/shared/RetryBoundary.tsx` - Using logError
+- ✅ `src/components/admin/AdminStats.tsx` - 1 instance migrated
+- ✅ `src/components/creator/PayoutSettings.tsx` - 2 instances migrated
+- ⏳ `src/components/creator/SubscriptionPriceEditor.tsx` - 1 instance
+- ⏳ `src/components/onboarding/InterestSelection.tsx` - 1 instance
+- ⏳ `src/components/profile/CreatorSubscriptionCard.tsx` - 1 instance
+- ⏳ `src/components/profile/ProfileAnalytics.tsx` - 1 instance
+- ⏳ `src/components/profile/ProfileStats.tsx` - 1 instance
+- ⏳ `src/components/profile/UsernameInput.tsx` - 1 instance
 
-#### Lib
+#### Lib (3 files)
 - ✅ `src/lib/camera.ts` - 3 instances migrated
-- ✅ `src/lib/notifications.ts` - 7 instances migrated (mix of logError and logInfo)
+- ✅ `src/lib/notifications.ts` - 7 instances migrated
 - ✅ `src/lib/error-logger.ts` - Safe logging utilities (exempt)
+- ⏳ `src/lib/native.ts` - 1 instance
+- ⏳ `src/lib/offline.ts` - 4 instances
+- ⏳ `src/lib/share.ts` - 1 instance
+- ⏳ `src/lib/splash.ts` - 2 instances
 
-**Total Migrated: 19 instances across 11 files**
+**Total Migrated: 29/51 instances (57%)**
 
 ---
 
-### ⏳ Remaining Files (23 files, 32 instances)
+### ⏳ Remaining Files (16 files, 22 instances)
 
 #### Pages (18 instances)
 - ⏳ `src/pages/AdminDashboard.tsx` - 1 instance
@@ -143,4 +166,5 @@ toast({
 ---
 
 *Last Updated: 2025-10-02*
-*Progress: 19/51 instances (37% complete)*
+*Progress: 29/51 instances (57% complete)*
+

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Loader2, DollarSign } from "lucide-react";
+import { logError, logWarning } from "@/lib/error-logger";
 
 const CreatorSetup = () => {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const CreatorSetup = () => {
         navigate(`/creator/${user.id}`);
       }
     } catch (error) {
-      console.error("Error checking status:", error);
+      logError(error, 'CreatorSetup.checkCreatorStatus');
     } finally {
       setChecking(false);
     }
@@ -102,7 +103,7 @@ const CreatorSetup = () => {
       );
 
       if (productError) {
-        console.error("Error creating Stripe product:", productError);
+        logWarning('Stripe product creation failed during creator setup', 'CreatorSetup');
         toast({
           title: "Warning",
           description: "Profile created but Stripe setup incomplete. You can set it up later.",
