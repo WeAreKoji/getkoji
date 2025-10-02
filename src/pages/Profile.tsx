@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Edit, Calendar } from "lucide-react";
+import { Loader2, Edit, Calendar, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import BottomNav from "@/components/navigation/BottomNav";
@@ -15,6 +15,9 @@ import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { ProfilePreviewModal } from "@/components/profile/ProfilePreviewModal";
 import { ProfileAnalytics } from "@/components/profile/ProfileAnalytics";
 import { ReferralCard } from "@/components/profile/ReferralCard";
+import { ProfileCompleteness } from "@/components/profile/ProfileCompleteness";
+import { ProfileAccordion } from "@/components/profile/ProfileAccordion";
+import { CreatorSubscriptionCard } from "@/components/profile/CreatorSubscriptionCard";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +33,8 @@ interface Profile {
   bio: string | null;
   avatar_url: string | null;
   intent: string;
+  created_at?: string;
+  privacy_settings?: any;
 }
 
 interface Photo {
@@ -221,34 +226,74 @@ const Profile = () => {
           {/* Content */}
           <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-4xl mx-auto px-6 py-6"}>
             {isMobile ? (
-              // Mobile: Single column layout
+              // Mobile: Single column layout with accordion
               <div className="space-y-4">
-                {isCreator && <ProfileStats userId={profile.id} isCreator={isCreator} />}
-                
-                {!isOwnProfile && (
-                  <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                {/* Profile Completeness for own profile */}
+                {isOwnProfile && (
+                  <ProfileCompleteness
+                    profile={profile}
+                    photosCount={photos.length}
+                    interestsCount={interests.length}
+                  />
                 )}
 
-                {isOwnProfile && (
-                  <>
+                {/* Creator Subscription Card for visitors */}
+                {!isOwnProfile && isCreator && (
+                  <CreatorSubscriptionCard creatorId={profile.id} isOwnProfile={false} />
+                )}
+
+                {/* Action Buttons */}
+                {!isOwnProfile ? (
+                  <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="outline"
+                      size="default"
+                      onClick={() => setShowPreview(true)}
+                      className="h-11"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview
+                    </Button>
                     <Link to="/profile/edit" className="block">
-                      <Button size="default" className="w-full h-11 text-sm font-semibold">
+                      <Button size="default" className="w-full h-11">
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Profile
                       </Button>
                     </Link>
-                    
-                    {isCreator && <ReferralCard userId={profile.id} />}
-                    
+                  </div>
+                )}
+
+                {/* Referral & Analytics for own profile */}
+                {isOwnProfile && (
+                  <>
+                    <ReferralCard userId={profile.id} />
                     <ProfileAnalytics userId={profile.id} />
                   </>
                 )}
 
-                <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
+                {/* Mobile Accordion */}
+                <ProfileAccordion
+                  bio={profile.bio}
+                  intent={profile.intent}
+                  interests={interests}
+                  photos={photos}
+                  isCreator={isCreator}
+                />
               </div>
             ) : (
               // Desktop: Modern layout with tabs
               <div className="space-y-4">
+                {/* Profile Completeness for own profile */}
+                {isOwnProfile && (
+                  <ProfileCompleteness
+                    profile={profile}
+                    photosCount={photos.length}
+                    interestsCount={interests.length}
+                  />
+                )}
+
                 {/* Info Bar with Member Since, Stats, and Action Button */}
                 <ProfileInfoBar
                   memberSince={memberSince}
@@ -268,10 +313,11 @@ const Profile = () => {
                         size="sm"
                         onClick={() => setShowPreview(true)}
                       >
+                        <Eye className="w-4 h-4 mr-2" />
                         View as Public
                       </Button>
                       <Link to="/profile/edit">
-                        <Button variant="hero" size="lg" className="h-11 px-6 text-sm font-semibold">
+                        <Button size="lg" className="h-11 px-6 text-sm font-semibold">
                           <Edit className="w-4 h-4 mr-2" />
                           Edit Profile
                         </Button>
@@ -279,6 +325,11 @@ const Profile = () => {
                     </div>
                   )}
                 </ProfileInfoBar>
+
+                {/* Creator Subscription Card for visitors */}
+                {!isOwnProfile && isCreator && (
+                  <CreatorSubscriptionCard creatorId={profile.id} isOwnProfile={false} />
+                )}
 
                 {/* Referral Card for own profile */}
                 {isOwnProfile && <ReferralCard userId={profile.id} />}

@@ -270,16 +270,17 @@ const ProfileEdit = () => {
           </Card>
 
           {/* Basic Info */}
-          <Card className="p-6 space-y-4">
-            <h3 className="font-semibold">Basic Information</h3>
+          <Card className="p-4 md:p-6 space-y-4">
+            <h3 className="font-semibold text-base md:text-lg">Basic Information</h3>
 
             <div className="space-y-2">
-              <Label htmlFor="displayName">Display Name</Label>
+              <Label htmlFor="displayName" className="text-sm md:text-base">Display Name</Label>
               <Input
                 id="displayName"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Your name"
+                className="h-11 md:h-10"
               />
             </div>
 
@@ -289,9 +290,9 @@ const ProfileEdit = () => {
               currentUsername={username}
             />
 
-            <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
+                <Label htmlFor="age" className="text-sm md:text-base">Age</Label>
                 <Input
                   id="age"
                   type="number"
@@ -299,22 +300,24 @@ const ProfileEdit = () => {
                   max="120"
                   value={age}
                   onChange={(e) => setAge(parseInt(e.target.value) || 18)}
+                  className="h-11 md:h-10"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city" className="text-sm md:text-base">City</Label>
                 <Input
                   id="city"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Your city"
+                  className="h-11 md:h-10"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio" className="text-sm md:text-base">Bio</Label>
               <Textarea
                 id="bio"
                 value={bio}
@@ -322,6 +325,7 @@ const ProfileEdit = () => {
                 placeholder="Tell others about yourself..."
                 rows={4}
                 maxLength={500}
+                className="text-base min-h-[100px] md:min-h-[80px]"
               />
               <p className="text-xs text-muted-foreground text-right">
                 {bio.length}/500
@@ -330,9 +334,9 @@ const ProfileEdit = () => {
           </Card>
 
           {/* Interests */}
-          <Card className="p-6 space-y-4">
+          <Card className="p-4 md:p-6 space-y-4">
             <div>
-              <h3 className="font-semibold mb-1">Interests</h3>
+              <h3 className="font-semibold mb-1 text-base md:text-lg">Interests</h3>
               <p className="text-sm text-muted-foreground">
                 {selectedInterestIds.length} selected (minimum 5)
               </p>
@@ -342,12 +346,13 @@ const ProfileEdit = () => {
               placeholder="Search interests..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-11 md:h-10"
             />
 
-            <div className="max-h-[400px] overflow-y-auto space-y-4">
+            <div className="space-y-4 max-h-[500px] md:max-h-[400px] overflow-y-auto">
               {Object.entries(groupedInterests).map(([category, interests]) => (
                 <div key={category}>
-                  <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2">
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2 sticky top-0 bg-background py-1">
                     {category}
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -357,7 +362,7 @@ const ProfileEdit = () => {
                         <Badge
                           key={interest.id}
                           variant={isSelected ? "default" : "outline"}
-                          className="cursor-pointer"
+                          className="cursor-pointer touch-manipulation h-9 md:h-auto px-3 md:px-2.5 text-sm md:text-xs"
                           onClick={() => toggleInterest(interest.id)}
                         >
                           {interest.name}
