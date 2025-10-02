@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,15 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check for referral code in URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+    if (refCode) {
+      localStorage.setItem("referral_code", refCode);
+    }
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +60,7 @@ const Auth = () => {
           }
         }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -60,6 +69,28 @@ const Auth = () => {
         });
 
         if (error) throw error;
+
+        // Track referral if exists
+        const refCode = localStorage.getItem("referral_code");
+        if (refCode && data.user) {
+          // Find referrer by code
+          const { data: referralData } = await supabase
+            .from("referral_codes")
+            .select("user_id")
+            .eq("code", refCode)
+            .maybeSingle();
+
+          if (referralData) {
+            // Create referral record
+            await supabase.from("referrals").insert({
+              referrer_id: referralData.user_id,
+              referred_user_id: data.user.id,
+              referral_code: refCode,
+              status: "pending"
+            });
+          }
+          localStorage.removeItem("referral_code");
+        }
 
         toast({
           title: "Account created!",

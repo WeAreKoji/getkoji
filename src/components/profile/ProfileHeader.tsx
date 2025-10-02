@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, MoreVertical, Edit, CreditCard, LayoutDashboard, Settings, Share2 } from "lucide-react";
+import { ArrowLeft, MoreVertical, Edit, CreditCard, LayoutDashboard, Settings, Share2, Gift, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -92,6 +92,18 @@ export const ProfileHeader = ({ isOwnProfile, isCreator, userId, username, displ
               </>
             )}
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/referrals" className="flex items-center cursor-pointer" onClick={() => haptics.light()}>
+                <Gift className="w-4 h-4 mr-2" />
+                Referrals
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/settings/privacy" className="flex items-center cursor-pointer" onClick={() => haptics.light()}>
+                <Shield className="w-4 h-4 mr-2" />
+                Privacy
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/support" className="flex items-center cursor-pointer" onClick={() => haptics.light()}>
                 <Settings className="w-4 h-4 mr-2" />

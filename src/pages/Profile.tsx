@@ -11,6 +11,10 @@ import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ProfileActions } from "@/components/profile/ProfileActions";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
 import { ProfileInfoBar } from "@/components/profile/ProfileInfoBar";
+import { ProfileTabs } from "@/components/profile/ProfileTabs";
+import { ProfilePreviewModal } from "@/components/profile/ProfilePreviewModal";
+import { ProfileAnalytics } from "@/components/profile/ProfileAnalytics";
+import { ReferralCard } from "@/components/profile/ReferralCard";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -53,6 +57,7 @@ const Profile = () => {
   const [memberSince, setMemberSince] = useState<string>("");
   const [stats, setStats] = useState<{ subscribers?: number; posts?: number; earnings?: number }>({});
   const [statsLoading, setStatsLoading] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -104,6 +109,16 @@ const Profile = () => {
 
   const fetchProfile = async (profileId: string) => {
     try {
+      // Track profile view
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && user.id !== profileId) {
+        // Track view (fire and forget)
+        supabase.from("profile_views").insert({
+          profile_id: profileId,
+          viewer_id: user.id
+        }).then();
+      }
+
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
@@ -215,18 +230,24 @@ const Profile = () => {
                 )}
 
                 {isOwnProfile && (
-                  <Link to="/profile/edit" className="block">
-                    <Button size="default" className="w-full h-11 text-sm font-semibold">
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                  </Link>
+                  <>
+                    <Link to="/profile/edit" className="block">
+                      <Button size="default" className="w-full h-11 text-sm font-semibold">
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Profile
+                      </Button>
+                    </Link>
+                    
+                    {isCreator && <ReferralCard userId={profile.id} />}
+                    
+                    <ProfileAnalytics userId={profile.id} />
+                  </>
                 )}
 
                 <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
               </div>
             ) : (
-              // Desktop: Single column modern layout
+              // Desktop: Modern layout with tabs
               <div className="space-y-4">
                 {/* Info Bar with Member Since, Stats, and Action Button */}
                 <ProfileInfoBar
@@ -241,20 +262,52 @@ const Profile = () => {
                   {!isOwnProfile ? (
                     <ProfileActions userId={profile.id} displayName={profile.display_name} />
                   ) : (
-                    <Link to="/profile/edit">
-                      <Button variant="hero" size="lg" className="h-11 px-6 text-sm font-semibold">
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit Profile
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowPreview(true)}
+                      >
+                        View as Public
                       </Button>
-                    </Link>
+                      <Link to="/profile/edit">
+                        <Button variant="hero" size="lg" className="h-11 px-6 text-sm font-semibold">
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Profile
+                        </Button>
+                      </Link>
+                    </div>
                   )}
                 </ProfileInfoBar>
 
-                {/* Profile Info - About, Looking For, Interests */}
-                <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
+                {/* Referral Card for own profile */}
+                {isOwnProfile && <ReferralCard userId={profile.id} />}
+                
+                {/* Analytics for own profile */}
+                {isOwnProfile && <ProfileAnalytics userId={profile.id} />}
+
+                {/* Profile Tabs - About, Photos, Posts */}
+                <ProfileTabs
+                  bio={profile.bio}
+                  intent={profile.intent}
+                  interests={interests}
+                  photos={photos}
+                  isCreator={isCreator}
+                  userId={profile.id}
+                />
               </div>
             )}
           </div>
+
+          {/* Preview Modal */}
+          <ProfilePreviewModal
+            open={showPreview}
+            onOpenChange={setShowPreview}
+            profile={profile}
+            photos={photos}
+            interests={interests}
+            isCreator={isCreator}
+          />
 
           {isMobile && <BottomNav />}
         </div>

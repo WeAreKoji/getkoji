@@ -32,6 +32,8 @@ import Terms from "./pages/Terms";
 import Community from "./pages/Community";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import Referrals from "./pages/Referrals";
+import PrivacySettings from "./pages/PrivacySettings";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,8 @@ const AppContent = () => {
                 <Route path="/subscription-success" element={<SubscriptionSuccess />} />
                 <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
                 <Route path="/creator/dashboard" element={<CreatorDashboard />} />
+                <Route path="/referrals" element={<Referrals />} />
+                <Route path="/settings/privacy" element={<PrivacySettings />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
@@ -101,6 +105,8 @@ const AppContent = () => {
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
           <Route path="/creator/dashboard" element={<CreatorDashboard />} />
+          <Route path="/referrals" element={<Referrals />} />
+          <Route path="/settings/privacy" element={<PrivacySettings />} />
           <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />

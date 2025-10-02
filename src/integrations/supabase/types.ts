@@ -319,6 +319,27 @@ export type Database = {
           },
         ]
       }
+      profile_views: {
+        Row: {
+          id: string
+          profile_id: string
+          viewed_at: string | null
+          viewer_id: string | null
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          viewed_at?: string | null
+          viewer_id?: string | null
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          viewed_at?: string | null
+          viewer_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number
@@ -330,6 +351,7 @@ export type Database = {
           email: string
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
+          privacy_settings: Json | null
           updated_at: string | null
           username: string | null
           username_updated_at: string | null
@@ -344,6 +366,7 @@ export type Database = {
           email: string
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
+          privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
           username_updated_at?: string | null
@@ -358,9 +381,102 @@ export type Database = {
           email?: string
           id?: string
           intent?: Database["public"]["Enums"]["user_intent"]
+          privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
           username_updated_at?: string | null
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          amount: number
+          claimed_at: string | null
+          created_at: string | null
+          id: string
+          referral_id: string | null
+          reward_type: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_id?: string | null
+          reward_type: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_id?: string | null
+          reward_type?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          referral_code: string
+          referred_user_id: string
+          referrer_id: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_code: string
+          referred_user_id: string
+          referrer_id: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_code?: string
+          referred_user_id?: string
+          referrer_id?: string
+          status?: string | null
         }
         Relationships: []
       }
@@ -454,6 +570,30 @@ export type Database = {
           },
         ]
       }
+      user_credits: {
+        Row: {
+          balance: number
+          id: string
+          total_earned: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          id?: string
+          total_earned?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          id?: string
+          total_earned?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_interests: {
         Row: {
           created_at: string | null
@@ -532,9 +672,17 @@ export type Database = {
         Args: { desired_username: string }
         Returns: boolean
       }
+      complete_referral: {
+        Args: { referral_uuid: string }
+        Returns: undefined
+      }
       decrement_subscriber_count: {
         Args: { creator_user_id: string }
         Returns: undefined
+      }
+      generate_referral_code: {
+        Args: { user_username: string }
+        Returns: string
       }
       get_discover_profiles: {
         Args: { max_count?: number; user_id: string }
@@ -548,6 +696,7 @@ export type Database = {
           email: string
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
+          privacy_settings: Json | null
           updated_at: string | null
           username: string | null
           username_updated_at: string | null

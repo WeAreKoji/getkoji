@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users, Home, User, LayoutDashboard } from "lucide-react";
+import { Heart, Sparkles, Users, Home, User, LayoutDashboard, Gift } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ const mainItems = [
   { title: "Discover", url: "/discover", icon: Sparkles },
   { title: "Matches", url: "/matches", icon: Heart },
   { title: "Creators", url: "/creators", icon: Users },
+  { title: "Referrals", url: "/referrals", icon: Gift },
   { title: "Profile", url: "/profile", icon: User },
 ];
 
