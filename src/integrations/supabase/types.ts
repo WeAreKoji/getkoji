@@ -412,6 +412,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      request_creator_role: {
+        Args: { application_text: string }
+        Returns: Json
+      }
     }
     Enums: {
       user_intent: "support_creators" | "make_friends" | "open_to_dating"

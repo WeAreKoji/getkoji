@@ -26,17 +26,21 @@ const PostCreationDialog = ({
   const { toast } = useToast();
   const [content, setContent] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaType, setMediaType] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setMediaUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    // Store the file for upload
+    setSelectedFile(file);
+    
+    // Show preview using object URL
+    const objectUrl = URL.createObjectURL(file);
+    setMediaUrl(objectUrl);
+    setMediaType(file.type.startsWith('video/') ? 'video' : 'image');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,11 +61,35 @@ const PostCreationDialog = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      let uploadedMediaUrl = null;
+      
+      // Upload file to storage if media exists
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("creator-content")
+          .upload(fileName, selectedFile, {
+            contentType: selectedFile.type,
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from("creator-content")
+          .getPublicUrl(uploadData.path);
+
+        uploadedMediaUrl = publicUrl;
+      }
+
       const { error } = await supabase.from("creator_posts").insert({
         creator_id: user.id,
         content,
-        media_url: mediaUrl || null,
-        media_type: mediaUrl ? "image" : null,
+        media_url: uploadedMediaUrl,
+        media_type: mediaType,
       });
 
       if (error) throw error;
@@ -73,6 +101,9 @@ const PostCreationDialog = ({
 
       setContent("");
       setMediaUrl("");
+      setMediaType(null);
+      setSelectedFile(null);
+      onOpenChange(false);
       onPostCreated();
     } catch (error: any) {
       toast({

@@ -65,19 +65,18 @@ const CreatorApplication = () => {
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      // Call the secure database function to grant creator role
+      const { data, error } = await supabase.rpc("request_creator_role", {
+        application_text: application,
+      });
 
-      // For MVP: Automatically approve and create creator role
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({
-          user_id: user.id,
-          role: "creator",
-          verified_at: new Date().toISOString(),
-        });
+      if (error) throw error;
 
-      if (roleError) throw roleError;
+      const result = data as { success: boolean; message?: string } | null;
+      
+      if (!result?.success) {
+        throw new Error(result?.message || "Failed to grant creator role");
+      }
 
       toast({
         title: "Application approved! 🎉",
