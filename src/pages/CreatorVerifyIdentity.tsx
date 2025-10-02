@@ -16,10 +16,16 @@ import { cn } from "@/lib/utils";
 export default function CreatorVerifyIdentity() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // File validation constants
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+  
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [step, setStep] = useState(1);
   const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
+  const [verificationData, setVerificationData] = useState<any>(null);
 
   // Form data
   const [documentType, setDocumentType] = useState("");
@@ -95,7 +101,7 @@ export default function CreatorVerifyIdentity() {
 
       setVerificationStatus(null);
       setVerificationData(null);
-      setCurrentStep(1);
+      setStep(1);
       
       toast({
         title: "Ready to resubmit",
