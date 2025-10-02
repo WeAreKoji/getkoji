@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Eye, Heart, MessageCircle, TrendingUp } from "lucide-react";
 import { LoadingCard } from "@/components/shared/LoadingCard";
 import { RetryBoundary } from "@/components/shared/RetryBoundary";
+import { logError } from "@/lib/error-logger";
 
 interface ProfileAnalyticsProps {
   userId: string;
@@ -65,7 +66,7 @@ export const ProfileAnalytics = ({ userId }: ProfileAnalyticsProps) => {
         responseRate: 75, // Placeholder - would need message data
       });
     } catch (error) {
-      console.error("Error fetching analytics:", error);
+      logError(error, 'ProfileAnalytics.fetchAnalytics');
     } finally {
       setLoading(false);
     }

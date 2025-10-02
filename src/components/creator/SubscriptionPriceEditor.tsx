@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logWarning } from "@/lib/error-logger";
 
 interface SubscriptionPriceEditorProps {
   open: boolean;
@@ -63,7 +64,7 @@ const SubscriptionPriceEditor = ({
       );
 
       if (productError) {
-        console.error("Error creating Stripe product:", productError);
+        logWarning(`Stripe product creation failed: ${JSON.stringify(productError)}`, 'SubscriptionPriceEditor.handleSave');
         toast({
           title: "Warning",
           description: "Price updated but Stripe setup incomplete. New subscribers may not work until resolved.",

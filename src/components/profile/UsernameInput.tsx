@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/lib/error-logger";
 
 interface UsernameInputProps {
   value: string;
@@ -56,7 +57,7 @@ export const UsernameInput = ({ value, onChange, currentUsername }: UsernameInpu
           setError("Username is already taken");
         }
       } catch (err) {
-        console.error("Error checking username:", err);
+        logError(err, 'UsernameInput.checkAvailability');
         setError("Could not verify username");
         setIsAvailable(false);
       } finally {

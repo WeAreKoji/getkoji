@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Search } from "lucide-react";
+import { logError } from "@/lib/error-logger";
 
 interface Interest {
   id: string;
@@ -50,7 +51,7 @@ const InterestSelection = ({ selectedInterests: initialSelected, onNext }: Inter
       setInterests(data || []);
       setFilteredInterests(data || []);
     } catch (error) {
-      console.error("Error fetching interests:", error);
+      logError(error, 'InterestSelection.fetchInterests');
     } finally {
       setLoading(false);
     }

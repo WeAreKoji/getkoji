@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logError } from "@/lib/error-logger";
 import {
   Select,
   SelectContent,
@@ -70,7 +71,7 @@ const PrivacySettings = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching privacy settings:", error);
+      logError(error, 'PrivacySettings.fetchSettings');
     } finally {
       setLoading(false);
     }

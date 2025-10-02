@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
+import { logError, getUserFriendlyError } from "@/lib/error-logger";
 
 interface Subscription {
   id: string;
@@ -81,10 +82,10 @@ const Subscriptions = () => {
 
       setSubscriptions(enrichedData);
     } catch (error) {
-      console.error("Error fetching subscriptions:", error);
+      logError(error, 'Subscriptions.fetchSubscriptions');
       toast({
         title: "Error",
-        description: "Failed to load subscriptions",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     } finally {

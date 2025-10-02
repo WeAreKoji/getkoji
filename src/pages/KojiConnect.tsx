@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import BottomNav from "@/components/navigation/BottomNav";
+import { logError } from "@/lib/error-logger";
 
 interface CreatorReferral {
   id: string;
@@ -133,7 +134,7 @@ const KojiConnect = () => {
         nextPayout: pendingAmount >= 25 ? pendingAmount : 0,
       });
     } catch (error) {
-      console.error("Error fetching data:", error);
+      logError(error, 'KojiConnect.fetchData');
     } finally {
       setLoading(false);
     }

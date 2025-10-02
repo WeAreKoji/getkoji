@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Users, FileText, DollarSign } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { logError } from "@/lib/error-logger";
 
 interface ProfileStatsProps {
   userId: string;
@@ -48,7 +49,7 @@ export const ProfileStats = ({ userId, isCreator }: ProfileStatsProps) => {
         });
       }
     } catch (error) {
-      console.error("Error fetching stats:", error);
+      logError(error, 'ProfileStats.fetchStats');
     } finally {
       setLoading(false);
     }

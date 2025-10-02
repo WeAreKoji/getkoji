@@ -11,6 +11,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoUpload from "@/components/profile/PhotoUpload";
 import { UsernameInput } from "@/components/profile/UsernameInput";
+import { logError } from "@/lib/error-logger";
 
 interface Photo {
   id?: string;
@@ -91,7 +92,7 @@ const ProfileEdit = () => {
 
       setSelectedInterestIds(userInterests?.map((ui) => ui.interest_id) || []);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      logError(error, 'ProfileEdit.fetchProfile');
     } finally {
       setLoading(false);
     }

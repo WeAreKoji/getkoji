@@ -10,6 +10,7 @@ import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import BottomNav from "@/components/navigation/BottomNav";
 import { KojiConnectCard } from "@/components/referrals/KojiConnectCard";
+import { logError } from "@/lib/error-logger";
 
 interface ReferralStats {
   totalReferrals: number;
@@ -132,7 +133,7 @@ const Referrals = () => {
         pendingCommission: pendingCommissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0,
       });
     } catch (error) {
-      console.error("Error fetching referral data:", error);
+      logError(error, 'Referrals.fetchReferralData');
     } finally {
       setLoading(false);
     }

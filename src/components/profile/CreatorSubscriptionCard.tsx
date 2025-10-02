@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { logError } from "@/lib/error-logger";
 
 interface CreatorSubscriptionCardProps {
   creatorId: string;
@@ -65,7 +66,7 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
         }
       }
     } catch (error) {
-      console.error("Error fetching creator data:", error);
+      logError(error, 'CreatorSubscriptionCard.fetchCreatorData');
     } finally {
       setLoading(false);
     }

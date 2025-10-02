@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Loader2, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { logError } from "@/lib/error-logger";
 
 const CreatorApplication = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const CreatorApplication = () => {
         });
       }
     } catch (error) {
-      console.error("Error checking creator status:", error);
+      logError(error, 'CreatorApplication.checkCreatorStatus');
     } finally {
       setChecking(false);
     }

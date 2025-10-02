@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { performanceMonitor } from "@/lib/performance-monitor";
+import { logError } from "@/lib/error-logger";
 
 interface CreatorAnalytics {
   subscriberCount: number;
@@ -143,7 +144,7 @@ export const useCreatorAnalytics = (creatorId: string | null) => {
           });
         } catch (err: any) {
           setError(err.message);
-          console.error("Error fetching creator analytics:", err);
+          logError(err, 'useCreatorAnalytics.fetchAnalytics');
           throw err;
         } finally {
           setLoading(false);

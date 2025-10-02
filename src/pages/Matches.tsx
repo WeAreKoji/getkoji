@@ -6,6 +6,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import { Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
+import { logError } from "@/lib/error-logger";
 
 interface Match {
   id: string;
@@ -96,7 +97,7 @@ const Matches = () => {
 
       setMatches(matchesWithProfiles);
     } catch (error) {
-      console.error("Error fetching matches:", error);
+      logError(error, 'Matches.fetchMatches');
     } finally {
       setLoading(false);
     }
