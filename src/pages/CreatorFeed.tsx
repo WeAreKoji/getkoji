@@ -4,10 +4,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Plus, Lock, ExternalLink } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Lock, ExternalLink, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
+import PostEditDialog from "@/components/creator/PostEditDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CreatorProfile {
   id: string;
@@ -42,6 +53,10 @@ const CreatorFeed = () => {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [managingPortal, setManagingPortal] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const SUBSCRIPTION_TIERS = [
     { priceId: "price_1SDisJEQjcZdgqoDhPvzRh33", amount: 5 },
@@ -200,6 +215,51 @@ const CreatorFeed = () => {
     }
   };
 
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post);
+    setShowEditDialog(true);
+  };
+
+  const handlePostUpdated = () => {
+    setShowEditDialog(false);
+    setEditingPost(null);
+    fetchCreatorData();
+  };
+
+  const handleDeleteClick = (postId: string) => {
+    setDeletingPostId(postId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingPostId) return;
+
+    try {
+      const { error } = await supabase
+        .from("creator_posts")
+        .delete()
+        .eq("id", deletingPostId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Post deleted",
+        description: "Your post has been removed",
+      });
+
+      fetchCreatorData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteDialog(false);
+      setDeletingPostId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -312,7 +372,27 @@ const CreatorFeed = () => {
             </div>
           ) : (
             posts.map((post) => (
-                <Card key={post.id} className="p-4">
+              <Card key={post.id} className="p-4">
+                {isOwnProfile && (
+                  <div className="flex gap-2 justify-end mb-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditPost(post)}
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteClick(post.id)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                )}
                 {!isSubscribed && !isOwnProfile ? (
                   <div className="relative">
                     <div className="filter blur-lg">
@@ -382,6 +462,30 @@ const CreatorFeed = () => {
         onOpenChange={setShowPostDialog}
         onPostCreated={handlePostCreated}
       />
+
+      <PostEditDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onPostUpdated={handlePostUpdated}
+        post={editingPost}
+      />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
