@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, X, MapPin, Sparkles, LogOut } from "lucide-react";
+import BottomNav from "@/components/navigation/BottomNav";
 
 interface Profile {
   id: string;
@@ -122,7 +123,7 @@ const Discover = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4 pb-24">
       <div className="container mx-auto max-w-md">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gradient-hero">Koji</h1>
@@ -190,6 +191,8 @@ const Discover = () => {
           {profiles.length - currentIndex - 1} profiles remaining
         </p>
       </div>
+      
+      <BottomNav />
     </div>
   );
 };
