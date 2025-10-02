@@ -111,11 +111,16 @@ const Discover = () => {
 
   if (!currentProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
-        <div className="text-center">
-          <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary" />
-          <h2 className="text-2xl font-bold mb-2">No more profiles!</h2>
-          <p className="text-muted-foreground mb-6">Check back later for new matches.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4">
+        <div className="text-center max-w-md">
+          <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary animate-pulse" />
+          <h2 className="text-2xl font-bold mb-2">You're Early! 🎉</h2>
+          <p className="text-muted-foreground mb-4">
+            No other profiles are available right now. You're one of the first members!
+          </p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Check back soon as more people join the community, or invite friends to get started.
+          </p>
           <Button onClick={() => navigate("/")} variant="hero">
             Back to Home
           </Button>
