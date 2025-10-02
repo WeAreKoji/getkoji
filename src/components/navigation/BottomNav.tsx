@@ -62,9 +62,7 @@ const BottomNav = () => {
             </Link>
           );
         })}
-        <div className="flex flex-col items-center justify-center flex-1 h-full">
-          <NotificationCenter />
-        </div>
+        <NotificationCenter variant="nav" />
       </div>
     </nav>
   );
