@@ -49,7 +49,7 @@ const AppContent = () => {
   const isMobile = useIsMobile();
 
   return (
-    <BrowserRouter>
+    <>
       {!isMobile ? (
         <SidebarProvider defaultOpen={true}>
           <div className="flex min-h-screen w-full">
@@ -141,10 +141,39 @@ const AppContent = () => {
           <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} />
           <Route path="/creator/setup" element={<CreatorSetup />} />
           <Route path="/creator/:creatorId" element={<CreatorFeed />} />
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute requireAdmin>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/verifications" element={
+            <ProtectedRoute requireAdmin>
+              <AdminVerifications />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/content-moderation" element={
+            <ProtectedRoute requireAdmin>
+              <AdminContentModeration />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/audit-logs" element={
+            <ProtectedRoute requireAdmin>
+              <AdminAuditLogs />
+            </ProtectedRoute>
+          } />
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
-          <Route path="/creator/dashboard" element={<CreatorDashboard />} />
+          <Route path="/creator/dashboard" element={
+            <ProtectedRoute requireCreator>
+              <CreatorDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/creator/subscribers" element={
+            <ProtectedRoute requireCreator>
+              <SubscriberManagement />
+            </ProtectedRoute>
+          } />
           <Route path="/referrals" element={<Referrals />} />
           <Route path="/koji-connect" element={<KojiConnect />} />
           <Route path="/settings/privacy" element={<PrivacySettings />} />
@@ -156,23 +185,25 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}
-    </BrowserRouter>
+    </>
   );
 };
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <AuthProvider>
-          <TooltipProvider>
-            <OfflineIndicator />
-            <Toaster />
-            <Sonner />
-            <AppContent />
-          </TooltipProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <BrowserRouter>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <TooltipProvider>
+              <OfflineIndicator />
+              <Toaster />
+              <Sonner />
+              <AppContent />
+            </TooltipProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };

@@ -9,12 +9,15 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
 import logo from "@/assets/logo.png";
+import { validateAuthSignup, validateAuthLogin } from "@/lib/auth-validation";
+import { logError, getUserFriendlyError } from "@/lib/error-logger";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,6 +32,18 @@ const Auth = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+    
+    // Validate inputs
+    const validation = isLogin 
+      ? validateAuthLogin(email, password)
+      : validateAuthSignup(email, password);
+    
+    if (!validation.success) {
+      setErrors(validation.errors || {});
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -99,9 +114,10 @@ const Auth = () => {
         navigate("/onboarding");
       }
     } catch (error: any) {
+      logError(error, 'Auth');
       toast({
         title: "Error",
-        description: error.message,
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -137,9 +153,16 @@ const Auth = () => {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors({ ...errors, email: undefined });
+                }}
                 required
+                className={errors.email ? "border-destructive" : ""}
               />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -147,12 +170,18 @@ const Auth = () => {
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={isLogin ? "••••••••" : "Min. 8 chars, 1 uppercase, 1 number"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) setErrors({ ...errors, password: undefined });
+                }}
                 required
-                minLength={6}
+                className={errors.password ? "border-destructive" : ""}
               />
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password}</p>
+              )}
             </div>
 
             <Button
