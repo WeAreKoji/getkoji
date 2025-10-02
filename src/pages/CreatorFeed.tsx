@@ -266,16 +266,25 @@ const CreatorFeed = () => {
             </div>
           ) : (
             posts.map((post) => (
-              <Card key={post.id} className="p-4">
+                <Card key={post.id} className="p-4">
                 {!isSubscribed && !isOwnProfile ? (
                   <div className="relative">
                     <div className="filter blur-lg">
                       {post.media_url && (
-                        <img
-                          src={post.media_url}
-                          alt="Locked content"
-                          className="w-full aspect-video object-cover rounded-lg mb-3"
-                        />
+                        <>
+                          {post.media_type === 'video' ? (
+                            <video
+                              src={post.media_url}
+                              className="w-full aspect-video object-cover rounded-lg mb-3"
+                            />
+                          ) : (
+                            <img
+                              src={post.media_url}
+                              alt="Locked content"
+                              className="w-full aspect-video object-cover rounded-lg mb-3"
+                            />
+                          )}
+                        </>
                       )}
                       <p className="text-foreground">{post.content}</p>
                     </div>
@@ -292,11 +301,21 @@ const CreatorFeed = () => {
                 ) : (
                   <>
                     {post.media_url && (
-                      <img
-                        src={post.media_url}
-                        alt="Post media"
-                        className="w-full aspect-video object-cover rounded-lg mb-3"
-                      />
+                      <>
+                        {post.media_type === 'video' ? (
+                          <video
+                            src={post.media_url}
+                            controls
+                            className="w-full aspect-video object-cover rounded-lg mb-3"
+                          />
+                        ) : (
+                          <img
+                            src={post.media_url}
+                            alt="Post media"
+                            className="w-full aspect-video object-cover rounded-lg mb-3"
+                          />
+                        )}
+                      </>
                     )}
                     <p className="text-foreground mb-2">{post.content}</p>
                     <p className="text-xs text-muted-foreground">

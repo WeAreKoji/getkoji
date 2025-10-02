@@ -34,6 +34,17 @@ const PostCreationDialog = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Store the file for upload
     setSelectedFile(file);
     
@@ -41,6 +52,15 @@ const PostCreationDialog = ({
     const objectUrl = URL.createObjectURL(file);
     setMediaUrl(objectUrl);
     setMediaType(file.type.startsWith('video/') ? 'video' : 'image');
+  };
+
+  const handleRemoveMedia = () => {
+    if (mediaUrl && mediaUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(mediaUrl);
+    }
+    setMediaUrl("");
+    setMediaType(null);
+    setSelectedFile(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,6 +119,11 @@ const PostCreationDialog = ({
         description: "Your content has been published",
       });
 
+      // Clean up object URL
+      if (mediaUrl && mediaUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(mediaUrl);
+      }
+
       setContent("");
       setMediaUrl("");
       setMediaType(null);
@@ -129,17 +154,25 @@ const PostCreationDialog = ({
             <Label>Photo/Video (Optional)</Label>
             {mediaUrl ? (
               <div className="relative mt-2">
-                <img
-                  src={mediaUrl}
-                  alt="Upload preview"
-                  className="w-full aspect-video object-cover rounded-lg"
-                />
+                {mediaType === 'video' ? (
+                  <video
+                    src={mediaUrl}
+                    controls
+                    className="w-full aspect-video object-cover rounded-lg"
+                  />
+                ) : (
+                  <img
+                    src={mediaUrl}
+                    alt="Upload preview"
+                    className="w-full aspect-video object-cover rounded-lg"
+                  />
+                )}
                 <Button
                   type="button"
                   variant="destructive"
                   size="icon"
                   className="absolute top-2 right-2"
-                  onClick={() => setMediaUrl("")}
+                  onClick={handleRemoveMedia}
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -149,7 +182,10 @@ const PostCreationDialog = ({
                 <div className="text-center">
                   <Camera className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    Click to upload photo
+                    Click to upload photo or video
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Max 10MB
                   </p>
                 </div>
                 <input
