@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Edit } from "lucide-react";
+import { Loader2, Edit, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import BottomNav from "@/components/navigation/BottomNav";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileHero } from "@/components/profile/ProfileHero";
@@ -13,6 +14,7 @@ import { PageTransition } from "@/components/transitions/PageTransition";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
+import { format } from "date-fns";
 
 interface Profile {
   id: string;
@@ -46,6 +48,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
+  const [memberSince, setMemberSince] = useState<string>("");
 
   useEffect(() => {
     checkAuth();
@@ -88,6 +91,11 @@ const Profile = () => {
 
       if (profileError) throw profileError;
       setProfile(profileData);
+      
+      // Format member since date
+      if (profileData.created_at) {
+        setMemberSince(format(new Date(profileData.created_at), "MMMM yyyy"));
+      }
 
       // Fetch photos
       const { data: photosData, error: photosError } = await supabase
@@ -151,27 +159,68 @@ const Profile = () => {
           />
 
           {/* Content */}
-          <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-6xl mx-auto px-6 py-8 space-y-6"}>
-            {/* Stats - Only for creators */}
-            {isCreator && <ProfileStats userId={profile.id} isCreator={isCreator} />}
+          <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-6xl mx-auto px-6 py-8"}>
+            {isMobile ? (
+              // Mobile: Single column layout
+              <div className="space-y-4">
+                {isCreator && <ProfileStats userId={profile.id} isCreator={isCreator} />}
+                
+                {!isOwnProfile && (
+                  <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                )}
 
-            {/* Action Buttons - Only for viewing others' profiles */}
-            {!isOwnProfile && (
-              <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                {isOwnProfile && (
+                  <Link to="/profile/edit" className="block">
+                    <Button size="default" className="w-full h-11 text-sm font-semibold">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                  </Link>
+                )}
+
+                <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
+              </div>
+            ) : (
+              // Desktop: Two column layout
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* Left Column - Photo Grid and Quick Info */}
+                <div className="lg:col-span-2 space-y-4">
+                  {/* Member Since Card */}
+                  {memberSince && (
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        <span className="text-sm">Member since {memberSince}</span>
+                      </div>
+                    </Card>
+                  )}
+                  
+                  {/* Stats - Only for creators */}
+                  {isCreator && <ProfileStats userId={profile.id} isCreator={isCreator} />}
+                </div>
+
+                {/* Right Column - Main Content */}
+                <div className="lg:col-span-3 space-y-4">
+                  {/* Action Buttons - Only for viewing others' profiles */}
+                  {!isOwnProfile && (
+                    <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                  )}
+
+                  {/* Edit Button - Only for own profile */}
+                  {isOwnProfile && (
+                    <Link to="/profile/edit" className="block">
+                      <Button size="lg" className="w-full h-12 text-base font-semibold shadow-md">
+                        <Edit className="w-5 h-5 mr-2" />
+                        Edit Profile
+                      </Button>
+                    </Link>
+                  )}
+
+                  {/* Profile Info */}
+                  <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
+                </div>
+              </div>
             )}
-
-            {/* Edit Button - Only for own profile */}
-            {isOwnProfile && (
-              <Link to="/profile/edit" className="block">
-                <Button size={isMobile ? "default" : "lg"} className={isMobile ? "w-full h-11 text-sm font-semibold" : "w-full h-12 text-base font-semibold shadow-md"}>
-                  <Edit className={isMobile ? "w-4 h-4 mr-2" : "w-5 h-5 mr-2"} />
-                  Edit Profile
-                </Button>
-              </Link>
-            )}
-
-            {/* Profile Info */}
-            <ProfileInfo bio={profile.bio} intent={profile.intent} interests={interests} />
           </div>
 
           {isMobile && <BottomNav />}
