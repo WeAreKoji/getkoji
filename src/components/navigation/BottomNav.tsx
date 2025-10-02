@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Heart, MessageCircle, User } from "lucide-react";
+import { Heart, MessageCircle, User, Sparkles } from "lucide-react";
 
 const BottomNav = () => {
   const location = useLocation();
@@ -9,6 +9,11 @@ const BottomNav = () => {
       path: "/discover",
       icon: Heart,
       label: "Discover",
+    },
+    {
+      path: "/creators",
+      icon: Sparkles,
+      label: "Creators",
     },
     {
       path: "/matches",

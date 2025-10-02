@@ -1,0 +1,133 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2, Users } from "lucide-react";
+import BottomNav from "@/components/navigation/BottomNav";
+import { useToast } from "@/hooks/use-toast";
+
+interface Creator {
+  id: string;
+  user_id: string;
+  subscription_price: number;
+  subscriber_count: number;
+  profile: {
+    display_name: string;
+    avatar_url: string | null;
+    bio: string | null;
+  };
+}
+
+const Creators = () => {
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadCreators();
+  }, []);
+
+  const loadCreators = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("creator_profiles")
+        .select(`
+          *,
+          profile:profiles!creator_profiles_user_id_fkey(
+            display_name,
+            avatar_url,
+            bio
+          )
+        `)
+        .order("subscriber_count", { ascending: false });
+
+      if (error) throw error;
+      setCreators(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="max-w-lg mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-foreground">Creators</h1>
+          <p className="text-sm text-muted-foreground">
+            Discover exclusive content
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
+        {creators.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground">No creators yet</p>
+            </CardContent>
+          </Card>
+        ) : (
+          creators.map((creator) => (
+            <Card
+              key={creator.id}
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => navigate(`/creator/${creator.user_id}`)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <Avatar className="w-16 h-16">
+                    <AvatarImage src={creator.profile.avatar_url || undefined} />
+                    <AvatarFallback>
+                      {creator.profile.display_name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg text-foreground">
+                      {creator.profile.display_name}
+                    </h3>
+                    {creator.profile.bio && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                        {creator.profile.bio}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                      <span>{creator.subscriber_count} subscribers</span>
+                      <span className="font-semibold text-primary">
+                        ${creator.subscription_price}/month
+                      </span>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    View
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </main>
+
+      <BottomNav />
+    </div>
+  );
+};
+
+export default Creators;
