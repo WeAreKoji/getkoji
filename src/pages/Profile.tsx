@@ -23,6 +23,7 @@ import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { format } from "date-fns";
+import { logError } from "@/lib/error-logger";
 
 interface Profile {
   id: string;
@@ -184,7 +185,7 @@ const Profile = () => {
       }
       setStatsLoading(false);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      logError(error, 'Profile.fetchProfile');
       navigate("/discover");
     } finally {
       setLoading(false);

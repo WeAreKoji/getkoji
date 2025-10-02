@@ -1,5 +1,6 @@
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { isNativePlatform } from "./native";
+import { logError } from "./error-logger";
 
 /**
  * Camera utilities for native photo capture
@@ -39,7 +40,7 @@ export const takePhoto = async (options: CameraOptions = {}) => {
 
     return image;
   } catch (error) {
-    console.error("Error taking photo:", error);
+    logError(error, 'Camera.takePhoto');
     throw error;
   }
 };
@@ -51,7 +52,7 @@ export const requestCameraPermissions = async () => {
     const permissions = await Camera.requestPermissions();
     return permissions.camera === "granted";
   } catch (error) {
-    console.error("Error requesting camera permissions:", error);
+    logError(error, 'Camera.requestPermissions');
     return false;
   }
 };
@@ -63,7 +64,7 @@ export const checkCameraPermissions = async () => {
     const permissions = await Camera.checkPermissions();
     return permissions.camera === "granted";
   } catch (error) {
-    console.error("Error checking camera permissions:", error);
+    logError(error, 'Camera.checkPermissions');
     return false;
   }
 };

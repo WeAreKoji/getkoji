@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { logError, getUserFriendlyError, logWarning } from "@/lib/error-logger";
 
 export default function CreatorVerifyIdentity() {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ export default function CreatorVerifyIdentity() {
         }
       }
     } catch (error) {
-      console.error("Error checking status:", error);
+      logError(error, 'CreatorVerifyIdentity.checkStatus');
     } finally {
       setCheckingStatus(false);
     }
@@ -224,7 +225,7 @@ export default function CreatorVerifyIdentity() {
           });
         }
       } catch (emailError) {
-        console.error("Email notification error:", emailError);
+        logWarning('Email notification failed during verification submission', 'CreatorVerifyIdentity');
       }
 
       toast({
@@ -234,10 +235,10 @@ export default function CreatorVerifyIdentity() {
 
       setVerificationStatus("pending");
     } catch (error: any) {
-      console.error("Error submitting verification:", error);
+      logError(error, 'CreatorVerifyIdentity.submitVerification');
       toast({
         title: "Submission Failed",
-        description: error.message,
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     } finally {

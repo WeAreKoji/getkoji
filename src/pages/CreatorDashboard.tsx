@@ -18,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { RetryBoundary } from "@/components/shared/RetryBoundary";
+import { logError } from "@/lib/error-logger";
 
 interface CreatorStats {
   subscriberCount: number;
@@ -139,7 +140,7 @@ const CreatorDashboard = () => {
 
       await fetchDashboardData(user.id);
     } catch (error) {
-      console.error("Error:", error);
+      logError(error, 'CreatorDashboard.checkCreatorStatus');
       setLoading(false);
     }
   };
@@ -265,7 +266,7 @@ const CreatorDashboard = () => {
         setPayoutInfo(payoutData);
       }
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      logError(error, 'CreatorDashboard.fetchDashboardData');
     } finally {
       setLoading(false);
     }

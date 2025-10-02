@@ -11,6 +11,7 @@ import { RealtimeChannel } from "@supabase/supabase-js";
 import { BackGesture } from "@/components/navigation/BackGesture";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { haptics, keyboard } from "@/lib/native";
+import { logError, getUserFriendlyError } from "@/lib/error-logger";
 
 interface Message {
   id: string;
@@ -132,10 +133,10 @@ const Chat = () => {
       if (messagesError) throw messagesError;
       setMessages(messagesData || []);
     } catch (error) {
-      console.error("Error fetching match data:", error);
+      logError(error, 'Chat.fetchMatchData');
       toast({
         title: "Error",
-        description: "Failed to load messages",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -181,10 +182,10 @@ const Chat = () => {
       // Scroll to bottom after sending
       setTimeout(() => scrollToBottom(false), 100);
     } catch (error) {
-      console.error("Error sending message:", error);
+      logError(error, 'Chat.sendMessage');
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     }

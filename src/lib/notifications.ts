@@ -1,5 +1,6 @@
 import { PushNotifications } from "@capacitor/push-notifications";
 import { isNativePlatform } from "./native";
+import { logError, logInfo } from "./error-logger";
 
 /**
  * Push notifications utilities
@@ -7,7 +8,7 @@ import { isNativePlatform } from "./native";
 
 export const initializePushNotifications = async () => {
   if (!isNativePlatform()) {
-    console.log("Push notifications only available on native platforms");
+    logInfo("Push notifications only available on native platforms", "PushNotifications");
     return null;
   }
 
@@ -22,24 +23,24 @@ export const initializePushNotifications = async () => {
       // Listen for registration
       const registration = await new Promise<string>((resolve) => {
         PushNotifications.addListener("registration", (token) => {
-          console.log("Push registration success, token:", token.value);
+          logInfo(`Push registration success`, "PushNotifications");
           resolve(token.value);
         });
       });
 
       // Listen for registration errors
       PushNotifications.addListener("registrationError", (error) => {
-        console.error("Push registration error:", error);
+        logError(error, "PushNotifications.registration");
       });
 
       // Listen for push notifications received
       PushNotifications.addListener("pushNotificationReceived", (notification) => {
-        console.log("Push notification received:", notification);
+        logInfo("Push notification received", "PushNotifications");
       });
 
       // Listen for push notifications actions (when user taps notification)
       PushNotifications.addListener("pushNotificationActionPerformed", (notification) => {
-        console.log("Push notification action performed:", notification);
+        logInfo("Push notification action performed", "PushNotifications");
       });
 
       return registration;
@@ -47,14 +48,14 @@ export const initializePushNotifications = async () => {
 
     return null;
   } catch (error) {
-    console.error("Error initializing push notifications:", error);
+    logError(error, "PushNotifications.initialize");
     return null;
   }
 };
 
 export const sendPushToken = async (token: string, userId: string) => {
   // TODO: Send token to your backend to store for sending notifications
-  console.log("Sending push token to backend:", token, userId);
+  logInfo("Push token ready for backend", "PushNotifications");
   // You would implement this based on your backend setup
 };
 
@@ -64,6 +65,6 @@ export const removePushNotificationListeners = async () => {
   try {
     await PushNotifications.removeAllListeners();
   } catch (error) {
-    console.error("Error removing push notification listeners:", error);
+    logError(error, "PushNotifications.removeListeners");
   }
 };
