@@ -85,6 +85,10 @@ export type Database = {
           id: string
           media_type: string | null
           media_url: string | null
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_reason: string | null
+          moderation_status: string | null
         }
         Insert: {
           content?: string | null
@@ -93,6 +97,10 @@ export type Database = {
           id?: string
           media_type?: string | null
           media_url?: string | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string | null
         }
         Update: {
           content?: string | null
@@ -101,6 +109,10 @@ export type Database = {
           id?: string
           media_type?: string | null
           media_url?: string | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string | null
         }
         Relationships: [
           {
@@ -928,7 +940,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_moderation_stats: {
+        Row: {
+          approved_posts: number | null
+          pending_posts: number | null
+          rejected_posts: number | null
+          total_posts: number | null
+        }
+        Relationships: []
+      }
+      admin_verification_stats: {
+        Row: {
+          approved_verifications: number | null
+          pending_verifications: number | null
+          rejected_verifications: number | null
+          total_verifications: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_creator_referral: {
@@ -987,6 +1016,10 @@ export type Database = {
       increment_subscriber_count: {
         Args: { creator_user_id: string }
         Returns: undefined
+      }
+      is_creator_verified: {
+        Args: { creator_user_id: string }
+        Returns: boolean
       }
       process_referral_payout: {
         Args: { referrer_user_id: string }
