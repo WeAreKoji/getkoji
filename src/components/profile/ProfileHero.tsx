@@ -36,14 +36,15 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
     <>
       <div className={cn(
         "relative w-full bg-gradient-to-br from-primary/20 to-secondary/20",
-        isMobile ? "aspect-[3/4]" : "aspect-[2/1] max-h-[250px]"
+        isMobile ? "aspect-[3/4]" : "aspect-[16/7] max-h-[200px]"
       )}>
         {/* Main Photo */}
         {mainPhoto ? (
           <img
             src={mainPhoto.photo_url}
             alt={displayName}
-            className="w-full h-full object-cover object-center cursor-pointer"
+            className="w-full h-full object-cover cursor-pointer"
+            style={{ objectPosition: 'center 30%' }}
             onClick={() => handlePhotoClick(0)}
           />
         ) : (

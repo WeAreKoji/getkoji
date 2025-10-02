@@ -76,14 +76,14 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto">
           <SidebarGroup>
-            <div className={open ? "px-4 py-4 pb-6 flex items-center" : "px-4 py-4 pb-6 flex items-center justify-center"}>
+            <div className={open ? "px-4 py-3 pb-4 flex items-center" : "px-4 py-3 pb-4 flex items-center justify-center"}>
               <img 
                 src={logo} 
                 alt="Koji" 
                 className={open ? "h-10 w-auto" : "h-8 w-8"}
               />
             </div>
-            <SidebarGroupContent>
+            <SidebarGroupContent className="space-y-1">
               <SidebarMenu>
                 {mainItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
@@ -100,9 +100,9 @@ export function AppSidebar() {
           </SidebarGroup>
 
           {isCreator && (
-            <SidebarGroup>
+            <SidebarGroup className="mt-2">
               <SidebarGroupLabel className="px-4">Creator</SidebarGroupLabel>
-              <SidebarGroupContent>
+              <SidebarGroupContent className="space-y-1">
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
