@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { EmailChangeDialog } from "@/components/settings/EmailChangeDialog";
 import { DeleteAccountDialog } from "@/components/profile/DeleteAccountDialog";
+import { DataExport } from "@/components/settings/DataExport";
+import { ThemeCustomizer } from "@/components/settings/ThemeCustomizer";
+import { ActivityInsights } from "@/components/settings/ActivityInsights";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ChevronLeft, User, Mail, AtSign, AlertTriangle, Check, Loader2 } from "lucide-react";
@@ -250,6 +254,23 @@ const AccountSettings = () => {
             </Button>
           </div>
         </Card>
+
+        <Separator />
+
+        {/* Activity Insights */}
+        <ActivityInsights userId={user?.id || ""} />
+
+        <Separator />
+
+        {/* Theme Customization */}
+        <ThemeCustomizer />
+
+        <Separator />
+
+        {/* Data Export */}
+        <DataExport userId={user?.id || ""} />
+
+        <Separator />
 
         {/* Danger Zone */}
         <Card className="p-6 space-y-4 border-destructive/50">
