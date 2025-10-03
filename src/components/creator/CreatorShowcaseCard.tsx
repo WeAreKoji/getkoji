@@ -185,10 +185,25 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
               {creator.age && <span>• {creator.age}</span>}
             </div>
           )}
-          <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
-            <span>Joined {format(new Date(creator.created_at), "MMM yyyy")}</span>
-          </div>
+          {creator.created_at && (
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              <span>
+                Joined{" "}
+                {(() => {
+                  try {
+                    const date = new Date(creator.created_at);
+                    if (!isNaN(date.getTime())) {
+                      return format(date, "MMM yyyy");
+                    }
+                    return "Recently";
+                  } catch {
+                    return "Recently";
+                  }
+                })()}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-1">
             <Users className="w-3 h-3" />
             <span>{creator.subscriber_count || 0} subscribers</span>
