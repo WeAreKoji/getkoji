@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,6 +35,24 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Rate limiting: 10 document accesses per 5 minutes
+    const rateLimit = await checkRateLimit(supabaseClient, {
+      maxAttempts: 10,
+      windowMinutes: 5,
+      identifier: `document_access:${user.id}`,
+    });
+
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for user ${user.id}`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Too many requests. Please try again later.",
+          resetAt: rateLimit.resetAt.toISOString()
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -128,10 +147,28 @@ serve(async (req) => {
       );
     }
 
-    // Generate signed URL (expires in 1 hour)
+    // Generate a one-time secure token (expires in 5 minutes) 
+    const { data: token, error: tokenError } = await supabaseClient.rpc(
+      'generate_document_token',
+      {
+        _verification_id: verificationId,
+        _document_type: documentType,
+        _expires_minutes: 5
+      }
+    );
+
+    if (tokenError || !token) {
+      console.error('Error generating token:', tokenError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to generate access token' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Generate signed URL with reduced expiration (5 minutes instead of 1 hour)
     const { data: signedUrlData, error: signedUrlError } = await supabaseClient.storage
       .from('id-documents')
-      .createSignedUrl(filePath, 3600);
+      .createSignedUrl(filePath, 300); // 5 minutes
 
     if (signedUrlError || !signedUrlData) {
       console.error('Signed URL generation error:', signedUrlError);
@@ -174,7 +211,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         signedUrl: signedUrlData.signedUrl,
-        expiresIn: 3600
+        token: token, // Include one-time token for validation
+        expiresIn: 300 // 5 minutes
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

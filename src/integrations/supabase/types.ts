@@ -535,6 +535,53 @@ export type Database = {
         }
         Relationships: []
       }
+      document_access_tokens: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          document_type: string
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          token: string
+          used_at: string | null
+          user_agent: string | null
+          verification_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          document_type: string
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          token: string
+          used_at?: string | null
+          user_agent?: string | null
+          verification_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          document_type?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          token?: string
+          used_at?: string | null
+          user_agent?: string | null
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_access_tokens_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "creator_id_verification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       failed_transfers: {
         Row: {
           amount: number
@@ -1544,6 +1591,10 @@ export type Database = {
         Args: { field_name: string; profile_user_id: string }
         Returns: boolean
       }
+      can_view_user_interests: {
+        Args: { _profile_user_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       check_expired_referrals: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1551,6 +1602,10 @@ export type Database = {
       check_username_available: {
         Args: { desired_username: string }
         Returns: boolean
+      }
+      cleanup_expired_rate_limits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       cleanup_old_rate_limits: {
         Args: Record<PropertyKey, never>
@@ -1573,6 +1628,14 @@ export type Database = {
       decrement_subscriber_count: {
         Args: { creator_user_id: string }
         Returns: undefined
+      }
+      generate_document_token: {
+        Args: {
+          _document_type: string
+          _expires_minutes?: number
+          _verification_id: string
+        }
+        Returns: string
       }
       generate_referral_code: {
         Args: { user_username: string }
@@ -1608,6 +1671,10 @@ export type Database = {
       }
       get_signed_document_url: {
         Args: { bucket_name: string; expires_in?: number; file_path: string }
+        Returns: string
+      }
+      get_user_email: {
+        Args: { _user_id: string }
         Returns: string
       }
       get_verification_stats: {
@@ -1674,6 +1741,14 @@ export type Database = {
       request_creator_role: {
         Args: { application_text: string }
         Returns: Json
+      }
+      validate_document_token: {
+        Args: { _token: string }
+        Returns: {
+          document_type: string
+          is_valid: boolean
+          verification_id: string
+        }[]
       }
     }
     Enums: {

@@ -10,6 +10,7 @@ import { PageTransition } from "@/components/transitions/PageTransition";
 import { ProfileCardSkeleton } from "@/components/shared/SkeletonLoader";
 import { haptics } from "@/lib/native";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import logo from "@/assets/logo.png";
 interface Profile {
   id: string;
@@ -72,6 +73,23 @@ const Discover = () => {
   const handleSwipe = async (isLike: boolean) => {
     const currentProfile = profiles[currentIndex];
     if (!currentProfile || !user) return;
+
+    // Rate limit: 50 swipes per 5 minutes
+    const rateLimit = ClientRateLimiter.checkLimit({
+      key: `swipe_${user.id}`,
+      maxAttempts: 50,
+      windowMinutes: 5,
+    });
+
+    if (!rateLimit.allowed) {
+      toast({
+        title: "Slow down!",
+        description: "You're swiping too quickly. Please wait a moment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const {
         error

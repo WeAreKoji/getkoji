@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,6 +41,18 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Rate limiting: 3 connect account creations per 60 minutes
+    const rateLimit = await checkRateLimit(supabaseClient, {
+      maxAttempts: 3,
+      windowMinutes: 60,
+      identifier: `connect_account:${user.id}`,
+    });
+
+    if (!rateLimit.allowed) {
+      logStep("Rate limit exceeded", { userId: user.id });
+      throw new Error("Too many account creation attempts. Please try again later.");
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 

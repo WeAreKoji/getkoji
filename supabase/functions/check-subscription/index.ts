@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,6 +41,18 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Rate limiting: 20 subscription checks per 5 minutes
+    const rateLimit = await checkRateLimit(supabaseClient, {
+      maxAttempts: 20,
+      windowMinutes: 5,
+      identifier: `check_subscription:${user.id}`,
+    });
+
+    if (!rateLimit.allowed) {
+      logStep("Rate limit exceeded", { userId: user.id });
+      throw new Error("Too many requests. Please try again later.");
+    }
 
     const { creatorId } = await req.json();
     if (!creatorId) throw new Error("Creator ID is required");
