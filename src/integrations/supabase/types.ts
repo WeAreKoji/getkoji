@@ -587,6 +587,7 @@ export type Database = {
           created_at: string | null
           id: string
           interested_in: string[] | null
+          interested_in_gender: string[] | null
           max_age: number | null
           max_distance_km: number | null
           min_age: number | null
@@ -600,6 +601,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           interested_in?: string[] | null
+          interested_in_gender?: string[] | null
           max_age?: number | null
           max_distance_km?: number | null
           min_age?: number | null
@@ -613,6 +615,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           interested_in?: string[] | null
+          interested_in_gender?: string[] | null
           max_age?: number | null
           max_distance_km?: number | null
           min_age?: number | null
@@ -1444,8 +1447,10 @@ export type Database = {
           created_at: string | null
           display_name: string
           email: string
+          gender: Database["public"]["Enums"]["gender"] | null
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
+          interested_in_gender: string[] | null
           privacy_settings: Json | null
           updated_at: string | null
           username: string | null
@@ -1459,8 +1464,10 @@ export type Database = {
           created_at?: string | null
           display_name: string
           email: string
+          gender?: Database["public"]["Enums"]["gender"] | null
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
+          interested_in_gender?: string[] | null
           privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
@@ -1474,8 +1481,10 @@ export type Database = {
           created_at?: string | null
           display_name?: string
           email?: string
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
           intent?: Database["public"]["Enums"]["user_intent"]
+          interested_in_gender?: string[] | null
           privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
@@ -2163,6 +2172,7 @@ export type Database = {
           city: string | null
           created_at: string | null
           display_name: string | null
+          gender: Database["public"]["Enums"]["gender"] | null
           id: string | null
           intent: Database["public"]["Enums"]["user_intent"] | null
           privacy_settings: Json | null
@@ -2176,6 +2186,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           display_name?: string | null
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string | null
           intent?: Database["public"]["Enums"]["user_intent"] | null
           privacy_settings?: Json | null
@@ -2189,6 +2200,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           display_name?: string | null
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string | null
           intent?: Database["public"]["Enums"]["user_intent"] | null
           privacy_settings?: Json | null
@@ -2521,6 +2533,7 @@ export type Database = {
       }
     }
     Enums: {
+      gender: "male" | "female" | "non_binary" | "other" | "prefer_not_to_say"
       security_event_type:
         | "login_success"
         | "login_failure"
@@ -2675,6 +2688,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      gender: ["male", "female", "non_binary", "other", "prefer_not_to_say"],
       security_event_type: [
         "login_success",
         "login_failure",

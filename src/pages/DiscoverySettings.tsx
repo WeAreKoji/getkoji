@@ -15,6 +15,7 @@ interface DiscoveryPreferences {
   max_age: number;
   max_distance_km: number;
   interested_in: string[];
+  interested_in_gender: string[];
   show_verified_only: boolean;
   show_creators_only: boolean;
   show_non_creators: boolean;
@@ -30,7 +31,8 @@ const DiscoverySettings = () => {
     min_age: 18,
     max_age: 99,
     max_distance_km: 50,
-    interested_in: ['dating', 'friendship', 'networking'],
+    interested_in: ['open_to_dating', 'make_friends', 'support_creators'],
+    interested_in_gender: ['male', 'female', 'non_binary', 'other'],
     show_verified_only: false,
     show_creators_only: false,
     show_non_creators: true,
@@ -67,6 +69,7 @@ const DiscoverySettings = () => {
         max_age: data.max_age,
         max_distance_km: data.max_distance_km,
         interested_in: data.interested_in,
+        interested_in_gender: data.interested_in_gender || ['male', 'female', 'non_binary', 'other'],
         show_verified_only: data.show_verified_only,
         show_creators_only: data.show_creators_only,
         show_non_creators: data.show_non_creators,
@@ -111,6 +114,15 @@ const DiscoverySettings = () => {
         ? prev.interested_in.filter(i => i !== intent)
         : [...prev.interested_in, intent];
       return { ...prev, interested_in: newIntents };
+    });
+  };
+
+  const toggleGender = (gender: string) => {
+    setPreferences(prev => {
+      const newGenders = prev.interested_in_gender.includes(gender)
+        ? prev.interested_in_gender.filter(g => g !== gender)
+        : [...prev.interested_in_gender, gender];
+      return { ...prev, interested_in_gender: newGenders };
     });
   };
 
@@ -214,27 +226,71 @@ const DiscoverySettings = () => {
           <CardContent className="space-y-4">
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="dating"
-                checked={preferences.interested_in.includes('dating')}
-                onCheckedChange={() => toggleIntent('dating')}
+                id="open_to_dating"
+                checked={preferences.interested_in.includes('open_to_dating')}
+                onCheckedChange={() => toggleIntent('open_to_dating')}
               />
-              <Label htmlFor="dating" className="cursor-pointer">Dating</Label>
+              <Label htmlFor="open_to_dating" className="cursor-pointer">Dating</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="friendship"
-                checked={preferences.interested_in.includes('friendship')}
-                onCheckedChange={() => toggleIntent('friendship')}
+                id="make_friends"
+                checked={preferences.interested_in.includes('make_friends')}
+                onCheckedChange={() => toggleIntent('make_friends')}
               />
-              <Label htmlFor="friendship" className="cursor-pointer">Friendship</Label>
+              <Label htmlFor="make_friends" className="cursor-pointer">Friendship</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="networking"
-                checked={preferences.interested_in.includes('networking')}
-                onCheckedChange={() => toggleIntent('networking')}
+                id="support_creators"
+                checked={preferences.interested_in.includes('support_creators')}
+                onCheckedChange={() => toggleIntent('support_creators')}
               />
-              <Label htmlFor="networking" className="cursor-pointer">Networking</Label>
+              <Label htmlFor="support_creators" className="cursor-pointer">Support Creators</Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Interested In Gender */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Interested In</CardTitle>
+            <CardDescription>
+              Show me profiles of these genders
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="male"
+                checked={preferences.interested_in_gender.includes('male')}
+                onCheckedChange={() => toggleGender('male')}
+              />
+              <Label htmlFor="male" className="cursor-pointer">Men</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="female"
+                checked={preferences.interested_in_gender.includes('female')}
+                onCheckedChange={() => toggleGender('female')}
+              />
+              <Label htmlFor="female" className="cursor-pointer">Women</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="non_binary"
+                checked={preferences.interested_in_gender.includes('non_binary')}
+                onCheckedChange={() => toggleGender('non_binary')}
+              />
+              <Label htmlFor="non_binary" className="cursor-pointer">Non-binary</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="other"
+                checked={preferences.interested_in_gender.includes('other')}
+                onCheckedChange={() => toggleGender('other')}
+              />
+              <Label htmlFor="other" className="cursor-pointer">Other</Label>
             </div>
           </CardContent>
         </Card>

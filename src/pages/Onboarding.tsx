@@ -21,6 +21,8 @@ interface OnboardingData {
   city: string;
   bio: string;
   avatarUrl: string;
+  gender?: string;
+  interestedInGender?: string[];
 }
 
 const Onboarding = () => {
@@ -97,6 +99,8 @@ const Onboarding = () => {
           bio: completeData.bio,
           avatar_url: completeData.avatarUrl,
           intent: completeData.intent!,
+          gender: (completeData.gender as any) || null,
+          interested_in_gender: completeData.interestedInGender || ['male', 'female', 'non_binary', 'other'],
         }]);
 
       if (profileError) throw profileError;

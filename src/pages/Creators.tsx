@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Users } from "lucide-react";
+import { Loader2, Users, Plus } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -74,10 +74,18 @@ const Creators = () => {
     <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
       <header className="bg-card border-b border-border sticky top-0 z-10">
         <div className={isMobile ? "max-w-lg mx-auto px-4 py-4" : "container max-w-4xl mx-auto px-6 py-4"}>
-          <h1 className={isMobile ? "text-2xl font-bold text-foreground" : "text-3xl font-bold text-foreground"}>Creators</h1>
-          <p className={isMobile ? "text-sm text-muted-foreground" : "text-base text-muted-foreground"}>
-            Discover exclusive content
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className={isMobile ? "text-2xl font-bold text-foreground" : "text-3xl font-bold text-foreground"}>Creators</h1>
+              <p className={isMobile ? "text-sm text-muted-foreground" : "text-base text-muted-foreground"}>
+                Discover exclusive content
+              </p>
+            </div>
+            <Button onClick={() => navigate("/creator/apply")} size={isMobile ? "sm" : "default"}>
+              <Plus className="w-4 h-4 mr-2" />
+              Become a Creator
+            </Button>
+          </div>
         </div>
       </header>
 

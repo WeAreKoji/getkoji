@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, User } from "lucide-react";
 import { UsernameInput } from "@/components/profile/UsernameInput";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProfileSetupProps {
   data: {
@@ -27,6 +29,8 @@ interface ProfileSetupData {
   city: string;
   bio: string;
   avatarUrl: string;
+  gender?: string;
+  interestedInGender?: string[];
 }
 
 const ProfileSetup = ({ data, onComplete, loading }: ProfileSetupProps) => {
@@ -185,6 +189,66 @@ const ProfileSetup = ({ data, onComplete, loading }: ProfileSetupProps) => {
           <p className="text-xs text-muted-foreground text-right">
             {formData.bio.length}/500 characters
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>I Am</Label>
+          <RadioGroup
+            value={formData.gender}
+            onValueChange={(value) => setFormData({ ...formData, gender: value })}
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="male" id="male" />
+              <Label htmlFor="male" className="font-normal cursor-pointer">Male</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="female" id="female" />
+              <Label htmlFor="female" className="font-normal cursor-pointer">Female</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="non_binary" id="non_binary" />
+              <Label htmlFor="non_binary" className="font-normal cursor-pointer">Non-binary</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="other" id="other" />
+              <Label htmlFor="other" className="font-normal cursor-pointer">Other</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="prefer_not_to_say" id="prefer_not_to_say" />
+              <Label htmlFor="prefer_not_to_say" className="font-normal cursor-pointer">Prefer not to say</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Interested In</Label>
+          <div className="space-y-2">
+            {[
+              { value: "male", label: "Men" },
+              { value: "female", label: "Women" },
+              { value: "non_binary", label: "Non-binary" },
+              { value: "other", label: "Other" },
+            ].map((option) => (
+              <div key={option.value} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`interested_${option.value}`}
+                  checked={formData.interestedInGender?.includes(option.value)}
+                  onCheckedChange={(checked) => {
+                    const current = formData.interestedInGender || [];
+                    setFormData({
+                      ...formData,
+                      interestedInGender: checked
+                        ? [...current, option.value]
+                        : current.filter((g) => g !== option.value),
+                    });
+                  }}
+                />
+                <Label htmlFor={`interested_${option.value}`} className="font-normal cursor-pointer">
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
 
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
