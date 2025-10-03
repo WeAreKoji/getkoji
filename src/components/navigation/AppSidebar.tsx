@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users, Home, User, LayoutDashboard, Gift, Settings, Shield, ShieldCheck, FileText, ScrollText } from "lucide-react";
+import { Heart, Sparkles, Users, Home, User, LayoutDashboard, Gift, Settings, Shield, ShieldCheck, FileText, ScrollText, Newspaper, UserCheck } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -114,6 +114,30 @@ export function AppSidebar() {
                       <NavLink to="/creator/dashboard" className={getNavCls}>
                         <LayoutDashboard className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
                         {open && <span>Dashboard</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/creator/feed" className={getNavCls}>
+                        <Newspaper className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
+                        {open && <span>Content Feed</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/subscriber-management" className={getNavCls}>
+                        <Users className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
+                        {open && <span>Subscribers</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/creator/verify-identity" className={getNavCls}>
+                        <ShieldCheck className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
+                        {open && <span>Verify Identity</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
