@@ -18,6 +18,10 @@ import { ReferralCard } from "@/components/profile/ReferralCard";
 import { ProfileCompleteness } from "@/components/profile/ProfileCompleteness";
 import { ProfileAccordion } from "@/components/profile/ProfileAccordion";
 import { CreatorSubscriptionCard } from "@/components/profile/CreatorSubscriptionCard";
+import { MutualConnections } from "@/components/profile/MutualConnections";
+import { LastActiveIndicator } from "@/components/profile/LastActiveIndicator";
+import { EnhancedPhotoManagement } from "@/components/profile/EnhancedPhotoManagement";
+import { EnhancedAnalyticsCharts } from "@/components/profile/EnhancedAnalyticsCharts";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -39,6 +43,7 @@ interface Profile {
   interested_in_gender: string[] | null;
   created_at?: string;
   privacy_settings?: any;
+  last_active?: string | null;
 }
 
 interface Photo {
@@ -72,6 +77,7 @@ const Profile = () => {
     coverImageUrl?: string | null;
     tagline?: string | null;
   }>({});
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -82,6 +88,13 @@ const Profile = () => {
     if (!user) {
       navigate("/auth");
       return;
+    }
+
+    setCurrentUserId(user.id);
+
+    // Update last active for current user
+    if (user.id) {
+      supabase.rpc("update_last_active").then();
     }
 
     // Resolve username to userId if username is provided
@@ -273,7 +286,17 @@ const Profile = () => {
 
                 {/* Action Buttons */}
                 {!isOwnProfile ? (
-                  <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                  <>
+                    {profile.last_active && (
+                      <div className="flex justify-center">
+                        <LastActiveIndicator lastActive={profile.last_active} />
+                      </div>
+                    )}
+                    <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                    {currentUserId && (
+                      <MutualConnections userId={profile.id} currentUserId={currentUserId} />
+                    )}
+                  </>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
                     <Button
@@ -298,7 +321,12 @@ const Profile = () => {
                 {isOwnProfile && (
                   <>
                     <ReferralCard userId={profile.id} />
-                    <ProfileAnalytics userId={profile.id} />
+                    <EnhancedAnalyticsCharts userId={profile.id} />
+                    <EnhancedPhotoManagement 
+                      photos={photos} 
+                      userId={profile.id}
+                      onPhotosUpdated={() => fetchProfile(profile.id)}
+                    />
                   </>
                 )}
 
@@ -338,7 +366,14 @@ const Profile = () => {
                 >
                   {/* Action Button */}
                   {!isOwnProfile ? (
-                    <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                    <div className="space-y-3">
+                      {profile.last_active && (
+                        <div className="flex justify-center">
+                          <LastActiveIndicator lastActive={profile.last_active} />
+                        </div>
+                      )}
+                      <ProfileActions userId={profile.id} displayName={profile.display_name} />
+                    </div>
                   ) : (
                     <div className="flex gap-2">
                       <Button
@@ -363,11 +398,25 @@ const Profile = () => {
                   <CreatorSubscriptionCard creatorId={profile.id} isOwnProfile={false} />
                 )}
 
+                {/* Mutual Connections for visitors */}
+                {!isOwnProfile && currentUserId && (
+                  <MutualConnections userId={profile.id} currentUserId={currentUserId} />
+                )}
+
                 {/* Referral Card for own profile */}
                 {isOwnProfile && <ReferralCard userId={profile.id} />}
                 
                 {/* Analytics for own profile */}
-                {isOwnProfile && <ProfileAnalytics userId={profile.id} />}
+                {isOwnProfile && (
+                  <>
+                    <EnhancedAnalyticsCharts userId={profile.id} />
+                    <EnhancedPhotoManagement 
+                      photos={photos} 
+                      userId={profile.id}
+                      onPhotosUpdated={() => fetchProfile(profile.id)}
+                    />
+                  </>
+                )}
 
                 {/* Profile Tabs - About, Photos, Posts */}
                 <ProfileTabs

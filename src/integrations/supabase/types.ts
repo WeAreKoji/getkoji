@@ -1451,6 +1451,7 @@ export type Database = {
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
           interested_in_gender: string[] | null
+          last_active: string | null
           privacy_settings: Json | null
           updated_at: string | null
           username: string | null
@@ -1468,6 +1469,7 @@ export type Database = {
           id: string
           intent: Database["public"]["Enums"]["user_intent"]
           interested_in_gender?: string[] | null
+          last_active?: string | null
           privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
@@ -1485,6 +1487,7 @@ export type Database = {
           id?: string
           intent?: Database["public"]["Enums"]["user_intent"]
           interested_in_gender?: string[] | null
+          last_active?: string | null
           privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
@@ -2454,6 +2457,10 @@ export type Database = {
         Returns: Json
       }
       revoke_expired_document_permissions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_last_active: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
