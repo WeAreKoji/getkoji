@@ -2216,7 +2216,7 @@ export type Database = {
         Returns: string
       }
       get_creators_with_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: { p_limit?: number; p_offset?: number }
         Returns: {
           age: number
           avatar_url: string
@@ -2232,6 +2232,7 @@ export type Database = {
           subscriber_count: number
           subscription_price: number
           tagline: string
+          total_count: number
           user_id: string
           username: string
           welcome_video_url: string

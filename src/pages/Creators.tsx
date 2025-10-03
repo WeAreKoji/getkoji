@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import BottomNav from "@/components/navigation/BottomNav";
 import { CreatorShowcaseCard } from "@/components/creator/CreatorShowcaseCard";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Creator {
   id: string;
@@ -29,16 +30,26 @@ interface Creator {
 const Creators = () => {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const ITEMS_PER_PAGE = 12;
 
   useEffect(() => {
-    loadCreators();
-  }, []);
+    loadCreators(currentPage);
+  }, [currentPage]);
 
-  const loadCreators = async () => {
+  const loadCreators = async (page: number) => {
     try {
-      const { data, error } = await supabase.rpc('get_creators_with_profiles');
+      setLoading(true);
+      const offset = (page - 1) * ITEMS_PER_PAGE;
+      
+      const { data, error } = await supabase.rpc('get_creators_with_profiles', {
+        p_limit: ITEMS_PER_PAGE,
+        p_offset: offset
+      });
 
       if (error) throw error;
 
@@ -63,6 +74,11 @@ const Creators = () => {
       }));
 
       setCreators(creators);
+      
+      // Get total count from first row
+      if (data && data.length > 0) {
+        setTotalCount(data[0].total_count);
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -73,6 +89,10 @@ const Creators = () => {
       setLoading(false);
     }
   };
+  
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+  const canGoPrevious = currentPage > 1;
+  const canGoNext = currentPage < totalPages;
 
   return (
     <>
@@ -115,11 +135,67 @@ const Creators = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-                {creators.map((creator) => (
-                  <CreatorShowcaseCard key={creator.id} creator={creator} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                  {creators.map((creator) => (
+                    <CreatorShowcaseCard key={creator.id} creator={creator} />
+                  ))}
+                </div>
+                
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8 max-w-6xl mx-auto">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(p => p - 1)}
+                      disabled={!canGoPrevious}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          // Show first page, last page, current page, and pages around current
+                          return page === 1 || 
+                                 page === totalPages || 
+                                 Math.abs(page - currentPage) <= 1;
+                        })
+                        .map((page, idx, arr) => {
+                          // Add ellipsis between non-consecutive pages
+                          const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+                          return (
+                            <>
+                              {showEllipsis && (
+                                <span key={`ellipsis-${page}`} className="text-muted-foreground px-2">
+                                  ...
+                                </span>
+                              )}
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => setCurrentPage(page)}
+                              >
+                                {page}
+                              </Button>
+                            </>
+                          );
+                        })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(p => p + 1)}
+                      disabled={!canGoNext}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
           <BottomNav />
