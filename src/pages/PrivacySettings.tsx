@@ -127,6 +127,21 @@ const PrivacySettings = () => {
         </div>
 
         <div className="px-4 py-6 space-y-6">
+          {/* Quick Link to Security Settings */}
+          <Card className="p-4 bg-primary/5 border-primary/20">
+            <Link to="/settings/security" className="flex items-center justify-between group">
+              <div className="space-y-1">
+                <h3 className="font-semibold group-hover:text-primary transition-colors">
+                  Security Settings
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Manage 2FA, sessions, and password security
+                </p>
+              </div>
+              <ArrowLeft className="w-5 h-5 rotate-180 text-muted-foreground group-hover:text-primary transition-colors" />
+            </Link>
+          </Card>
+
           {/* Profile Visibility */}
           <Card className="p-6 space-y-4">
             <div>

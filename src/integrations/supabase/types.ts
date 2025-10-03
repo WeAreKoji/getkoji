@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_lockouts: {
+        Row: {
+          failed_attempts: number
+          id: string
+          last_failed_attempt: string | null
+          locked_at: string | null
+          metadata: Json | null
+          reason: string
+          unlock_at: string
+          unlock_method: string | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          failed_attempts?: number
+          id?: string
+          last_failed_attempt?: string | null
+          locked_at?: string | null
+          metadata?: Json | null
+          reason: string
+          unlock_at: string
+          unlock_method?: string | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          failed_attempts?: number
+          id?: string
+          last_failed_attempt?: string | null
+          locked_at?: string | null
+          metadata?: Json | null
+          reason?: string
+          unlock_at?: string
+          unlock_method?: string | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -861,6 +900,27 @@ export type Database = {
         }
         Relationships: []
       }
+      password_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_revenue: {
         Row: {
           created_at: string | null
@@ -1221,6 +1281,51 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          acknowledged: boolean | null
+          acknowledged_at: string | null
+          created_at: string | null
+          device_info: Json | null
+          event_type: Database["public"]["Enums"]["security_event_type"]
+          id: string
+          ip_address: unknown | null
+          location_info: Json | null
+          metadata: Json | null
+          severity: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          created_at?: string | null
+          device_info?: Json | null
+          event_type: Database["public"]["Enums"]["security_event_type"]
+          id?: string
+          ip_address?: unknown | null
+          location_info?: Json | null
+          metadata?: Json | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          created_at?: string | null
+          device_info?: Json | null
+          event_type?: Database["public"]["Enums"]["security_event_type"]
+          id?: string
+          ip_address?: unknown | null
+          location_info?: Json | null
+          metadata?: Json | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriber_analytics: {
         Row: {
           created_at: string | null
@@ -1380,6 +1485,39 @@ export type Database = {
           },
         ]
       }
+      user_2fa: {
+        Row: {
+          backup_codes: string[]
+          created_at: string | null
+          enabled: boolean
+          enabled_at: string | null
+          id: string
+          secret: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          backup_codes: string[]
+          created_at?: string | null
+          enabled?: boolean
+          enabled_at?: string | null
+          id?: string
+          secret: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[]
+          created_at?: string | null
+          enabled?: boolean
+          enabled_at?: string | null
+          id?: string
+          secret?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           balance: number
@@ -1482,6 +1620,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          device_info: Json | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          last_active: string | null
+          revoke_reason: string | null
+          revoked: boolean | null
+          revoked_at: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          last_active?: string | null
+          revoke_reason?: string | null
+          revoked?: boolean | null
+          revoked_at?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          last_active?: string | null
+          revoke_reason?: string | null
+          revoked?: boolean | null
+          revoked_at?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -1599,6 +1782,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      check_unlock_accounts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       check_username_available: {
         Args: { desired_username: string }
         Returns: boolean
@@ -1607,7 +1794,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_expired_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_rate_limits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_old_security_events: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -1697,6 +1892,10 @@ export type Database = {
         Args: { creator_user_id: string }
         Returns: undefined
       }
+      is_account_locked: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       is_creator_verified: {
         Args: { creator_user_id: string }
         Returns: boolean
@@ -1730,12 +1929,27 @@ export type Database = {
         }
         Returns: string
       }
+      log_security_event: {
+        Args: {
+          _event_type: Database["public"]["Enums"]["security_event_type"]
+          _ip_address?: unknown
+          _metadata?: Json
+          _severity?: string
+          _user_agent?: string
+          _user_id: string
+        }
+        Returns: string
+      }
       process_referral_payout: {
         Args: { referrer_user_id: string }
         Returns: string
       }
       publish_scheduled_posts: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      record_failed_login: {
+        Args: { _ip_address?: unknown; _user_agent?: string; _user_id: string }
         Returns: undefined
       }
       request_creator_role: {
@@ -1752,6 +1966,18 @@ export type Database = {
       }
     }
     Enums: {
+      security_event_type:
+        | "login_success"
+        | "login_failure"
+        | "password_change"
+        | "email_change"
+        | "2fa_enabled"
+        | "2fa_disabled"
+        | "new_device_login"
+        | "suspicious_location"
+        | "multiple_failed_attempts"
+        | "account_locked"
+        | "account_unlocked"
       user_intent: "support_creators" | "make_friends" | "open_to_dating"
       user_role: "user" | "creator" | "admin"
       verification_status: "pending" | "under_review" | "approved" | "rejected"
@@ -1894,6 +2120,19 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      security_event_type: [
+        "login_success",
+        "login_failure",
+        "password_change",
+        "email_change",
+        "2fa_enabled",
+        "2fa_disabled",
+        "new_device_login",
+        "suspicious_location",
+        "multiple_failed_attempts",
+        "account_locked",
+        "account_unlocked",
+      ],
       user_intent: ["support_creators", "make_friends", "open_to_dating"],
       user_role: ["user", "creator", "admin"],
       verification_status: ["pending", "under_review", "approved", "rejected"],

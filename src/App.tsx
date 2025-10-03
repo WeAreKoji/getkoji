@@ -49,6 +49,7 @@ const Support = lazy(() => import("./pages/Support"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const KojiConnect = lazy(() => import("./pages/KojiConnect"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
+const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 
 const queryClient = new QueryClient();
 
@@ -114,6 +115,7 @@ const AppContent = () => {
           <Route path="/referrals" element={<Referrals />} errorElement={<RouteErrorBoundary />} />
           <Route path="/koji-connect" element={<KojiConnect />} errorElement={<RouteErrorBoundary />} />
           <Route path="/settings/privacy" element={<PrivacySettings />} errorElement={<RouteErrorBoundary />} />
+          <Route path="/settings/security" element={<SecuritySettings />} errorElement={<RouteErrorBoundary />} />
           <Route path="/about" element={<About />} errorElement={<RouteErrorBoundary />} />
           <Route path="/privacy" element={<Privacy />} errorElement={<RouteErrorBoundary />} />
           <Route path="/terms" element={<Terms />} errorElement={<RouteErrorBoundary />} />
