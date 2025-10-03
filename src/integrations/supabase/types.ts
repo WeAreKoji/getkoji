@@ -2215,6 +2215,28 @@ export type Database = {
         Args: { user_username: string }
         Returns: string
       }
+      get_creators_with_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          age: number
+          avatar_url: string
+          bio: string
+          city: string
+          cover_image_url: string
+          creator_created_at: string
+          creator_id: string
+          display_name: string
+          id_verified: boolean
+          profile_created_at: string
+          showcase_bio: string
+          subscriber_count: number
+          subscription_price: number
+          tagline: string
+          user_id: string
+          username: string
+          welcome_video_url: string
+        }[]
+      }
       get_discover_profiles: {
         Args: { max_count?: number; user_id: string }
         Returns: Database["public"]["CompositeTypes"]["discoverable_profile_type"][]

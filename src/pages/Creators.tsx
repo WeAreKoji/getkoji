@@ -38,69 +38,31 @@ const Creators = () => {
 
   const loadCreators = async () => {
     try {
-      const { data: creatorsData, error } = await supabase
-        .from('creator_profiles')
-        .select(`
-          id,
-          user_id,
-          subscription_price,
-          subscriber_count,
-          id_verified,
-          welcome_video_url,
-          cover_image_url,
-          tagline,
-          showcase_bio
-        `)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_creators_with_profiles');
 
       if (error) throw error;
 
-      const base = (creatorsData || []) as any[];
+      // Map RPC results directly to Creator interface
+      const creators: Creator[] = (data || []).map((row: any) => ({
+        id: row.creator_id,
+        user_id: row.user_id,
+        subscription_price: row.subscription_price,
+        subscriber_count: row.subscriber_count,
+        id_verified: row.id_verified,
+        welcome_video_url: row.welcome_video_url,
+        cover_image_url: row.cover_image_url,
+        tagline: row.tagline,
+        showcase_bio: row.showcase_bio,
+        display_name: row.display_name || 'Creator',
+        username: row.username,
+        avatar_url: row.avatar_url,
+        bio: row.bio,
+        city: row.city,
+        age: row.age,
+        created_at: row.creator_created_at || row.profile_created_at,
+      }));
 
-      // Enrich creators with profile data
-      const enriched = await Promise.all(
-        base.map(async (c) => {
-          const creator: Creator = {
-            id: c.id,
-            user_id: c.user_id,
-            subscription_price: c.subscription_price,
-            subscriber_count: c.subscriber_count,
-            id_verified: c.id_verified,
-            created_at: c.created_at,
-            welcome_video_url: c.welcome_video_url,
-            cover_image_url: c.cover_image_url,
-            tagline: c.tagline,
-            showcase_bio: c.showcase_bio,
-            display_name: 'Creator',
-            username: undefined,
-            avatar_url: undefined,
-            bio: undefined,
-            city: undefined,
-            age: undefined,
-          };
-
-          try {
-            const { data: safe } = await supabase.rpc('get_safe_profile', { profile_id: c.user_id });
-            const row = Array.isArray(safe) ? safe[0] : (safe as any)?.[0] || (safe as any);
-            
-            if (row) {
-              creator.display_name = row.display_name || 'Creator';
-              creator.username = row.username;
-              creator.avatar_url = row.avatar_url;
-              creator.bio = row.bio;
-              creator.city = row.city;
-              creator.age = row.age;
-              creator.created_at = row.created_at || c.created_at;
-            }
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-          }
-
-          return creator;
-        })
-      );
-
-      setCreators(enriched);
+      setCreators(creators);
     } catch (error: any) {
       toast({
         title: "Error",
