@@ -41,9 +41,11 @@ export const AppScreenshots = () => {
             <Card key={index} className="p-3 sm:p-4 bg-card border-border h-full">
               <div className="aspect-[4/3] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-2 flex items-center justify-center relative overflow-hidden">
                 <img 
-                  src="/logo.png" 
+                  src="/logo.webp" 
                   alt={screenshot.alt}
                   className="w-12 h-12 sm:w-16 sm:h-16 object-contain opacity-50"
+                  width="64"
+                  height="64"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               </div>

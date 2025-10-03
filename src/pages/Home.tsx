@@ -7,8 +7,8 @@ import { PlatformAvailability } from "@/components/home/PlatformAvailability";
 import { FAQ } from "@/components/home/FAQ";
 import { SocialProof } from "@/components/home/SocialProof";
 import { AppScreenshots } from "@/components/home/AppScreenshots";
-import heroImage from "@/assets/hero-bg.jpg";
-import logo from "@/assets/logo.png";
+import heroImage from "@/assets/hero-bg.webp";
+import logo from "@/assets/logo.webp";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -32,6 +32,8 @@ const Home = () => {
               src={logo} 
               alt="Koji app logo - Social discovery and creator monetization platform" 
               className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 animate-in fade-in zoom-in duration-700"
+              width="128"
+              height="128"
             />
           </div>
           

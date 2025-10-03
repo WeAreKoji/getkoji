@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.webp";
 import { validateAuthSignup, validateAuthLogin } from "@/lib/auth-validation";
 import { logError, getUserFriendlyError } from "@/lib/error-logger";
 import HCaptcha from '@hcaptcha/react-hcaptcha';

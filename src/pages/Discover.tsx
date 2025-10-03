@@ -12,7 +12,7 @@ import { haptics } from "@/lib/native";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import { ActiveFilters } from "@/components/discover/ActiveFilters";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.webp";
 interface Profile {
   id: string;
   display_name: string;
