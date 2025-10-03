@@ -96,25 +96,33 @@ const CreatorFeed = () => {
 
       let actualCreatorId = creatorId;
 
-      // If username is provided instead of UUID, look it up
+      // If username is provided instead of UUID, resolve it
       if (username && !creatorId) {
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("username", username)
-          .single();
+        // Check if username is actually a UUID
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        
+        if (uuidRegex.test(username)) {
+          // It's a UUID, use it directly
+          actualCreatorId = username;
+        } else {
+          // It's a username, resolve it using the RPC
+          const { data: resolvedData, error: resolveError } = await supabase
+            .rpc('get_user_id_by_username', { p_username: username })
+            .maybeSingle();
 
-        if (profileError || !profileData) {
-          toast({
-            title: "Creator not found",
-            description: "This creator profile doesn't exist.",
-            variant: "destructive",
-          });
-          navigate("/creators");
-          return;
+          if (resolveError || !resolvedData) {
+            toast({
+              title: "Creator not found",
+              description: "This creator profile doesn't exist.",
+              variant: "destructive",
+            });
+            navigate("/creators");
+            return;
+          }
+
+          actualCreatorId = resolvedData.id;
         }
-
-        actualCreatorId = profileData.id;
+        
         setResolvedCreatorId(actualCreatorId);
       }
 
@@ -126,18 +134,34 @@ const CreatorFeed = () => {
       setIsOwnProfile(user.id === actualCreatorId);
 
       // Fetch creator profile
-      const { data: creator } = await supabase
+      const { data: creator, error: creatorError } = await supabase
         .from("creator_profiles")
         .select("*")
         .eq("user_id", actualCreatorId)
-        .single();
+        .maybeSingle();
+
+      if (creatorError) {
+        logError(creatorError, 'CreatorFeed.fetchCreatorData.creator_profiles');
+      }
 
       if (!creator) {
+        // If it's the user's own profile and they're not a creator, redirect to setup
+        if (user.id === actualCreatorId) {
+          toast({
+            title: "Creator Profile Not Set Up",
+            description: "You haven't set up your creator profile yet.",
+            variant: "default",
+          });
+          navigate("/creator/setup");
+          return;
+        }
+        
         toast({
           title: "Creator not found",
+          description: "This creator profile doesn't exist.",
           variant: "destructive",
         });
-        navigate("/discover");
+        navigate("/creators");
         return;
       }
 

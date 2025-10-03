@@ -2265,6 +2265,12 @@ export type Database = {
         Args: { _user_id: string }
         Returns: string
       }
+      get_user_id_by_username: {
+        Args: { p_username: string }
+        Returns: {
+          id: string
+        }[]
+      }
       get_verification_stats: {
         Args: Record<PropertyKey, never>
         Returns: {

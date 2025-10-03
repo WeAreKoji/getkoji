@@ -34,7 +34,8 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleCardClick = () => {
-    navigate(`/creators/${creator.username || creator.user_id}`);
+    const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
+    navigate(path);
   };
 
   const handleVideoClick = (e: React.MouseEvent) => {
@@ -221,7 +222,8 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/creators/${creator.username || creator.user_id}`);
+              const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
+              navigate(path);
             }}
             size="lg"
             className="font-semibold"

@@ -132,7 +132,7 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <NavLink to="/creator/feed" className={getNavCls}>
+                      <NavLink to={user ? `/creator/${user.id}` : "/creator/dashboard"} className={getNavCls}>
                         <Newspaper className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
                         {open && <span>Content Feed</span>}
                       </NavLink>
