@@ -137,6 +137,111 @@ export type Database = {
         }
         Relationships: []
       }
+      content_flags: {
+        Row: {
+          ai_analysis: Json | null
+          auto_action: string | null
+          confidence_score: number
+          content_id: string
+          content_type: string
+          created_at: string | null
+          flag_type: string
+          id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          auto_action?: string | null
+          confidence_score: number
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          flag_type: string
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          auto_action?: string | null
+          confidence_score?: number
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          flag_type?: string
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      content_reports: {
+        Row: {
+          action_taken: string | null
+          content_id: string
+          content_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          priority: string
+          report_category: string
+          reporter_id: string
+          resolution_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_taken?: string | null
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          priority?: string
+          report_category: string
+          reporter_id: string
+          resolution_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_taken?: string | null
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          priority?: string
+          report_category?: string
+          reporter_id?: string
+          resolution_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       creator_id_verification: {
         Row: {
           created_at: string | null
@@ -815,6 +920,63 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moderation_actions: {
+        Row: {
+          action_type: string
+          content_id: string
+          content_type: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          moderator_id: string
+          reason: string
+          related_flag_id: string | null
+          related_report_id: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          moderator_id: string
+          reason: string
+          related_flag_id?: string | null
+          related_report_id?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          moderator_id?: string
+          reason?: string
+          related_flag_id?: string | null
+          related_report_id?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_actions_related_flag_id_fkey"
+            columns: ["related_flag_id"]
+            isOneToOne: false
+            referencedRelation: "content_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_actions_related_report_id_fkey"
+            columns: ["related_report_id"]
+            isOneToOne: false
+            referencedRelation: "content_reports"
             referencedColumns: ["id"]
           },
         ]
@@ -1878,6 +2040,62 @@ export type Database = {
         }
         Relationships: []
       }
+      user_warnings: {
+        Row: {
+          acknowledged: boolean | null
+          acknowledged_at: string | null
+          created_at: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          issued_by: string
+          metadata: Json | null
+          related_content_id: string | null
+          related_report_id: string | null
+          severity: string
+          user_id: string
+          warning_type: string
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          created_at?: string | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          issued_by: string
+          metadata?: Json | null
+          related_content_id?: string | null
+          related_report_id?: string | null
+          severity: string
+          user_id: string
+          warning_type: string
+        }
+        Update: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          created_at?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          issued_by?: string
+          metadata?: Json | null
+          related_content_id?: string | null
+          related_report_id?: string | null
+          severity?: string
+          user_id?: string
+          warning_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_warnings_related_report_id_fkey"
+            columns: ["related_report_id"]
+            isOneToOne: false
+            referencedRelation: "content_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       discoverable_profiles: {
@@ -2022,6 +2240,28 @@ export type Database = {
         Args: { referral_uuid: string }
         Returns: undefined
       }
+      create_content_flag: {
+        Args: {
+          _ai_analysis?: Json
+          _auto_action?: string
+          _confidence_score: number
+          _content_id: string
+          _content_type: string
+          _flag_type: string
+        }
+        Returns: string
+      }
+      create_content_report: {
+        Args: {
+          _content_id: string
+          _content_type: string
+          _description?: string
+          _ip_address?: unknown
+          _report_category: string
+          _user_agent?: string
+        }
+        Returns: string
+      }
       create_notification: {
         Args: {
           _data?: Json
@@ -2056,7 +2296,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           approved_posts: number
+          pending_flags: number
           pending_posts: number
+          pending_reports: number
+          pending_verifications: number
           rejected_posts: number
           total_posts: number
         }[]

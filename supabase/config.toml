@@ -62,3 +62,6 @@ verify_jwt = true
 
 [functions.accept-compliance]
 verify_jwt = true
+
+[functions.moderate-content]
+verify_jwt = false
