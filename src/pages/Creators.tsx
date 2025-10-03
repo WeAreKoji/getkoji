@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Users, Plus } from "lucide-react";
+import { Loader2, Users, Plus, MapPin, Calendar } from "lucide-react";
+import { VerificationBadges } from "@/components/profile/VerificationBadges";
+import { Skeleton } from "@/components/ui/skeleton";
 import BottomNav from "@/components/navigation/BottomNav";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -20,6 +22,9 @@ interface Creator {
     display_name: string;
     avatar_url: string | null;
     bio: string | null;
+    age: number | null;
+    city: string | null;
+    created_at: string;
   } | null;
 }
 
@@ -50,28 +55,67 @@ const Creators = () => {
 
       if (error) throw error;
 
-      const base = (data || []) as Creator[];
+      const base = (data || []) as any[];
 
       // Enrich creators missing profile using secure function
       const enriched = await Promise.all(
         base.map(async (c) => {
-          if (c.profile && c.profile.display_name) return c;
+          const creator: Creator = {
+            id: c.id,
+            user_id: c.user_id,
+            subscription_price: c.subscription_price,
+            subscriber_count: c.subscriber_count,
+            id_verified: c.id_verified,
+            created_at: c.created_at,
+            profile: null
+          };
+
+          // Use existing profile data or fetch from get_safe_profile
+          if (c.profile && c.profile.display_name) {
+            creator.profile = {
+              display_name: c.profile.display_name,
+              avatar_url: c.profile.avatar_url || null,
+              bio: c.profile.bio || null,
+              age: null,
+              city: null,
+              created_at: c.created_at
+            };
+            return creator;
+          }
+
           try {
             const { data: safe } = await supabase.rpc('get_safe_profile', { profile_id: c.user_id });
             const row = Array.isArray(safe) ? safe[0] : (safe as any)?.[0] || (safe as any);
             if (row) {
-              c.profile = {
+              creator.profile = {
                 display_name: row.display_name || 'Creator',
                 avatar_url: row.avatar_url || null,
                 bio: row.bio || null,
+                age: row.age || null,
+                city: row.city || null,
+                created_at: row.created_at || c.created_at,
               };
             } else {
-              c.profile = { display_name: 'Creator', avatar_url: null, bio: null };
+              creator.profile = { 
+                display_name: 'Creator', 
+                avatar_url: null, 
+                bio: null,
+                age: null,
+                city: null,
+                created_at: c.created_at
+              };
             }
           } catch {
-            c.profile = c.profile ?? { display_name: 'Creator', avatar_url: null, bio: null };
+            creator.profile = { 
+              display_name: 'Creator', 
+              avatar_url: null, 
+              bio: null,
+              age: null,
+              city: null,
+              created_at: c.created_at
+            };
           }
-          return c;
+          return creator;
         })
       );
 
@@ -115,48 +159,96 @@ const Creators = () => {
         </div>
       </header>
 
-      <main className={isMobile ? "max-w-lg mx-auto px-4 py-6 space-y-4" : "container max-w-4xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-4"}>
+      <main className={isMobile ? "max-w-lg mx-auto px-4 py-6 space-y-4" : "container max-w-4xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6"}>
         {creators.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">No creators yet</p>
+          <Card className="md:col-span-2">
+            <CardContent className="py-16 text-center">
+              <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-lg text-muted-foreground">No creators yet</p>
+              <p className="text-sm text-muted-foreground mt-2">Be the first to become a creator!</p>
             </CardContent>
           </Card>
         ) : (
           creators.map((creator) => (
             <Card
               key={creator.id}
-              className="hover:shadow-lg transition-shadow cursor-pointer"
+              className="group hover:shadow-xl hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden"
               onClick={() => navigate(`/creator/${creator.user_id}`)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <Avatar className={isMobile ? "w-16 h-16" : "w-20 h-20"}>
+              {/* Gradient header */}
+              <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 relative">
+                <div className="absolute -bottom-12 left-6">
+                  <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
                     <AvatarImage src={creator.profile?.avatar_url || undefined} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-2xl bg-gradient-to-br from-primary/30 to-primary/10">
                       {(creator.profile?.display_name?.charAt(0)) || 'C'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className={isMobile ? "font-semibold text-lg text-foreground" : "font-semibold text-xl text-foreground"}>
+                </div>
+              </div>
+
+              <CardContent className="pt-16 pb-6 px-6 space-y-3">
+                {/* Name & verification */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <h3 className="font-bold text-xl text-foreground truncate">
                       {creator.profile?.display_name || 'Creator'}
                     </h3>
-                    {creator.profile?.bio && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                        {creator.profile.bio}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                      <span>{creator.subscriber_count} subscribers</span>
-                      <span className="font-semibold text-primary">
-                        ${creator.subscription_price}/month
-                      </span>
-                    </div>
+                    <VerificationBadges 
+                      userId={creator.user_id}
+                      isCreator={true}
+                      idVerified={creator.id_verified}
+                      size="md"
+                    />
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                  >
                     View
                   </Button>
+                </div>
+
+                {/* Bio */}
+                {creator.profile?.bio && (
+                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                    {creator.profile.bio}
+                  </p>
+                )}
+
+                {/* Location & member since */}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  {creator.profile?.age && (
+                    <span>{creator.profile.age} years</span>
+                  )}
+                  {creator.profile?.city && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {creator.profile.city}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(creator.profile?.created_at || creator.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+
+                {/* Stats & Price */}
+                <div className="flex items-center justify-between pt-3 border-t border-border">
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-semibold">{creator.subscriber_count}</span>
+                      <span className="text-muted-foreground">subscribers</span>
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-primary">
+                      ${creator.subscription_price}
+                      <span className="text-xs text-muted-foreground font-normal">/mo</span>
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Plus, Lock, ExternalLink, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Lock, ExternalLink, Edit, Trash2, MapPin, Calendar, Users } from "lucide-react";
+import { VerificationBadges } from "@/components/profile/VerificationBadges";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
 import PostCreationDialog from "@/components/creator/PostCreationDialog";
@@ -33,6 +35,10 @@ interface CreatorProfile {
 interface Profile {
   display_name: string;
   avatar_url: string | null;
+  bio: string | null;
+  age: number | null;
+  city: string | null;
+  created_at: string;
 }
 
 interface Post {
@@ -107,12 +113,11 @@ const CreatorFeed = () => {
 
       setCreatorProfile(creator);
 
-      // Fetch profile
-      const { data: userProfile } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", creatorId)
-        .single();
+      // Fetch profile using get_safe_profile to respect RLS
+      const { data: safeProfile } = await supabase.rpc('get_safe_profile', { 
+        profile_id: creatorId 
+      });
+      const userProfile = Array.isArray(safeProfile) ? safeProfile[0] : safeProfile;
 
       setProfile(userProfile);
 
@@ -280,35 +285,97 @@ const CreatorFeed = () => {
         </div>
 
         {/* Creator Info */}
-        <Card className="m-4 p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold">{profile.display_name}</h1>
-              <p className="text-muted-foreground">
-                ${creatorProfile.subscription_price}/month
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {creatorProfile.subscriber_count} subscribers
-              </p>
+        <Card className="m-4 overflow-hidden">
+          {/* Cover gradient */}
+          <div className="h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
+          
+          <div className="px-6 pb-6">
+            {/* Avatar positioned over cover */}
+            <div className="flex items-end justify-between -mt-16 mb-4">
+              <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
+                <AvatarImage src={profile.avatar_url || undefined} />
+                <AvatarFallback className="text-2xl">
+                  {profile.display_name?.charAt(0) || 'C'}
+                </AvatarFallback>
+              </Avatar>
+              
+              {!isOwnProfile && (
+                <Button
+                  onClick={handleSubscribe}
+                  disabled={subscribing || isSubscribed}
+                  size="lg"
+                  className="shadow-lg"
+                >
+                  {subscribing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : isSubscribed ? (
+                    "Subscribed ✓"
+                  ) : (
+                    "Subscribe"
+                  )}
+                </Button>
+              )}
             </div>
-            {!isOwnProfile && (
-              <Button
-                onClick={handleSubscribe}
-                disabled={subscribing || isSubscribed}
-                size="lg"
-              >
-                {subscribing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : isSubscribed ? (
-                  "Subscribed ✓"
-                ) : (
-                  "Subscribe"
+
+            {/* Creator details */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">{profile.display_name}</h1>
+                <VerificationBadges 
+                  userId={creatorId}
+                  isCreator={true}
+                  idVerified={creatorProfile.id_verified}
+                  size="lg"
+                />
+              </div>
+
+              {profile.bio && (
+                <p className="text-muted-foreground">{profile.bio}</p>
+              )}
+
+              {/* Stats row */}
+              <div className="flex items-center gap-6 text-sm">
+                {profile.age && (
+                  <span className="text-muted-foreground">{profile.age} years old</span>
                 )}
-              </Button>
-            )}
+                {profile.city && (
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    {profile.city}
+                  </span>
+                )}
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Calendar className="w-4 h-4" />
+                  Joined {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+
+              {/* Subscription info */}
+              <div className="flex items-center gap-6 pt-2 border-t border-border">
+                <div>
+                  <p className="text-2xl font-bold text-primary">
+                    ${creatorProfile.subscription_price}
+                    <span className="text-sm text-muted-foreground font-normal">/month</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">
+                    <span className="font-semibold">{creatorProfile.subscriber_count}</span>
+                    <span className="text-muted-foreground"> subscribers</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">
+                    <span className="font-semibold">{posts.length}</span>
+                    <span className="text-muted-foreground"> posts</span>
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {!isSubscribed && !isOwnProfile && (
