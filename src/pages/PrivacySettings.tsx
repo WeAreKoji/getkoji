@@ -22,6 +22,10 @@ interface PrivacySettings {
   show_photos: boolean;
   show_location: "exact" | "region" | "hidden";
   show_age: "exact" | "range" | "hidden";
+  profile_visibility: "everyone" | "matches_only" | "hidden";
+  message_permissions: "everyone" | "matches_only" | "none";
+  online_status_visibility: "everyone" | "matches_only" | "hidden";
+  searchable_by_username: boolean;
 }
 
 const PrivacySettings = () => {
@@ -36,7 +40,12 @@ const PrivacySettings = () => {
     show_photos: true,
     show_location: "exact",
     show_age: "exact",
+    profile_visibility: "everyone",
+    message_permissions: "everyone",
+    online_status_visibility: "everyone",
+    searchable_by_username: true,
   });
+  const [blockedCount, setBlockedCount] = useState(0);
 
   useEffect(() => {
     checkAuth();
@@ -54,22 +63,34 @@ const PrivacySettings = () => {
 
   const fetchSettings = async (userId: string) => {
     try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("privacy_settings")
-        .eq("id", userId)
-        .single();
+      const [settingsData, blockedData] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("privacy_settings")
+          .eq("id", userId)
+          .single(),
+        supabase
+          .from("blocked_users")
+          .select("*", { count: "exact", head: true })
+          .eq("blocker_id", userId)
+      ]);
 
-      if (data?.privacy_settings) {
-        const parsed = data.privacy_settings as any;
+      if (settingsData.data?.privacy_settings) {
+        const parsed = settingsData.data.privacy_settings as any;
         setSettings({
           show_in_discover: parsed.show_in_discover ?? true,
           show_interests: parsed.show_interests ?? true,
           show_photos: parsed.show_photos ?? true,
           show_location: parsed.show_location ?? "exact",
           show_age: parsed.show_age ?? "exact",
+          profile_visibility: parsed.profile_visibility ?? "everyone",
+          message_permissions: parsed.message_permissions ?? "everyone",
+          online_status_visibility: parsed.online_status_visibility ?? "everyone",
+          searchable_by_username: parsed.searchable_by_username ?? true,
         });
       }
+
+      setBlockedCount(blockedData.count || 0);
     } catch (error) {
       logError(error, 'PrivacySettings.fetchSettings');
     } finally {
@@ -117,7 +138,7 @@ const PrivacySettings = () => {
       <div className="container max-w-2xl mx-auto">
         {/* Header */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3 flex items-center justify-between">
-          <Link to="/profile" aria-label="Back to profile">
+          <Link to="/settings" aria-label="Back to settings">
             <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
           </Link>
           <h1 className="font-semibold">Privacy Settings</h1>
@@ -127,15 +148,20 @@ const PrivacySettings = () => {
         </div>
 
         <div className="px-4 py-6 space-y-6">
-          {/* Quick Link to Security Settings */}
+          {/* Blocked Users Quick Access */}
           <Card className="p-4 bg-primary/5 border-primary/20">
-            <Link to="/settings/security" className="flex items-center justify-between group">
+            <Link to="/settings/blocked-users" className="flex items-center justify-between group">
               <div className="space-y-1">
-                <h3 className="font-semibold group-hover:text-primary transition-colors">
-                  Security Settings
+                <h3 className="font-semibold group-hover:text-primary transition-colors flex items-center gap-2">
+                  Blocked Users
+                  {blockedCount > 0 && (
+                    <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                      {blockedCount}
+                    </span>
+                  )}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Manage 2FA, sessions, and password security
+                  Manage your blocked accounts
                 </p>
               </div>
               <ArrowLeft className="w-5 h-5 rotate-180 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -245,6 +271,98 @@ const PrivacySettings = () => {
                   <SelectItem value="hidden">Hidden</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </Card>
+
+          {/* Data Visibility & Access */}
+          <Card className="p-6 space-y-4">
+            <div>
+              <h3 className="font-semibold text-lg mb-1">Data Visibility & Access</h3>
+              <p className="text-sm text-muted-foreground">
+                Control who can see your profile and interact with you
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Profile Visibility</Label>
+              <Select
+                value={settings.profile_visibility}
+                onValueChange={(value: any) =>
+                  setSettings({ ...settings, profile_visibility: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="everyone">Everyone</SelectItem>
+                  <SelectItem value="matches_only">Only Matches</SelectItem>
+                  <SelectItem value="hidden">Hidden (Discovery Off)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose who can view your full profile
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Message Permissions</Label>
+              <Select
+                value={settings.message_permissions}
+                onValueChange={(value: any) =>
+                  setSettings({ ...settings, message_permissions: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="everyone">Everyone</SelectItem>
+                  <SelectItem value="matches_only">Only Matches</SelectItem>
+                  <SelectItem value="none">No One</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Who can send you messages
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Online Status</Label>
+              <Select
+                value={settings.online_status_visibility}
+                onValueChange={(value: any) =>
+                  setSettings({ ...settings, online_status_visibility: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="everyone">Everyone</SelectItem>
+                  <SelectItem value="matches_only">Only Matches</SelectItem>
+                  <SelectItem value="hidden">Hidden</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Who can see when you're online
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="searchable">Searchable by Username</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow others to find you by username
+                </p>
+              </div>
+              <Switch
+                id="searchable"
+                checked={settings.searchable_by_username}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, searchable_by_username: checked })
+                }
+              />
             </div>
           </Card>
 

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Loader2, SlidersHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,6 +21,8 @@ interface DiscoveryPreferences {
   show_verified_only: boolean;
   show_creators_only: boolean;
   show_non_creators: boolean;
+  distance_unit: "km" | "miles";
+  interested_in_interests: string[];
 }
 
 const DiscoverySettings = () => {
@@ -28,6 +31,7 @@ const DiscoverySettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [interests, setInterests] = useState<{ id: string; name: string }[]>([]);
   const [preferences, setPreferences] = useState<DiscoveryPreferences>({
     min_age: 18,
     max_age: 99,
@@ -37,10 +41,13 @@ const DiscoverySettings = () => {
     show_verified_only: false,
     show_creators_only: false,
     show_non_creators: true,
+    distance_unit: 'km',
+    interested_in_interests: [],
   });
 
   useEffect(() => {
     checkUser();
+    fetchInterests();
   }, []);
 
   const checkUser = async () => {
@@ -74,9 +81,22 @@ const DiscoverySettings = () => {
         show_verified_only: data.show_verified_only,
         show_creators_only: data.show_creators_only,
         show_non_creators: data.show_non_creators,
+        distance_unit: (data.distance_unit as "km" | "miles") || 'km',
+        interested_in_interests: data.interested_in_interests || [],
       });
     }
     setLoading(false);
+  };
+
+  const fetchInterests = async () => {
+    const { data } = await supabase
+      .from('interests')
+      .select('id, name')
+      .order('name');
+    
+    if (data) {
+      setInterests(data);
+    }
   };
 
   const savePreferences = async () => {
@@ -118,6 +138,24 @@ const DiscoverySettings = () => {
     });
   };
 
+  const toggleInterest = (interestId: string) => {
+    setPreferences(prev => {
+      const newInterests = prev.interested_in_interests.includes(interestId)
+        ? prev.interested_in_interests.filter(id => id !== interestId)
+        : [...prev.interested_in_interests, interestId];
+      return { ...prev, interested_in_interests: newInterests };
+    });
+  };
+
+  const convertDistance = (km: number, toUnit: "km" | "miles"): number => {
+    return toUnit === "miles" ? Math.round(km * 0.621371) : km;
+  };
+
+  const getDistanceDisplay = (): string => {
+    const value = convertDistance(preferences.max_distance_km, preferences.distance_unit);
+    return `${value} ${preferences.distance_unit}`;
+  };
+
   const handleGenderChange = (value: string) => {
     if (value === 'everyone') {
       setPreferences(prev => ({ ...prev, interested_in_gender: ['male', 'female'] }));
@@ -142,7 +180,7 @@ const DiscoverySettings = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/discover')}
+            onClick={() => navigate('/settings')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -199,10 +237,28 @@ const DiscoverySettings = () => {
         {/* Distance */}
         <Card>
           <CardHeader>
-            <CardTitle>Distance</CardTitle>
-            <CardDescription>
-              Show profiles within {preferences.max_distance_km} km
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Distance</CardTitle>
+                <CardDescription>
+                  Show profiles within {getDistanceDisplay()}
+                </CardDescription>
+              </div>
+              <Select
+                value={preferences.distance_unit}
+                onValueChange={(value: "km" | "miles") =>
+                  setPreferences(prev => ({ ...prev, distance_unit: value }))
+                }
+              >
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="km">km</SelectItem>
+                  <SelectItem value="miles">miles</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <Slider
@@ -284,6 +340,49 @@ const DiscoverySettings = () => {
                 <Label htmlFor="gender_everyone" className="font-normal cursor-pointer">Everyone</Label>
               </div>
             </RadioGroup>
+          </CardContent>
+        </Card>
+
+        {/* Interests Filter */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filter by Interests</CardTitle>
+            <CardDescription>
+              Show profiles with these interests (optional)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {interests.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Loading interests...</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {interests.map((interest) => (
+                  <div key={interest.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`interest_${interest.id}`}
+                      checked={preferences.interested_in_interests.includes(interest.id)}
+                      onCheckedChange={() => toggleInterest(interest.id)}
+                    />
+                    <Label
+                      htmlFor={`interest_${interest.id}`}
+                      className="cursor-pointer text-sm"
+                    >
+                      {interest.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            )}
+            {preferences.interested_in_interests.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPreferences(prev => ({ ...prev, interested_in_interests: [] }))}
+                className="mt-3"
+              >
+                Clear all interests
+              </Button>
+            )}
           </CardContent>
         </Card>
 

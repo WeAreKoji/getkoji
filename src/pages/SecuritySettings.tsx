@@ -7,12 +7,14 @@ import { TwoFactorAuth } from "@/components/security/TwoFactorAuth";
 import { SessionManagement } from "@/components/security/SessionManagement";
 import { SecurityEvents } from "@/components/security/SecurityEvents";
 import { PasswordStrengthMeter } from "@/components/security/PasswordStrengthMeter";
+import { LoginHistory } from "@/components/security/LoginHistory";
+import { PasswordRequirements } from "@/components/security/PasswordRequirements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldCheck, ArrowLeft, Lock, AlertTriangle } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Lock, AlertTriangle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PageTransition } from "@/components/transitions/PageTransition";
 
@@ -133,9 +135,14 @@ const SecuritySettings = () => {
         <div className="container mx-auto max-w-4xl space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/settings")}
+              className="flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
               <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                   <ShieldCheck className="w-8 h-8" />
@@ -153,12 +160,27 @@ const SecuritySettings = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Account Locked</AlertTitle>
               <AlertDescription>
-                Your account is temporarily locked due to multiple failed login attempts.
+                Your account is temporarily locked due to {lockoutStatus.failed_attempts} failed login attempts.
                 It will be automatically unlocked at{" "}
                 {new Date(lockoutStatus.unlock_at).toLocaleString()}.
               </AlertDescription>
             </Alert>
           )}
+
+          {/* Password Requirements Info */}
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle>Password Security Policy</AlertTitle>
+            <AlertDescription>
+              For your security, passwords must meet the following requirements:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>At least 8 characters long</li>
+                <li>Mix of uppercase and lowercase letters</li>
+                <li>At least one number</li>
+                <li>At least one special character</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
 
           {/* Change Password */}
           <Card>
@@ -194,7 +216,12 @@ const SecuritySettings = () => {
                 />
               </div>
 
-              {newPassword && <PasswordStrengthMeter password={newPassword} />}
+              {newPassword && (
+                <>
+                  <PasswordStrengthMeter password={newPassword} />
+                  <PasswordRequirements password={newPassword} />
+                </>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm New Password</Label>
@@ -215,8 +242,11 @@ const SecuritySettings = () => {
           {/* Two-Factor Authentication */}
           <TwoFactorAuth userId={user.id} />
 
-          {/* Session Management */}
+          {/* Session Management - Trusted Devices */}
           <SessionManagement userId={user.id} />
+
+          {/* Login History */}
+          <LoginHistory userId={user.id} />
 
           {/* Security Events */}
           <SecurityEvents userId={user.id} />

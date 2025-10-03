@@ -618,9 +618,11 @@ export type Database = {
       discovery_preferences: {
         Row: {
           created_at: string | null
+          distance_unit: string | null
           id: string
           interested_in: string[] | null
           interested_in_gender: string[] | null
+          interested_in_interests: string[] | null
           max_age: number | null
           max_distance_km: number | null
           min_age: number | null
@@ -632,9 +634,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          distance_unit?: string | null
           id?: string
           interested_in?: string[] | null
           interested_in_gender?: string[] | null
+          interested_in_interests?: string[] | null
           max_age?: number | null
           max_distance_km?: number | null
           min_age?: number | null
@@ -646,9 +650,11 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          distance_unit?: string | null
           id?: string
           interested_in?: string[] | null
           interested_in_gender?: string[] | null
+          interested_in_interests?: string[] | null
           max_age?: number | null
           max_distance_km?: number | null
           min_age?: number | null
