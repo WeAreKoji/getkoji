@@ -1483,6 +1483,7 @@ export type Database = {
       public_creator_profiles: {
         Row: {
           created_at: string | null
+          id: string | null
           id_verified: boolean | null
           subscriber_count: number | null
           subscription_price: number | null
@@ -1490,6 +1491,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          id?: string | null
           id_verified?: boolean | null
           subscriber_count?: number | null
           subscription_price?: number | null
@@ -1497,6 +1499,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          id?: string | null
           id_verified?: boolean | null
           subscriber_count?: number | null
           subscription_price?: number | null
