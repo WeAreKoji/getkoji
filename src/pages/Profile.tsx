@@ -318,9 +318,8 @@ const Profile = () => {
                         View as Public
                       </Button>
                       <Link to="/profile/edit">
-                        <Button size="lg" className="h-11 px-6 text-sm font-semibold">
-                          <Edit className="w-4 h-4 mr-2" />
-                          Edit Profile
+                        <Button size="icon">
+                          <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
                     </div>
