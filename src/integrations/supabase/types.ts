@@ -437,6 +437,83 @@ export type Database = {
           },
         ]
       }
+      document_access_logs: {
+        Row: {
+          access_reason: string | null
+          access_type: string
+          accessed_by: string
+          created_at: string | null
+          document_type: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          verification_id: string
+        }
+        Insert: {
+          access_reason?: string | null
+          access_type: string
+          accessed_by: string
+          created_at?: string | null
+          document_type: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          verification_id: string
+        }
+        Update: {
+          access_reason?: string | null
+          access_type?: string
+          accessed_by?: string
+          created_at?: string | null
+          document_type?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_access_logs_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "creator_id_verification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_access_permissions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          is_active: boolean | null
+          permission_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          permission_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          permission_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       failed_transfers: {
         Row: {
           amount: number
@@ -1236,6 +1313,10 @@ export type Database = {
         Args: { amount: number; creator_user_id: string }
         Returns: undefined
       }
+      can_access_documents: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       can_view_email: {
         Args: { profile_user_id: string }
         Returns: boolean
@@ -1335,6 +1416,17 @@ export type Database = {
           _details?: Json
           _resource_id?: string
           _resource_type: string
+        }
+        Returns: string
+      }
+      log_document_access: {
+        Args: {
+          _access_reason?: string
+          _access_type?: string
+          _document_type: string
+          _ip_address?: unknown
+          _user_agent?: string
+          _verification_id: string
         }
         Returns: string
       }

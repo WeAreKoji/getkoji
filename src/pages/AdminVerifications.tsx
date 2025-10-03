@@ -91,30 +91,46 @@ export default function AdminVerifications() {
     setLoading(false);
   };
 
-  const getSignedUrl = async (path: string) => {
-    if (imageUrls[path]) return imageUrls[path];
+  const getSignedUrl = async (verificationId: string, documentType: 'front' | 'back' | 'selfie') => {
+    const cacheKey = `${verificationId}-${documentType}`;
+    if (imageUrls[cacheKey]) return imageUrls[cacheKey];
 
-    const { data, error } = await supabase.storage
-      .from("id-documents")
-      .createSignedUrl(path, 3600); // 1 hour expiry
+    try {
+      const { data, error } = await supabase.functions.invoke('get-signed-document-url', {
+        body: {
+          verificationId: verificationId,
+          documentType: documentType,
+          accessReason: 'Admin review of identity verification'
+        }
+      });
 
-    if (error) {
+      if (error) throw error;
+      
+      if (data?.signedUrl) {
+        setImageUrls(prev => ({ ...prev, [cacheKey]: data.signedUrl }));
+        return data.signedUrl;
+      }
+      
+      return null;
+    } catch (error) {
       logError(error, 'AdminVerifications.getSignedUrl');
+      toast({
+        title: "Failed to load document",
+        description: "You may not have permission to access this document.",
+        variant: "destructive",
+      });
       return null;
     }
-
-    setImageUrls(prev => ({ ...prev, [path]: data.signedUrl }));
-    return data.signedUrl;
   };
 
   const viewVerification = async (verification: Verification) => {
     setSelectedVerification(verification);
     // Preload signed URLs
-    await getSignedUrl(verification.document_front_url);
+    await getSignedUrl(verification.id, 'front');
     if (verification.document_back_url) {
-      await getSignedUrl(verification.document_back_url);
+      await getSignedUrl(verification.id, 'back');
     }
-    await getSignedUrl(verification.selfie_url);
+    await getSignedUrl(verification.id, 'selfie');
   };
 
   const handleReview = async (verificationId: string, approved: boolean) => {
@@ -262,7 +278,8 @@ export default function AdminVerifications() {
                 <div>
                   <h3 className="font-medium mb-2">Document Front</h3>
                   <DocumentImage
-                    url={selectedVerification.document_front_url}
+                    verificationId={selectedVerification.id}
+                    documentType="front"
                     getSignedUrl={getSignedUrl}
                     imageUrls={imageUrls}
                   />
@@ -271,7 +288,8 @@ export default function AdminVerifications() {
                   <div>
                     <h3 className="font-medium mb-2">Document Back</h3>
                     <DocumentImage
-                      url={selectedVerification.document_back_url}
+                      verificationId={selectedVerification.id}
+                      documentType="back"
                       getSignedUrl={getSignedUrl}
                       imageUrls={imageUrls}
                     />
@@ -281,7 +299,8 @@ export default function AdminVerifications() {
               <div>
                 <h3 className="font-medium mb-2">Selfie Verification</h3>
                 <DocumentImage
-                  url={selectedVerification.selfie_url}
+                  verificationId={selectedVerification.id}
+                  documentType="selfie"
                   getSignedUrl={getSignedUrl}
                   imageUrls={imageUrls}
                 />
@@ -339,30 +358,33 @@ export default function AdminVerifications() {
 }
 
 function DocumentImage({ 
-  url, 
+  verificationId,
+  documentType,
   getSignedUrl, 
   imageUrls 
 }: { 
-  url: string; 
-  getSignedUrl: (path: string) => Promise<string | null>;
+  verificationId: string;
+  documentType: 'front' | 'back' | 'selfie';
+  getSignedUrl: (verificationId: string, documentType: 'front' | 'back' | 'selfie') => Promise<string | null>;
   imageUrls: Record<string, string>;
 }) {
   const [loading, setLoading] = useState(true);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const cacheKey = `${verificationId}-${documentType}`;
 
   useEffect(() => {
     const loadUrl = async () => {
-      if (imageUrls[url]) {
-        setSignedUrl(imageUrls[url]);
+      if (imageUrls[cacheKey]) {
+        setSignedUrl(imageUrls[cacheKey]);
         setLoading(false);
       } else {
-        const signed = await getSignedUrl(url);
+        const signed = await getSignedUrl(verificationId, documentType);
         setSignedUrl(signed);
         setLoading(false);
       }
     };
     loadUrl();
-  }, [url, getSignedUrl, imageUrls]);
+  }, [verificationId, documentType, getSignedUrl, imageUrls, cacheKey]);
 
   if (loading) {
     return (
