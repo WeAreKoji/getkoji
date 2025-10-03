@@ -582,6 +582,63 @@ export type Database = {
         }
         Relationships: []
       }
+      discovery_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          interested_in: string[] | null
+          max_age: number | null
+          max_distance_km: number | null
+          min_age: number | null
+          show_creators_only: boolean | null
+          show_non_creators: boolean | null
+          show_verified_only: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interested_in?: string[] | null
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          show_creators_only?: boolean | null
+          show_non_creators?: boolean | null
+          show_verified_only?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interested_in?: string[] | null
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          show_creators_only?: boolean | null
+          show_non_creators?: boolean | null
+          show_verified_only?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discovery_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discovery_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disputes: {
         Row: {
           amount: number
