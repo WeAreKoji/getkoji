@@ -77,6 +77,19 @@ const Discover = () => {
           showCreatorsOnly: data.show_creators_only || false,
           showVerifiedOnly: data.show_verified_only || false,
         });
+      } else {
+        // Create default preferences if none exist
+        await supabase.from('discovery_preferences').insert({
+          user_id: userId,
+          min_age: 18,
+          max_age: 99,
+          max_distance_km: 50,
+          interested_in: ['open_to_dating', 'make_friends', 'support_creators'],
+          interested_in_gender: ['male', 'female'],
+          show_verified_only: false,
+          show_creators_only: false,
+          show_non_creators: true,
+        });
       }
     } catch (error) {
       console.error('Error loading preferences:', error);
@@ -192,18 +205,46 @@ const Discover = () => {
       </div>;
   }
   if (!currentProfile) {
-    return <div className={isMobile ? "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4 pb-24" : "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4"}>
-        <div className="text-center max-w-md">
-          <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary animate-pulse" />
-          <h2 className="text-2xl font-bold mb-2">You're Early! 🎉</h2>
-          <p className="text-muted-foreground mb-4">
-            No other profiles are available right now. You're one of the first members!
-          </p>
-          <p className="text-sm text-muted-foreground mb-6">
-            Check back soon as more people join the community, or invite friends to get started.
-          </p>
-          
+    return <div className={isMobile ? "min-h-screen flex flex-col bg-gradient-to-br from-primary/5 to-secondary/5 px-4 pb-24" : "min-h-screen flex flex-col bg-gradient-to-br from-primary/5 to-secondary/5 px-4"}>
+        <div className="container mx-auto max-w-md pt-8">
+          <div className="flex justify-between items-center mb-6">
+            <img 
+              src={logo} 
+              alt="Koji" 
+              className="h-10 w-auto"
+            />
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate('/discovery-settings')} 
+                aria-label="Discovery settings"
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
+                <LogOut className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Active Filters Display */}
+          <ActiveFilters {...filters} />
         </div>
+
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary animate-pulse" />
+            <h2 className="text-2xl font-bold mb-2">You're Early! 🎉</h2>
+            <p className="text-muted-foreground mb-4">
+              No profiles match your current filters. Try adjusting your preferences or check back later as more people join!
+            </p>
+            <Button onClick={() => navigate('/discovery-settings')} className="mt-4">
+              Adjust Filters
+            </Button>
+          </div>
+        </div>
+        
         {isMobile && <BottomNav />}
       </div>;
   }
