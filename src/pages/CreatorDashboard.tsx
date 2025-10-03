@@ -106,7 +106,7 @@ const CreatorDashboard = () => {
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "creator")
-        .single();
+        .maybeSingle();
 
       if (!roleData) {
         toast({
