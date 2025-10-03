@@ -65,29 +65,49 @@ export default function AdminVerifications() {
   const fetchVerifications = async () => {
     setLoading(true);
     const statusFilter = activeTab as "pending" | "approved" | "rejected" | "under_review";
-    const { data, error } = await supabase
-      .from("creator_id_verification")
-      .select(`
-        *,
-        profiles:creator_id (
-          display_name,
-          email,
-          username
-        )
-      `)
-      .eq("status", statusFilter)
-      .order("submitted_at", { ascending: false });
+    
+    try {
+      // First, fetch verifications
+      const { data: verificationsData, error } = await supabase
+        .from("creator_id_verification")
+        .select("*")
+        .eq("status", statusFilter)
+        .order("submitted_at", { ascending: false });
 
-    if (error) {
+      if (error) throw error;
+
+      if (verificationsData && verificationsData.length > 0) {
+        // Batch fetch all creator profiles
+        const creatorIds = [...new Set(verificationsData.map(v => v.creator_id))];
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, display_name, email, username")
+          .in("id", creatorIds);
+
+        // Map profiles to verifications
+        const verificationsWithProfiles = verificationsData.map(verification => ({
+          ...verification,
+          profiles: profilesData?.find(p => p.id === verification.creator_id) || {
+            display_name: "Unknown",
+            email: "N/A",
+            username: null
+          }
+        })) as Verification[];
+
+        setVerifications(verificationsWithProfiles);
+      } else {
+        setVerifications([]);
+      }
+    } catch (error) {
       logError(error, 'AdminVerifications.fetchVerifications');
       toast({
         title: "Error",
         description: getUserFriendlyError(error),
         variant: "destructive",
       });
-    } else {
-      setVerifications(data as unknown as Verification[]);
+      setVerifications([]);
     }
+    
     setLoading(false);
   };
 
