@@ -5,39 +5,30 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Copy, Check, Gift, Users, TrendingUp, DollarSign, Calendar, HelpCircle, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Copy, Check, DollarSign, Users, TrendingUp, Calendar, Gift, ShieldAlert, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import BottomNav from "@/components/navigation/BottomNav";
-import { KojiConnectCard } from "@/components/referrals/KojiConnectCard";
 import { logError } from "@/lib/error-logger";
 
-interface ReferralStats {
-  totalReferrals: number;
-  completedReferrals: number;
-  pendingReferrals: number;
-  totalRewards: number;
-  availableCredits: number;
-  totalEarned: number;
-  creditsUsed: number;
-}
-
-interface CreatorStats {
-  activeReferrals: number;
-  totalCommission: number;
-  pendingCommission: number;
-}
-
-interface ReferralRecord {
+interface CreatorReferral {
   id: string;
+  referrer_id: string;
+  referred_creator_id: string;
   status: string;
   created_at: string;
-  completed_at: string | null;
-  referred_user: {
-    display_name: string;
+  activated_at: string | null;
+  expires_at: string | null;
+  total_earnings_tracked: number;
+  total_commission_earned: number;
+  commission_percentage: number;
+  referred_creator: {
     username: string | null;
-  } | null;
+    display_name: string;
+    id_verified?: boolean;
+  };
 }
 
 const Referrals = () => {
@@ -47,21 +38,15 @@ const Referrals = () => {
   const [loading, setLoading] = useState(true);
   const [referralCode, setReferralCode] = useState("");
   const [copied, setCopied] = useState(false);
-  const [stats, setStats] = useState<ReferralStats>({
-    totalReferrals: 0,
-    completedReferrals: 0,
-    pendingReferrals: 0,
-    totalRewards: 0,
-    availableCredits: 0,
-    totalEarned: 0,
-    creditsUsed: 0,
-  });
-  const [creatorStats, setCreatorStats] = useState<CreatorStats>({
+  const [referrals, setReferrals] = useState<CreatorReferral[]>([]);
+  const [isCreator, setIsCreator] = useState(false);
+  const [stats, setStats] = useState({
     activeReferrals: 0,
     totalCommission: 0,
     pendingCommission: 0,
+    nextPayoutDate: "",
+    nextPayoutAmount: 0,
   });
-  const [referralsList, setReferralsList] = useState<ReferralRecord[]>([]);
 
   useEffect(() => {
     checkAuth();
@@ -73,119 +58,136 @@ const Referrals = () => {
       navigate("/auth");
       return;
     }
-    await fetchReferralData(user.id);
+    await fetchData(user.id);
   };
 
-  const fetchReferralData = async (userId: string) => {
-    setLoading(true);
-    try {
-      // Batch 1: Fetch core data in parallel
-      const [
-        { data: referralCodeData },
-        { data: referrals },
-        { data: rewards },
-        { data: credits },
-        { data: creatorReferrals }
-      ] = await Promise.all([
-        supabase.from("referral_codes").select("code").eq("user_id", userId).maybeSingle(),
-        supabase.from("referrals").select("id, status, created_at, completed_at, referred_user_id").eq("referrer_id", userId).order("created_at", { ascending: false }),
-        supabase.from("referral_rewards").select("amount, status").eq("user_id", userId),
-        supabase.from("user_credits").select("balance, total_earned").eq("user_id", userId).maybeSingle(),
-        supabase.from("creator_referrals").select("*").eq("referrer_id", userId)
-      ]);
+  const getNextPayoutDate = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const payoutDates = [
+      new Date(currentYear, 2, 31), // End of March
+      new Date(currentYear, 5, 30), // End of June
+      new Date(currentYear, 8, 30), // End of September
+      new Date(currentYear, 11, 31), // End of December
+    ];
 
-      // Generate referral code if doesn't exist
-      if (!referralCodeData) {
-        const { data: profile } = await supabase
+    for (const date of payoutDates) {
+      if (now < date) {
+        return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+      }
+    }
+    
+    // If we're past December, return next March
+    return new Date(currentYear + 1, 2, 31).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  };
+
+  const fetchData = async (userId: string) => {
+    try {
+      // Check if user is a creator
+      const { data: creatorProfile } = await supabase
+        .from("creator_profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      const userIsCreator = !!creatorProfile;
+      setIsCreator(userIsCreator);
+
+      // Get or create referral code
+      let { data: codeData } = await supabase
+        .from("referral_codes")
+        .select("code")
+        .eq("user_id", userId)
+        .eq("referral_type", "creator")
+        .maybeSingle();
+
+      if (!codeData) {
+        const { data: profileData } = await supabase
           .from("profiles")
           .select("username")
           .eq("id", userId)
           .single();
 
         const newCode = await supabase.rpc("generate_referral_code", {
-          user_username: profile?.username || null,
+          user_username: profileData?.username || null
         });
 
-        if (newCode.data) {
-          await supabase.from("referral_codes").insert({
-            user_id: userId,
-            code: newCode.data,
-          });
-          setReferralCode(newCode.data);
-        }
+        await supabase.from("referral_codes").insert({
+          user_id: userId,
+          code: `CREATOR-${newCode.data}`,
+          referral_type: "creator"
+        });
+
+        setReferralCode(`CREATOR-${newCode.data}`);
       } else {
-        setReferralCode(referralCodeData.code);
+        setReferralCode(codeData.code);
       }
 
-      // Batch 2: Fetch referred user profiles if referrals exist
-      let referralsWithProfiles: ReferralRecord[] = [];
-      if (referrals && referrals.length > 0) {
-        const referredIds = [...new Set(referrals.map(r => r.referred_user_id))];
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("id, username, display_name")
-          .in("id", referredIds);
+      // Get creator referrals with creator profiles and verification status
+      const { data: referralsData } = await supabase
+        .from("creator_referrals")
+        .select("*")
+        .eq("referrer_id", userId)
+        .order("created_at", { ascending: false });
 
-        referralsWithProfiles = referrals.map(ref => ({
-          id: ref.id,
-          status: ref.status,
-          created_at: ref.created_at,
-          completed_at: ref.completed_at,
-          referred_user: profilesData?.find(p => p.id === ref.referred_user_id) || null
-        }));
-      }
+      // Fetch creator profiles and verification status
+      const referralsWithProfiles = await Promise.all(
+        (referralsData || []).map(async (ref) => {
+          const [profileResult, creatorProfileResult] = await Promise.all([
+            supabase.from("profiles").select("username, display_name").eq("id", ref.referred_creator_id).single(),
+            supabase.from("creator_profiles").select("id_verified").eq("user_id", ref.referred_creator_id).maybeSingle()
+          ]);
 
-      // Batch 3: Fetch creator commissions only if creator referrals exist
-      let pendingCommissions: any[] = [];
-      if (creatorReferrals && creatorReferrals.length > 0) {
-        const creatorRefIds = creatorReferrals.map(r => r.id);
-        const { data } = await supabase
-          .from("creator_referral_commissions")
-          .select("commission_amount")
-          .is("included_in_payout_id", null)
-          .in("creator_referral_id", creatorRefIds);
-        pendingCommissions = data || [];
-      }
+          return {
+            ...ref,
+            referred_creator: profileResult.data ? {
+              ...profileResult.data,
+              id_verified: creatorProfileResult.data?.id_verified || false,
+            } : { username: null, display_name: "Unknown", id_verified: false }
+          };
+        })
+      );
+
+      setReferrals(referralsWithProfiles);
 
       // Calculate stats
-      const totalEarned = credits?.total_earned || 0;
-      const balance = credits?.balance || 0;
+      const active = referralsWithProfiles?.filter(r => r.status === "active").length || 0;
+      const totalCommission = referralsWithProfiles?.reduce((sum, r) => sum + Number(r.total_commission_earned), 0) || 0;
+
+      // Get pending commissions
+      const { data: pendingCommissions } = await supabase
+        .from("creator_referral_commissions")
+        .select("commission_amount, creator_referral_id")
+        .is("included_in_payout_id", null)
+        .in("creator_referral_id", referralsWithProfiles?.map(r => r.id) || []);
+
+      const pendingAmount = pendingCommissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0;
 
       setStats({
-        totalReferrals: referrals?.length || 0,
-        completedReferrals: referrals?.filter(r => r.status === "completed").length || 0,
-        pendingReferrals: referrals?.filter(r => r.status === "pending").length || 0,
-        totalRewards: rewards?.reduce((sum, r) => sum + Number(r.amount), 0) || 0,
-        availableCredits: balance,
-        totalEarned,
-        creditsUsed: totalEarned - balance,
-      });
-
-      setReferralsList(referralsWithProfiles);
-
-      setCreatorStats({
-        activeReferrals: creatorReferrals?.filter(r => r.status === "active").length || 0,
-        totalCommission: creatorReferrals?.reduce((sum, r) => sum + Number(r.total_commission_earned), 0) || 0,
-        pendingCommission: pendingCommissions.reduce((sum, c) => sum + Number(c.commission_amount), 0),
+        activeReferrals: active,
+        totalCommission,
+        pendingCommission: pendingAmount,
+        nextPayoutDate: getNextPayoutDate(),
+        nextPayoutAmount: pendingAmount >= 25 ? pendingAmount : 0,
       });
     } catch (error) {
-      logError(error, 'Referrals.fetchReferralData');
+      logError(error, 'Referrals.fetchData');
     } finally {
       setLoading(false);
     }
   };
 
-  const getReferralLink = () => {
-    return `${window.location.origin}/?ref=${referralCode}`;
+  const getCreatorReferralLink = () => {
+    return `${window.location.origin}/creator-application?ref=${referralCode}`;
   };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(getReferralLink());
+      await navigator.clipboard.writeText(getCreatorReferralLink());
       setCopied(true);
       toast({
         title: "Copied!",
-        description: "Referral link copied to clipboard",
+        description: "Creator referral link copied to clipboard",
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -198,8 +200,26 @@ const Referrals = () => {
   };
 
   const formatDate = (date: string | null) => {
-    if (!date) return "Pending";
+    if (!date) return "N/A";
     return new Date(date).toLocaleDateString();
+  };
+
+  const calculateMonthlyEarnings = (referral: CreatorReferral) => {
+    if (!referral.activated_at) return 0;
+    const monthsActive = Math.max(1, Math.floor((Date.now() - new Date(referral.activated_at).getTime()) / (30 * 24 * 60 * 60 * 1000)));
+    return referral.total_earnings_tracked / monthsActive;
+  };
+
+  const getStatusBadge = (referral: CreatorReferral) => {
+    if (referral.status === "active") {
+      return { label: "Active - Earning", variant: "default" as const, icon: CheckCircle };
+    } else if (referral.status === "expired") {
+      return { label: "Expired", variant: "secondary" as const, icon: Clock };
+    } else if (referral.referred_creator.id_verified) {
+      return { label: "Pending First Post", variant: "outline" as const, icon: AlertCircle };
+    } else {
+      return { label: "Pending Verification", variant: "outline" as const, icon: Clock };
+    }
   };
 
   if (loading) {
@@ -213,43 +233,68 @@ const Referrals = () => {
   return (
     <SafeAreaView bottom={isMobile}>
       <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
-        <div className="container max-w-4xl mx-auto px-4 py-6">
+        <div className="container max-w-6xl mx-auto px-4 py-6">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold">Referral Program</h1>
+            <h1 className="text-3xl font-bold">Koji Connect - Creator Referral Program</h1>
             <p className="text-muted-foreground mt-2">
-              Share Koji with friends and earn credits together
+              Earn 7.5% commission on creator referrals for 9 months
             </p>
           </div>
 
-          {/* Koji Connect Card */}
-          {creatorStats.activeReferrals > 0 && (
-            <div className="mb-6">
-              <KojiConnectCard 
-                activeReferrals={creatorStats.activeReferrals}
-                totalCommission={creatorStats.totalCommission}
-                pendingCommission={creatorStats.pendingCommission}
-              />
-            </div>
-          )}
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-muted-foreground">Active Referrals</span>
+              </div>
+              <p className="text-2xl font-bold">{stats.activeReferrals}</p>
+            </Card>
 
-          {/* Tabs */}
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="w-4 h-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Total Earned</span>
+              </div>
+              <p className="text-2xl font-bold">${stats.totalCommission.toFixed(2)}</p>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-muted-foreground">Pending Commission</span>
+              </div>
+              <p className="text-2xl font-bold">${stats.pendingCommission.toFixed(2)}</p>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Gift className="w-4 h-4 text-purple-500" />
+                <span className="text-sm text-muted-foreground">Next Payout</span>
+              </div>
+              <p className="text-lg font-bold">${stats.nextPayoutAmount.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.pendingCommission < 25 ? `$${(25 - stats.pendingCommission).toFixed(2)} to minimum` : stats.nextPayoutDate}
+              </p>
+            </Card>
+          </div>
+
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-              <TabsTrigger value="rewards">Rewards</TabsTrigger>
-              <TabsTrigger value="info">How It Works</TabsTrigger>
+              <TabsTrigger value="referrals">My Referrals</TabsTrigger>
+              <TabsTrigger value="payouts">Payout Details</TabsTrigger>
+              <TabsTrigger value="how">How It Works</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
-              {/* Referral Link Card */}
+            <TabsContent value="overview" className="mt-6 space-y-6">
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Your Referral Link</h2>
-                <div className="flex gap-2">
+                <h2 className="text-xl font-semibold mb-4">Your Creator Referral Link</h2>
+                <div className="flex gap-2 mb-4">
                   <Input
-                    value={getReferralLink()}
+                    value={getCreatorReferralLink()}
                     readOnly
                     className="font-mono text-sm"
                   />
@@ -257,91 +302,113 @@ const Referrals = () => {
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
-                <p className="text-sm text-muted-foreground mt-3">
-                  Share this link with friends to earn rewards when they sign up!
+                <p className="text-sm text-muted-foreground">
+                  Share this link with creators. When they complete verification and publish their first exclusive post, you'll earn 7.5% of their earnings for 9 months!
                 </p>
               </Card>
 
-              {/* Quick Stats */}
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Rewards Summary</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Total Earned</p>
-                    <p className="text-2xl font-bold text-green-600">{stats.totalEarned}</p>
-                    <p className="text-xs text-muted-foreground mt-1">credits</p>
+                <h2 className="text-xl font-semibold mb-4">Quick Summary</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="text-sm">Active Referrals Earning:</span>
+                    <span className="font-bold">{stats.activeReferrals}</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Available</p>
-                    <p className="text-2xl font-bold text-primary">{stats.availableCredits}</p>
-                    <p className="text-xs text-muted-foreground mt-1">credits</p>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="text-sm">Lifetime Earnings:</span>
+                    <span className="font-bold text-green-600">${stats.totalCommission.toFixed(2)}</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Used</p>
-                    <p className="text-2xl font-bold">{stats.creditsUsed}</p>
-                    <p className="text-xs text-muted-foreground mt-1">credits</p>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="text-sm">Pending Payout:</span>
+                    <span className="font-bold text-orange-600">${stats.pendingCommission.toFixed(2)}</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Credit Value</p>
-                    <p className="text-2xl font-bold">$1</p>
-                    <p className="text-xs text-muted-foreground mt-1">per credit</p>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="text-sm">Next Payout Date:</span>
+                    <span className="font-bold">{stats.nextPayoutDate}</span>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-primary/5 border-primary/20">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Commission Calculator
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Potential monthly earnings based on creator performance:
+                </p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Creator earns $500/month:</span>
+                    <span className="font-bold">You earn $37.50/month</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Creator earns $1,000/month:</span>
+                    <span className="font-bold">You earn $75/month</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Creator earns $2,000/month:</span>
+                    <span className="font-bold">You earn $150/month</span>
                   </div>
                 </div>
               </Card>
             </TabsContent>
 
-            {/* History Tab */}
-            <TabsContent value="history">
+            {/* My Referrals Tab */}
+            <TabsContent value="referrals" className="mt-6">
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Referral History</h2>
-                {referralsList.length === 0 ? (
+                <h2 className="text-xl font-semibold mb-4">Your Creator Referrals</h2>
+                {referrals.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No referrals yet. Share your link to get started!</p>
+                    <p>No creator referrals yet. Share your link to get started!</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-3 px-2 font-medium text-sm">Friend</th>
-                          <th className="text-left py-3 px-2 font-medium text-sm">Status</th>
-                          <th className="text-left py-3 px-2 font-medium text-sm">Joined</th>
-                          <th className="text-left py-3 px-2 font-medium text-sm">Completed</th>
-                          <th className="text-right py-3 px-2 font-medium text-sm">Reward</th>
+                          <th className="text-left py-3 px-2">Creator</th>
+                          <th className="text-left py-3 px-2">Status</th>
+                          <th className="text-left py-3 px-2">Joined</th>
+                          <th className="text-left py-3 px-2">Expires</th>
+                          <th className="text-right py-3 px-2">Avg Monthly</th>
+                          <th className="text-right py-3 px-2">Your Commission</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {referralsList.map((referral) => (
-                          <tr key={referral.id} className="border-b last:border-0">
-                            <td className="py-3 px-2">
-                              <div>
-                                <p className="font-medium">
-                                  {referral.referred_user?.display_name || "Unknown User"}
-                                </p>
-                                {referral.referred_user?.username && (
-                                  <p className="text-xs text-muted-foreground">
-                                    @{referral.referred_user.username}
-                                  </p>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-3 px-2">
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                referral.status === "completed" 
-                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                              }`}>
-                                {referral.status}
-                              </span>
-                            </td>
-                            <td className="py-3 px-2 text-sm">{formatDate(referral.created_at)}</td>
-                            <td className="py-3 px-2 text-sm">{formatDate(referral.completed_at)}</td>
-                            <td className="py-3 px-2 text-right font-medium">
-                              {referral.status === "completed" ? "100 credits" : "-"}
-                            </td>
-                          </tr>
-                        ))}
+                        {referrals.map((ref) => {
+                          const statusInfo = getStatusBadge(ref);
+                          const StatusIcon = statusInfo.icon;
+                          return (
+                            <tr key={ref.id} className="border-b last:border-0">
+                              <td className="py-3 px-2">
+                                <div>
+                                  <p className="font-medium">{ref.referred_creator.display_name}</p>
+                                  {ref.referred_creator.username && (
+                                    <p className="text-xs text-muted-foreground">
+                                      @{ref.referred_creator.username}
+                                    </p>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-2">
+                                <Badge variant={statusInfo.variant} className="gap-1">
+                                  <StatusIcon className="w-3 h-3" />
+                                  {statusInfo.label}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-2 text-sm">{formatDate(ref.created_at)}</td>
+                              <td className="py-3 px-2 text-sm">{formatDate(ref.expires_at)}</td>
+                              <td className="py-3 px-2 text-right text-sm">
+                                ${calculateMonthlyEarnings(ref).toFixed(2)}
+                              </td>
+                              <td className="py-3 px-2 text-right font-medium">
+                                ${ref.total_commission_earned.toFixed(2)}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -349,148 +416,248 @@ const Referrals = () => {
               </Card>
             </TabsContent>
 
-            {/* Rewards Tab */}
-            <TabsContent value="rewards">
+            {/* Payout Details Tab */}
+            <TabsContent value="payouts" className="mt-6 space-y-6">
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Credits & Rewards</h2>
-                <div className="space-y-6">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-muted rounded-lg">
-                      <Gift className="w-8 h-8 text-primary mb-2" />
-                      <p className="text-sm text-muted-foreground">Referral Bonus</p>
-                      <p className="text-2xl font-bold mt-1">100</p>
-                      <p className="text-xs text-muted-foreground mt-1">credits per referral</p>
-                    </div>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <DollarSign className="w-8 h-8 text-green-600 mb-2" />
-                      <p className="text-sm text-muted-foreground">Credit Value</p>
-                      <p className="text-2xl font-bold mt-1">$1</p>
-                      <p className="text-xs text-muted-foreground mt-1">per credit</p>
-                    </div>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <TrendingUp className="w-8 h-8 text-purple-600 mb-2" />
-                      <p className="text-sm text-muted-foreground">Your Balance</p>
-                      <p className="text-2xl font-bold mt-1">{stats.availableCredits}</p>
-                      <p className="text-xs text-muted-foreground mt-1">available credits</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-6">
-                    <h3 className="font-semibold mb-3">How to Use Credits</h3>
+                <h2 className="text-xl font-semibold mb-4">Payout Schedule</h2>
+                <div className="space-y-4">
+                  <div className="bg-muted p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">Quarterly Payout Dates</h3>
                     <ul className="space-y-2 text-sm">
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                        <span>Credits can be used for premium features and subscriptions</span>
+                      <li className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span>Q1: End of March (March 31)</span>
                       </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                        <span>1 credit = $1 USD discount on any purchase</span>
+                      <li className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span>Q2: End of June (June 30)</span>
                       </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                        <span>Credits are automatically applied at checkout</span>
+                      <li className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span>Q3: End of September (September 30)</span>
                       </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                        <span>No expiration date on credits</span>
+                      <li className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span>Q4: End of December (December 31)</span>
                       </li>
                     </ul>
+                  </div>
+
+                  <div className="border-l-4 border-primary pl-4">
+                    <p className="font-semibold">Next Payout: {stats.nextPayoutDate}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Estimated amount: ${stats.nextPayoutAmount.toFixed(2)}
+                      {stats.pendingCommission < 25 && " (Minimum $25 required)"}
+                    </p>
+                  </div>
+
+                  <div className="bg-orange-500/10 border border-orange-500/20 p-4 rounded-lg">
+                    <p className="text-sm font-medium mb-1">Minimum Payout Threshold</p>
+                    <p className="text-xs text-muted-foreground">
+                      You must have at least $25 in pending commissions to receive a payout. If you don't meet the threshold, your balance carries over to the next quarter.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Payout Methods</h2>
+                <div className="space-y-4">
+                  {isCreator ? (
+                    <div className="border p-4 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                        <div className="flex-1">
+                          <h3 className="font-semibold mb-1">Stripe Connect (Recommended)</h3>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Since you're a creator, your commissions will be paid directly to your connected Stripe account along with your creator earnings.
+                          </p>
+                          <Button size="sm" variant="outline">View Stripe Settings</Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="border p-4 rounded-lg">
+                        <h3 className="font-semibold mb-1">PayPal</h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Receive your commissions via PayPal. Fast and secure payments to your PayPal account.
+                        </p>
+                        <Button size="sm" variant="outline">Connect PayPal Account</Button>
+                      </div>
+                      
+                      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg">
+                        <h3 className="font-semibold mb-1">Become a Creator</h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Creators can receive payouts directly through Stripe Connect along with their creator earnings.
+                        </p>
+                        <Button size="sm">Apply to Become a Creator</Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Activation Requirements</h2>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-primary font-semibold text-sm">1</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">Creator Must Complete ID Verification</p>
+                      <p className="text-sm text-muted-foreground">
+                        All referred creators must verify their identity before commissions can begin.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-primary font-semibold text-sm">2</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">Creator Must Publish First Exclusive Post</p>
+                      <p className="text-sm text-muted-foreground">
+                        The 9-month commission period begins when they publish their first monetized content.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Card>
             </TabsContent>
 
             {/* How It Works Tab */}
-            <TabsContent value="info">
+            <TabsContent value="how" className="mt-6 space-y-6">
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">How It Works</h2>
+                <h2 className="text-xl font-semibold mb-6">How Koji Connect Works</h2>
                 <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-primary font-semibold">1</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Share Your Link</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Copy your unique referral link and share it with friends via social media, email, or messaging apps.
-                        </p>
-                      </div>
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-primary font-semibold">1</span>
                     </div>
-
-                    <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-primary font-semibold">2</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Friend Signs Up</h3>
-                        <p className="text-sm text-muted-foreground">
-                          When your friend clicks your link and creates a Koji account, they'll be tracked as your referral.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-primary font-semibold">3</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Complete Requirements</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Once your friend completes their profile and is active for 7 days, the referral is marked as completed.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-primary font-semibold">4</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Earn Rewards</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Both you and your friend receive 100 credits! Use them for premium features, subscriptions, and more.
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Share Your Creator Link</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Send your unique creator referral link to content creators who might be interested in monetizing their content on Koji.
+                      </p>
                     </div>
                   </div>
 
-                  <div className="border-t pt-6">
-                    <h3 className="font-semibold mb-3 flex items-center gap-2">
-                      <HelpCircle className="w-5 h-5" />
-                      Program Details
-                    </h3>
-                    <dl className="space-y-2 text-sm">
-                      <div>
-                        <dt className="font-medium">Referral Bonus:</dt>
-                        <dd className="text-muted-foreground">100 credits per completed referral</dd>
-                      </div>
-                      <div>
-                        <dt className="font-medium">Friend Bonus:</dt>
-                        <dd className="text-muted-foreground">Your friend also gets 100 credits</dd>
-                      </div>
-                      <div>
-                        <dt className="font-medium">Completion Time:</dt>
-                        <dd className="text-muted-foreground">7 days of active account required</dd>
-                      </div>
-                      <div>
-                        <dt className="font-medium">Referral Limit:</dt>
-                        <dd className="text-muted-foreground">Unlimited referrals allowed</dd>
-                      </div>
-                    </dl>
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-primary font-semibold">2</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Creator Signs Up & Verifies</h3>
+                      <p className="text-sm text-muted-foreground">
+                        When they sign up using your link, the referral is tracked. They need to complete ID verification and publish their first exclusive post to activate.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="bg-muted/50 rounded-lg p-4 flex gap-3">
-                    <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <div className="space-y-2 text-sm">
-                      <p className="font-medium">Important Information</p>
-                      <ul className="space-y-1 text-muted-foreground">
-                        <li>• Referrals must be genuine accounts - fraud detection is active</li>
-                        <li>• Self-referrals and fake accounts will be removed</li>
-                        <li>• Credits are non-transferable and have no cash value</li>
-                        <li>• Program terms may change with notice</li>
-                      </ul>
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-primary font-semibold">3</span>
                     </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Earn 7.5% for 9 Months</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Once activated, you automatically earn 7.5% of their gross earnings for the next 9 months. Commissions are calculated on each payment they receive.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-primary font-semibold">4</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Receive Quarterly Payouts</h3>
+                      <p className="text-sm text-muted-foreground">
+                        When you reach the $25 minimum, you'll receive your payout at the end of the quarter through your chosen payment method.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-muted">
+                <h3 className="font-semibold mb-3">Key Program Details</h3>
+                <div className="grid md:grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span><strong>Commission Rate:</strong> 7.5% of creator's gross earnings</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span><strong>Duration:</strong> 9 months from first post</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span><strong>Minimum Payout:</strong> $25 per quarter</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span><strong>Payout Schedule:</strong> Quarterly (End of Mar, Jun, Sep, Dec)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span><strong>Referral Limit:</strong> Unlimited referrals</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span><strong>Cookie Duration:</strong> 90 days tracking</span>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5" />
+                  Terms & Conditions
+                </h3>
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <h4 className="font-medium mb-1">Eligibility</h4>
+                    <p className="text-muted-foreground">
+                      Any Koji user can refer creators. Referred creators must be new to the platform and complete verification and publish their first post to activate commissions.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-1">Anti-Fraud Policy</h4>
+                    <p className="text-muted-foreground">
+                      Self-referrals are strictly prohibited. Using bots, fake accounts, or spam tactics will result in immediate disqualification and account suspension. We monitor referral patterns to ensure program integrity.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-1">Commission Clawbacks</h4>
+                    <p className="text-muted-foreground">
+                      If a referred creator requests a refund or disputes charges, the corresponding commission will be deducted from your pending balance. If your balance is insufficient, future commissions may be withheld.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-1">Referral Link Cookie Duration</h4>
+                    <p className="text-muted-foreground">
+                      When someone clicks your referral link, a 90-day tracking cookie is set. If they sign up and become a creator within 90 days, you'll receive credit for the referral.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-1">Program Modifications</h4>
+                    <p className="text-muted-foreground">
+                      Koji reserves the right to modify or terminate the referral program at any time. Existing active referrals will be honored through their 9-month period. Changes will be communicated with 30 days notice.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-1">Dispute Resolution</h4>
+                    <p className="text-muted-foreground">
+                      For any questions or disputes regarding commissions, contact support@koji.com. We'll review your case within 14 business days and provide a resolution. All decisions are final.
+                    </p>
                   </div>
                 </div>
               </Card>

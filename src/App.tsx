@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OfflineIndicator } from "@/components/offline/OfflineIndicator";
@@ -47,7 +47,6 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Community = lazy(() => import("./pages/Community"));
 const Support = lazy(() => import("./pages/Support"));
 const Referrals = lazy(() => import("./pages/Referrals"));
-const KojiConnect = lazy(() => import("./pages/KojiConnect"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const AdminRefunds = lazy(() => import("./pages/AdminRefunds"));
@@ -134,7 +133,7 @@ const AppContent = () => {
                 </ProtectedRoute>
               } errorElement={<RouteErrorBoundary />} />
               <Route path="/referrals" element={<Referrals />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/koji-connect" element={<KojiConnect />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/koji-connect" element={<Navigate to="/referrals" replace />} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/privacy" element={<PrivacySettings />} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/security" element={<SecuritySettings />} errorElement={<RouteErrorBoundary />} />
               <Route path="/about" element={<About />} errorElement={<RouteErrorBoundary />} />

@@ -52,7 +52,7 @@ export const KojiConnectCard = ({
         </div>
       </div>
 
-      <Link to="/koji-connect">
+      <Link to="/referrals">
         <Button variant="outline" className="w-full">
           View Creator Referrals
           <ArrowRight className="w-4 h-4 ml-2" />

@@ -76,7 +76,7 @@ export const ReferralCard = ({ userId }: ReferralCardProps) => {
             </Button>
           </Link>
           {creatorReferrals > 0 && (
-            <Link to="/koji-connect">
+            <Link to="/referrals">
               <Button variant="ghost" size="sm" className="w-full text-xs">
                 Koji Connect
               </Button>
