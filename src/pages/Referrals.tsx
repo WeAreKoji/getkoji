@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Copy, Check, Gift, Users, TrendingUp, DollarSign } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Copy, Check, Gift, Users, TrendingUp, DollarSign, Calendar, HelpCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -18,12 +19,25 @@ interface ReferralStats {
   pendingReferrals: number;
   totalRewards: number;
   availableCredits: number;
+  totalEarned: number;
+  creditsUsed: number;
 }
 
 interface CreatorStats {
   activeReferrals: number;
   totalCommission: number;
   pendingCommission: number;
+}
+
+interface ReferralRecord {
+  id: string;
+  status: string;
+  created_at: string;
+  completed_at: string | null;
+  referred_user: {
+    display_name: string;
+    username: string | null;
+  } | null;
 }
 
 const Referrals = () => {
@@ -39,12 +53,15 @@ const Referrals = () => {
     pendingReferrals: 0,
     totalRewards: 0,
     availableCredits: 0,
+    totalEarned: 0,
+    creditsUsed: 0,
   });
   const [creatorStats, setCreatorStats] = useState<CreatorStats>({
     activeReferrals: 0,
     totalCommission: 0,
     pendingCommission: 0,
   });
+  const [referralsList, setReferralsList] = useState<ReferralRecord[]>([]);
 
   useEffect(() => {
     checkAuth();
@@ -96,6 +113,32 @@ const Referrals = () => {
         .select("status")
         .eq("referrer_id", userId);
 
+      // Get referrals with user details
+      const { data: referralsData } = await supabase
+        .from("referrals")
+        .select("id, status, created_at, completed_at, referred_user_id")
+        .eq("referrer_id", userId)
+        .order("created_at", { ascending: false });
+
+      // Fetch profiles for referred users
+      const referralsWithProfiles = await Promise.all(
+        (referralsData || []).map(async (ref) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("username, display_name")
+            .eq("id", ref.referred_user_id)
+            .maybeSingle();
+
+          return {
+            id: ref.id,
+            status: ref.status,
+            created_at: ref.created_at,
+            completed_at: ref.completed_at,
+            referred_user: profile || null,
+          };
+        })
+      );
+
       const { data: rewards } = await supabase
         .from("referral_rewards")
         .select("amount, status")
@@ -119,13 +162,20 @@ const Referrals = () => {
         .is("included_in_payout_id", null)
         .in("creator_referral_id", creatorReferrals?.map(r => (r as any).id) || []);
 
+      const totalEarned = credits?.total_earned || 0;
+      const balance = credits?.balance || 0;
+
       setStats({
         totalReferrals: referrals?.length || 0,
         completedReferrals: referrals?.filter(r => r.status === "completed").length || 0,
         pendingReferrals: referrals?.filter(r => r.status === "pending").length || 0,
         totalRewards: rewards?.reduce((sum, r) => sum + Number(r.amount), 0) || 0,
-        availableCredits: credits?.balance || 0,
+        availableCredits: balance,
+        totalEarned,
+        creditsUsed: totalEarned - balance,
       });
+
+      setReferralsList(referralsWithProfiles);
 
       setCreatorStats({
         activeReferrals: creatorReferrals?.filter(r => r.status === "active").length || 0,
@@ -161,6 +211,11 @@ const Referrals = () => {
     }
   };
 
+  const formatDate = (date: string | null) => {
+    if (!date) return "Pending";
+    return new Date(date).toLocaleDateString();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -177,7 +232,7 @@ const Referrals = () => {
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Referral Program</h1>
             <p className="text-muted-foreground mt-2">
-              Invite friends and earn rewards together
+              Share Koji with friends and earn credits together
             </p>
           </div>
 
