@@ -140,7 +140,7 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <NavLink to="/subscriber-management" className={getNavCls}>
+                      <NavLink to="/creator/subscribers" className={getNavCls}>
                         <Users className={open ? "mr-2 h-5 w-5" : "h-5 w-5"} />
                         {open && <span>Subscribers</span>}
                       </NavLink>

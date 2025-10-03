@@ -343,11 +343,11 @@ const CreatorFeed = () => {
         {/* Creator Info */}
         <Card className="m-4 overflow-hidden">
           {/* Cover gradient */}
-          <div className="h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
+          <div className="h-40 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
           
           <div className="px-6 pb-6">
             {/* Avatar positioned over cover */}
-            <div className="flex items-end justify-between -mt-16 mb-4">
+            <div className="flex items-end justify-between -mt-20 mb-4">
               <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
                 <AvatarImage src={profile.avatar_url || undefined} />
                 <AvatarFallback className="text-2xl">
