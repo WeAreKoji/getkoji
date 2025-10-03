@@ -34,77 +34,79 @@ export const ActiveFilters = ({
     (ageRange[0] !== 18 || ageRange[1] !== 99 ? 1 : 0) +
     (distance !== 50 ? 1 : 0) +
     (interestedIn.length < 3 ? 1 : 0) +
-    (interestedInGender.length < 4 ? 1 : 0) +
+    (interestedInGender.length < 2 ? 1 : 0) +
     (showCreatorsOnly ? 1 : 0) +
     (showVerifiedOnly ? 1 : 0);
-
-  if (activeFiltersCount === 0) {
-    return null;
-  }
 
   return (
     <div className="bg-card border rounded-lg p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Active Filters</span>
-          <Badge variant="secondary" className="text-xs">
-            {activeFiltersCount}
-          </Badge>
+          <span className="text-sm font-medium">
+            {activeFiltersCount > 0 ? 'Active Filters' : 'Showing: Everyone'}
+          </span>
+          {activeFiltersCount > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {activeFiltersCount}
+            </Badge>
+          )}
         </div>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/settings/discovery')}
+          onClick={() => navigate('/discovery-settings')}
           className="text-xs h-8"
         >
           Edit
         </Button>
       </div>
       
-      <div className="flex flex-wrap gap-2">
-        {/* Age Range */}
-        {(ageRange[0] !== 18 || ageRange[1] !== 99) && (
-          <Badge variant="outline" className="text-xs px-2 py-1">
-            Age: {ageRange[0]}-{ageRange[1]}
-          </Badge>
-        )}
-        
-        {/* Distance */}
-        {distance !== 50 && (
-          <Badge variant="outline" className="text-xs px-2 py-1">
-            Within {distance}km
-          </Badge>
-        )}
-        
-        {/* Intent Filters */}
-        {interestedIn.length < 3 && interestedIn.map((intent) => (
-          <Badge key={intent} variant="outline" className="text-xs px-2 py-1">
-            {formatIntent(intent)}
-          </Badge>
-        ))}
-        
-        {/* Gender Filters */}
-        {interestedInGender.length < 4 && interestedInGender.map((gender) => (
-          <Badge key={gender} variant="outline" className="text-xs px-2 py-1">
-            {formatGender(gender)}
-          </Badge>
-        ))}
-        
-        {/* Creator Filter */}
-        {showCreatorsOnly && (
-          <Badge variant="outline" className="text-xs px-2 py-1">
-            Creators Only
-          </Badge>
-        )}
-        
-        {/* Verified Filter */}
-        {showVerifiedOnly && (
-          <Badge variant="outline" className="text-xs px-2 py-1">
-            Verified Only
-          </Badge>
-        )}
-      </div>
+      {activeFiltersCount > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {/* Age Range */}
+          {(ageRange[0] !== 18 || ageRange[1] !== 99) && (
+            <Badge variant="outline" className="text-xs px-2 py-1">
+              Age: {ageRange[0]}-{ageRange[1]}
+            </Badge>
+          )}
+          
+          {/* Distance */}
+          {distance !== 50 && (
+            <Badge variant="outline" className="text-xs px-2 py-1">
+              Within {distance}km
+            </Badge>
+          )}
+          
+          {/* Intent Filters */}
+          {interestedIn.length < 3 && interestedIn.map((intent) => (
+            <Badge key={intent} variant="outline" className="text-xs px-2 py-1">
+              {formatIntent(intent)}
+            </Badge>
+          ))}
+          
+          {/* Gender Filters */}
+          {interestedInGender.length < 2 && interestedInGender.map((gender) => (
+            <Badge key={gender} variant="outline" className="text-xs px-2 py-1">
+              {formatGender(gender)}
+            </Badge>
+          ))}
+          
+          {/* Creator Filter */}
+          {showCreatorsOnly && (
+            <Badge variant="outline" className="text-xs px-2 py-1">
+              Creators Only
+            </Badge>
+          )}
+          
+          {/* Verified Filter */}
+          {showVerifiedOnly && (
+            <Badge variant="outline" className="text-xs px-2 py-1">
+              Verified Only
+            </Badge>
+          )}
+        </div>
+      )}
     </div>
   );
 };
