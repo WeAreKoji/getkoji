@@ -16,11 +16,11 @@ interface Creator {
   subscriber_count: number;
   id_verified: boolean;
   created_at: string;
-  profile: {
+  profile?: {
     display_name: string;
     avatar_url: string | null;
     bio: string | null;
-  };
+  } | null;
 }
 
 const Creators = () => {
@@ -49,7 +49,33 @@ const Creators = () => {
         .order("subscriber_count", { ascending: false });
 
       if (error) throw error;
-      setCreators(data || []);
+
+      const base = (data || []) as Creator[];
+
+      // Enrich creators missing profile using secure function
+      const enriched = await Promise.all(
+        base.map(async (c) => {
+          if (c.profile && c.profile.display_name) return c;
+          try {
+            const { data: safe } = await supabase.rpc('get_safe_profile', { profile_id: c.user_id });
+            const row = Array.isArray(safe) ? safe[0] : (safe as any)?.[0] || (safe as any);
+            if (row) {
+              c.profile = {
+                display_name: row.display_name || 'Creator',
+                avatar_url: row.avatar_url || null,
+                bio: row.bio || null,
+              };
+            } else {
+              c.profile = { display_name: 'Creator', avatar_url: null, bio: null };
+            }
+          } catch {
+            c.profile = c.profile ?? { display_name: 'Creator', avatar_url: null, bio: null };
+          }
+          return c;
+        })
+      );
+
+      setCreators(enriched);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -107,16 +133,16 @@ const Creators = () => {
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <Avatar className={isMobile ? "w-16 h-16" : "w-20 h-20"}>
-                    <AvatarImage src={creator.profile.avatar_url || undefined} />
+                    <AvatarImage src={creator.profile?.avatar_url || undefined} />
                     <AvatarFallback>
-                      {creator.profile.display_name.charAt(0)}
+                      {(creator.profile?.display_name?.charAt(0)) || 'C'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <h3 className={isMobile ? "font-semibold text-lg text-foreground" : "font-semibold text-xl text-foreground"}>
-                      {creator.profile.display_name}
+                      {creator.profile?.display_name || 'Creator'}
                     </h3>
-                    {creator.profile.bio && (
+                    {creator.profile?.bio && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                         {creator.profile.bio}
                       </p>
