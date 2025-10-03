@@ -2356,7 +2356,26 @@ export type Database = {
       }
       get_discover_profiles: {
         Args: { max_count?: number; user_id: string }
-        Returns: Database["public"]["CompositeTypes"]["discoverable_profile_type"][]
+        Returns: {
+          age: number
+          avatar_url: string
+          bio: string
+          city: string
+          created_at: string
+          creator_subscription_price: number
+          creator_tagline: string
+          display_name: string
+          id: string
+          id_verified: boolean
+          intent: string
+          interests: string[]
+          is_creator: boolean
+          photo_count: number
+          photos: Json
+          privacy_settings: Json
+          updated_at: string
+          username: string
+        }[]
       }
       get_moderation_stats: {
         Args: Record<PropertyKey, never>

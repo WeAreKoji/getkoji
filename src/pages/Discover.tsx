@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Sparkles, LogOut, SlidersHorizontal } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import SwipeableCard from "@/components/discover/SwipeableCard";
+import { DiscoverProfileModal } from "@/components/discover/DiscoverProfileModal";
+import { MatchCelebrationModal } from "@/components/discover/MatchCelebrationModal";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { ProfileCardSkeleton } from "@/components/shared/SkeletonLoader";
 import { haptics } from "@/lib/native";
@@ -13,20 +15,33 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import { ActiveFilters } from "@/components/discover/ActiveFilters";
 import logo from "@/assets/logo.webp";
+
 interface Profile {
   id: string;
   display_name: string;
+  username: string | null;
   bio: string | null;
   age: number;
   city: string | null;
   avatar_url: string | null;
   intent: string;
+  photos: Array<{ id: string; photo_url: string; order_index: number }>;
+  photo_count: number;
+  interests: string[];
+  is_creator: boolean;
+  creator_subscription_price: number | null;
+  creator_tagline: string | null;
+  id_verified: boolean;
 }
 const Discover = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
+  const [modalProfile, setModalProfile] = useState<Profile | null>(null);
+  const [matchedProfile, setMatchedProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
+  const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [filters, setFilters] = useState({
     ageRange: [18, 99] as [number, number],
     distance: 50,
@@ -37,22 +52,70 @@ const Discover = () => {
   });
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   useEffect(() => {
     checkUser();
   }, []);
+
+  // Real-time match detection
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('match-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'matches',
+          filter: `user1_id=eq.${user.id},user2_id=eq.${user.id}`
+        },
+        async (payload) => {
+          console.log('Match detected!', payload);
+          
+          // Get matched user's profile from notification
+          const matchedUserId = payload.new.user1_id === user.id 
+            ? payload.new.user2_id 
+            : payload.new.user1_id;
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url')
+            .eq('id', matchedUserId)
+            .single();
+
+          if (profile) {
+            setMatchedProfile(profile);
+            setShowMatchCelebration(true);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const checkUser = async () => {
-    const {
-      data: {
-        user
-      }
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
     } else {
       setUser(user);
+      
+      // Load current user's profile for match celebration
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        setCurrentUserProfile(profile);
+      }
+
       // Load user's discovery preferences
       await loadUserPreferences(user.id);
       // Load profiles after user is set
@@ -276,12 +339,43 @@ const Discover = () => {
           {/* Active Filters Display */}
           <ActiveFilters {...filters} />
 
-          <SwipeableCard profile={currentProfile} onSwipe={handleSwipe} />
+          <SwipeableCard 
+            profile={currentProfile} 
+            onSwipe={handleSwipe}
+            onProfileOpen={() => setModalProfile(currentProfile)}
+          />
 
           <p className="text-center text-muted-foreground mt-4 text-sm">
             {profiles.length - currentIndex - 1} profiles remaining
           </p>
         </div>
+        
+        {/* Full Profile Modal */}
+        <DiscoverProfileModal
+          profile={modalProfile}
+          open={!!modalProfile}
+          onOpenChange={(open) => !open && setModalProfile(null)}
+          onLike={() => {
+            if (modalProfile) {
+              handleSwipe(true);
+              setModalProfile(null);
+            }
+          }}
+          onPass={() => {
+            if (modalProfile) {
+              handleSwipe(false);
+              setModalProfile(null);
+            }
+          }}
+        />
+
+        {/* Match Celebration Modal */}
+        <MatchCelebrationModal
+          open={showMatchCelebration}
+          onOpenChange={setShowMatchCelebration}
+          matchedProfile={matchedProfile}
+          currentUserAvatar={currentUserProfile?.avatar_url || null}
+        />
         
         {isMobile && <BottomNav />}
       </div>
