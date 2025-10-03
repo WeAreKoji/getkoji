@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import PhotoGrid from "./PhotoGrid";
+import { ProfileInfo } from "./ProfileInfo";
 
 interface Interest {
   id: string;
@@ -23,9 +24,11 @@ interface ProfileTabsProps {
   photos: Photo[];
   isCreator: boolean;
   userId: string;
+  gender?: string | null;
+  interestedInGender?: string[] | null;
 }
 
-export const ProfileTabs = ({ bio, intent, interests, photos, isCreator, userId }: ProfileTabsProps) => {
+export const ProfileTabs = ({ bio, intent, interests, photos, isCreator, userId, gender, interestedInGender }: ProfileTabsProps) => {
   return (
     <Tabs defaultValue="about" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
@@ -35,37 +38,13 @@ export const ProfileTabs = ({ bio, intent, interests, photos, isCreator, userId 
       </TabsList>
 
       <TabsContent value="about" className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Bio */}
-          {bio && (
-            <Card className="p-6">
-              <h3 className="font-semibold mb-3">About</h3>
-              <p className="text-muted-foreground leading-relaxed">{bio}</p>
-            </Card>
-          )}
-
-          {/* Looking For */}
-          <Card className="p-6">
-            <h3 className="font-semibold mb-3">Looking For</h3>
-            <p className="text-muted-foreground capitalize">
-              {intent.replace(/_/g, " ")}
-            </p>
-          </Card>
-        </div>
-
-        {/* Interests */}
-        {interests.length > 0 && (
-          <Card className="p-6">
-            <h3 className="font-semibold mb-3">Interests</h3>
-            <div className="flex flex-wrap gap-2">
-              {interests.map((interest) => (
-                <Badge key={interest.id} variant="secondary">
-                  {interest.name}
-                </Badge>
-              ))}
-            </div>
-          </Card>
-        )}
+        <ProfileInfo 
+          bio={bio} 
+          intent={intent} 
+          interests={interests}
+          gender={gender}
+          interestedInGender={interestedInGender}
+        />
       </TabsContent>
 
       <TabsContent value="photos">

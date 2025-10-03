@@ -11,6 +11,7 @@ import { ProfileCardSkeleton } from "@/components/shared/SkeletonLoader";
 import { haptics } from "@/lib/native";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ClientRateLimiter } from "@/lib/rate-limit-client";
+import { ActiveFilters } from "@/components/discover/ActiveFilters";
 import logo from "@/assets/logo.png";
 interface Profile {
   id: string;
@@ -26,6 +27,14 @@ const Discover = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [filters, setFilters] = useState({
+    ageRange: [18, 99] as [number, number],
+    distance: 50,
+    interestedIn: ['open_to_dating', 'make_friends', 'support_creators'],
+    interestedInGender: ['male', 'female', 'non_binary', 'other'],
+    showCreatorsOnly: false,
+    showVerifiedOnly: false,
+  });
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const {
@@ -44,8 +53,33 @@ const Discover = () => {
       navigate("/auth");
     } else {
       setUser(user);
+      // Load user's discovery preferences
+      await loadUserPreferences(user.id);
       // Load profiles after user is set
       await loadProfiles(user.id);
+    }
+  };
+
+  const loadUserPreferences = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('discovery_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (data) {
+        setFilters({
+          ageRange: [data.min_age || 18, data.max_age || 99],
+          distance: data.max_distance_km || 50,
+          interestedIn: data.interested_in || ['open_to_dating', 'make_friends', 'support_creators'],
+          interestedInGender: data.interested_in_gender || ['male', 'female', 'non_binary', 'other'],
+          showCreatorsOnly: data.show_creators_only || false,
+          showVerifiedOnly: data.show_verified_only || false,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading preferences:', error);
     }
   };
   const loadProfiles = async (userId: string) => {
@@ -197,6 +231,9 @@ const Discover = () => {
               </Button>
             </div>
           </div>
+
+          {/* Active Filters Display */}
+          <ActiveFilters {...filters} />
 
           <SwipeableCard profile={currentProfile} onSwipe={handleSwipe} />
 

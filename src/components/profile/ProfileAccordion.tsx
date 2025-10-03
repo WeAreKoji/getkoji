@@ -22,9 +22,15 @@ interface ProfileAccordionProps {
   interests: Interest[];
   photos: Photo[];
   isCreator: boolean;
+  gender?: string | null;
+  interestedInGender?: string[] | null;
 }
 
-export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator }: ProfileAccordionProps) => {
+export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, gender, interestedInGender }: ProfileAccordionProps) => {
+  const formatGender = (g: string) => {
+    return g.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+  };
+
   return (
     <Accordion type="multiple" defaultValue={["about"]} className="space-y-3">
       {/* About */}
@@ -49,6 +55,26 @@ export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator }: 
                 {intent.replace(/_/g, " ")}
               </p>
             </div>
+            {gender && (
+              <div>
+                <h4 className="text-sm font-medium mb-2">Gender</h4>
+                <p className="text-sm text-muted-foreground">
+                  {formatGender(gender)}
+                </p>
+              </div>
+            )}
+            {interestedInGender && interestedInGender.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium mb-2">Interested In</h4>
+                <div className="flex flex-wrap gap-2">
+                  {interestedInGender.map((g) => (
+                    <Badge key={g} variant="secondary" className="text-xs">
+                      {formatGender(g)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>

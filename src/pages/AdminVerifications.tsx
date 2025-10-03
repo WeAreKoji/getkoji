@@ -116,6 +116,8 @@ export default function AdminVerifications() {
     if (imageUrls[cacheKey]) return imageUrls[cacheKey];
 
     try {
+      console.log('🔐 Requesting signed URL for:', { verificationId, documentType });
+      
       const { data, error } = await supabase.functions.invoke('get-signed-document-url', {
         body: {
           verificationId: verificationId,
@@ -124,20 +126,33 @@ export default function AdminVerifications() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw error;
+      }
       
       if (data?.signedUrl) {
+        console.log('✅ Signed URL received successfully');
         setImageUrls(prev => ({ ...prev, [cacheKey]: data.signedUrl }));
         return data.signedUrl;
       }
       
+      console.warn('⚠️ No signed URL in response');
       return null;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Failed to get signed URL:', error);
       logError(error, 'AdminVerifications.getSignedUrl');
+      
+      const errorMessage = error?.message || 'Unknown error';
+      const isPermissionError = errorMessage.includes('permission') || errorMessage.includes('Unauthorized') || errorMessage.includes('403');
+      
       toast({
         title: "Failed to load document",
-        description: "You may not have permission to access this document.",
+        description: isPermissionError 
+          ? "You don't have permission to access documents. Please contact a super admin to grant you document access permissions."
+          : `Error: ${errorMessage}`,
         variant: "destructive",
+        duration: 5000,
       });
       return null;
     }

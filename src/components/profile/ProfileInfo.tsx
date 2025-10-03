@@ -13,10 +13,16 @@ interface ProfileInfoProps {
   bio: string | null;
   intent: string;
   interests: Interest[];
+  gender?: string | null;
+  interestedInGender?: string[] | null;
 }
 
-export const ProfileInfo = ({ bio, intent, interests }: ProfileInfoProps) => {
+export const ProfileInfo = ({ bio, intent, interests, gender, interestedInGender }: ProfileInfoProps) => {
   const isMobile = useIsMobile();
+  
+  const formatGender = (g: string) => {
+    return g.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+  };
   
   return (
     <div className={isMobile ? "space-y-4" : "space-y-4"}>
@@ -47,6 +53,37 @@ export const ProfileInfo = ({ bio, intent, interests }: ProfileInfoProps) => {
           </Badge>
         </Card>
       </div>
+
+      {/* Gender Info */}
+      {(gender || (interestedInGender && interestedInGender.length > 0)) && (
+        <div className={isMobile ? "space-y-4" : "grid grid-cols-2 gap-4"}>
+          {gender && (
+            <Card className="p-6 shadow-sm">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Gender
+              </h3>
+              <Badge variant="secondary" className="text-sm px-4 py-2 font-medium">
+                {formatGender(gender)}
+              </Badge>
+            </Card>
+          )}
+          
+          {interestedInGender && interestedInGender.length > 0 && (
+            <Card className="p-6 shadow-sm">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Interested In
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {interestedInGender.map((g) => (
+                  <Badge key={g} variant="secondary" className="text-sm px-3 py-1.5">
+                    {formatGender(g)}
+                  </Badge>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* Interests - Full Width */}
       {interests.length > 0 && (

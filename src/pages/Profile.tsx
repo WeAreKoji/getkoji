@@ -34,6 +34,8 @@ interface Profile {
   bio: string | null;
   avatar_url: string | null;
   intent: string;
+  gender: string | null;
+  interested_in_gender: string[] | null;
   created_at?: string;
   privacy_settings?: any;
 }
@@ -281,6 +283,8 @@ const Profile = () => {
                   interests={interests}
                   photos={photos}
                   isCreator={isCreator}
+                  gender={profile.gender}
+                  interestedInGender={profile.interested_in_gender}
                 />
               </div>
             ) : (
@@ -345,6 +349,8 @@ const Profile = () => {
                   photos={photos}
                   isCreator={isCreator}
                   userId={profile.id}
+                  gender={profile.gender}
+                  interestedInGender={profile.interested_in_gender}
                 />
               </div>
             )}
