@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, MoreVertical, Edit, CreditCard, LayoutDashboard, Settings, Share2, Gift, Shield } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, MoreVertical, Edit, CreditCard, LayoutDashboard, Settings, Share2, Gift, Shield, LogOut, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { DeleteAccountDialog } from "./DeleteAccountDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,11 +21,14 @@ interface ProfileHeaderProps {
   userId: string;
   username: string | null;
   displayName: string;
+  userEmail: string;
 }
 
-export const ProfileHeader = ({ isOwnProfile, isCreator, userId, username, displayName }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ isOwnProfile, isCreator, userId, username, displayName, userEmail }: ProfileHeaderProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const showShare = canShare();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleShare = async () => {
     const profileUrl = username 
@@ -42,6 +48,24 @@ export const ProfileHeader = ({ isOwnProfile, isCreator, userId, username, displ
       toast({
         title: "Copied to clipboard",
         description: "Profile link copied to clipboard",
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      haptics.light();
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
     }
   };
@@ -110,8 +134,33 @@ export const ProfileHeader = ({ isOwnProfile, isCreator, userId, username, displ
                 Settings
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => {
+                haptics.light();
+                setShowDeleteDialog(true);
+              }} 
+              className="cursor-pointer text-destructive focus:text-destructive"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Account
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      )}
+
+      {/* Delete Account Dialog */}
+      {isOwnProfile && (
+        <DeleteAccountDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          userId={userId}
+          userEmail={userEmail}
+        />
       )}
     </header>
   );

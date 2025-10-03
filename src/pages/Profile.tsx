@@ -29,6 +29,7 @@ interface Profile {
   id: string;
   display_name: string;
   username: string | null;
+  email: string;
   age: number;
   city: string | null;
   bio: string | null;
@@ -215,6 +216,7 @@ const Profile = () => {
             userId={profile.id}
             username={profile.username}
             displayName={profile.display_name}
+            userEmail={profile.email}
           />
 
           {/* Hero Section with Photos */}
