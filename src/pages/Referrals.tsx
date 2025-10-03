@@ -15,6 +15,9 @@ import { logError } from "@/lib/error-logger";
 import { FriendReferralsTab } from "@/components/referrals/FriendReferralsTab";
 import { PayoutHistoryTab } from "@/components/referrals/PayoutHistoryTab";
 import { ShareReferralLink } from "@/components/referrals/ShareReferralLink";
+import { ReferralAnalytics } from "@/components/referrals/ReferralAnalytics";
+import { ReferralTips } from "@/components/referrals/ReferralTips";
+import { EnhancedEmptyState } from "@/components/referrals/EnhancedEmptyState";
 import { useDebounce } from "@/hooks/useDebounce";
 
 interface CreatorReferral {
@@ -303,9 +306,11 @@ const Referrals = () => {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="w-full overflow-x-auto flex gap-2">
               <TabsTrigger value="overview" className="flex-shrink-0">Overview</TabsTrigger>
+              <TabsTrigger value="analytics" className="flex-shrink-0">Analytics</TabsTrigger>
               <TabsTrigger value="creator-referrals" className="flex-shrink-0">Creator Referrals</TabsTrigger>
               <TabsTrigger value="friend-referrals" className="flex-shrink-0">Friend Referrals</TabsTrigger>
               <TabsTrigger value="payout-history" className="flex-shrink-0">Payout History</TabsTrigger>
+              <TabsTrigger value="tips" className="flex-shrink-0">Tips & Best Practices</TabsTrigger>
               <TabsTrigger value="payouts" className="flex-shrink-0">Payout Info</TabsTrigger>
               <TabsTrigger value="how" className="flex-shrink-0">How It Works</TabsTrigger>
             </TabsList>
@@ -381,6 +386,11 @@ const Referrals = () => {
               </Card>
             </TabsContent>
 
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="mt-6">
+              <ReferralAnalytics stats={stats} referrals={referrals} />
+            </TabsContent>
+
             {/* Creator Referrals Tab */}
             <TabsContent value="creator-referrals" className="mt-6">
               <Card className="p-6">
@@ -432,10 +442,39 @@ const Referrals = () => {
                 )}
 
                 {filteredReferrals.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>{searchTerm || filterStatus ? "No matching referrals found" : "No creator referrals yet. Share your link to get started!"}</p>
-                  </div>
+                  searchTerm || filterStatus ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No matching referrals found</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setFilterStatus(null);
+                        }}
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  ) : (
+                    <EnhancedEmptyState
+                      icon={Users}
+                      title="No Creator Referrals Yet"
+                      description="Start earning commissions by sharing your referral link with content creators!"
+                      primaryAction={{
+                        label: "Copy Referral Link",
+                        onClick: handleCopy,
+                      }}
+                      tips={[
+                        "Share on social media platforms where creators are active",
+                        "Join creator communities and Discord servers",
+                        "Reach out personally to creators you know",
+                        "Explain the benefits: easy monetization, no upfront costs",
+                      ]}
+                    />
+                  )
                 ) : (
                   <>
                     {/* Mobile: Card Layout */}
@@ -546,6 +585,11 @@ const Referrals = () => {
             {/* Payout History Tab */}
             <TabsContent value="payout-history" className="mt-6">
               <PayoutHistoryTab userId={userId} />
+            </TabsContent>
+
+            {/* Tips & Best Practices Tab */}
+            <TabsContent value="tips" className="mt-6">
+              <ReferralTips />
             </TabsContent>
 
             {/* Payout Details Tab */}
