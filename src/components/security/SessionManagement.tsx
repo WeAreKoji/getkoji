@@ -3,14 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Smartphone, Monitor, Tablet, MapPin, Clock, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { getLocationDisplay, type LocationInfo } from "@/lib/geolocation";
 
 interface Session {
   id: string;
   user_agent: string;
   ip_address: unknown;
+  location_info: LocationInfo | null;
   device_info: any;
   last_active: string;
   created_at: string;
@@ -41,7 +44,12 @@ export const SessionManagement = ({ userId }: { userId: string }) => {
         variant: "destructive",
       });
     } else {
-      setSessions(data || []);
+      // Cast location_info to LocationInfo type
+      const typedSessions = (data || []).map(session => ({
+        ...session,
+        location_info: session.location_info as unknown as LocationInfo | null,
+      }));
+      setSessions(typedSessions);
     }
     setLoading(false);
   };
@@ -160,10 +168,29 @@ export const SessionManagement = ({ userId }: { userId: string }) => {
                         </div>
                         
                         <div className="text-sm text-muted-foreground space-y-1">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>IP: {String(session.ip_address || 'Unknown')}</span>
-                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-2 cursor-help">
+                                  <MapPin className="w-4 h-4" />
+                                  <span>{getLocationDisplay(session.location_info, String(session.ip_address || 'Unknown'))}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="text-xs space-y-1">
+                                  <p>IP: {String(session.ip_address || 'Unknown')}</p>
+                                  {session.location_info && (
+                                    <>
+                                      {session.location_info.city && <p>City: {session.location_info.city}</p>}
+                                      {session.location_info.regionName && <p>Region: {session.location_info.regionName}</p>}
+                                      {session.location_info.country && <p>Country: {session.location_info.country}</p>}
+                                      {session.location_info.timezone && <p>Timezone: {session.location_info.timezone}</p>}
+                                    </>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                           <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4" />
                             <span>

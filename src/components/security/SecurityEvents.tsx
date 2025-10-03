@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   Shield, 
   AlertTriangle, 
@@ -11,16 +12,19 @@ import {
   Unlock, 
   Key,
   Mail,
-  Smartphone
+  Smartphone,
+  MapPin
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { getLocationDisplay, type LocationInfo } from "@/lib/geolocation";
 
 interface SecurityEvent {
   id: string;
   event_type: string;
   severity: string;
   ip_address: unknown;
+  location_info: LocationInfo | null;
   metadata: any;
   acknowledged: boolean;
   created_at: string;
@@ -50,7 +54,12 @@ export const SecurityEvents = ({ userId }: { userId: string }) => {
         variant: "destructive",
       });
     } else {
-      setEvents(data || []);
+      // Cast location_info to LocationInfo type
+      const typedEvents = (data || []).map(event => ({
+        ...event,
+        location_info: event.location_info as unknown as LocationInfo | null,
+      }));
+      setEvents(typedEvents);
     }
     setLoading(false);
   };
@@ -149,8 +158,30 @@ export const SecurityEvents = ({ userId }: { userId: string }) => {
                         <div>
                           {format(new Date(event.created_at), "PPp")}
                         </div>
-                        {event.ip_address && (
-                          <div>IP: {String(event.ip_address)}</div>
+                        {(event.location_info || event.ip_address) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1 cursor-help">
+                                  <MapPin className="w-3 h-3" />
+                                  {getLocationDisplay(event.location_info, String(event.ip_address || ''))}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="text-xs space-y-1">
+                                  {event.ip_address && <p>IP: {String(event.ip_address)}</p>}
+                                  {event.location_info && (
+                                    <>
+                                      {event.location_info.city && <p>City: {event.location_info.city}</p>}
+                                      {event.location_info.regionName && <p>Region: {event.location_info.regionName}</p>}
+                                      {event.location_info.country && <p>Country: {event.location_info.country}</p>}
+                                      {event.location_info.timezone && <p>Timezone: {event.location_info.timezone}</p>}
+                                    </>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                         {event.metadata && Object.keys(event.metadata).length > 0 && (
                           <div className="text-xs">

@@ -1991,6 +1991,7 @@ export type Database = {
           id: string
           ip_address: unknown | null
           last_active: string | null
+          location_info: Json | null
           revoke_reason: string | null
           revoked: boolean | null
           revoked_at: string | null
@@ -2005,6 +2006,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           last_active?: string | null
+          location_info?: Json | null
           revoke_reason?: string | null
           revoked?: boolean | null
           revoked_at?: string | null
@@ -2019,6 +2021,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           last_active?: string | null
+          location_info?: Json | null
           revoke_reason?: string | null
           revoked?: boolean | null
           revoked_at?: string | null
@@ -2333,14 +2336,24 @@ export type Database = {
         Returns: string
       }
       log_security_event: {
-        Args: {
-          _event_type: Database["public"]["Enums"]["security_event_type"]
-          _ip_address?: unknown
-          _metadata?: Json
-          _severity?: string
-          _user_agent?: string
-          _user_id: string
-        }
+        Args:
+          | {
+              _event_type: Database["public"]["Enums"]["security_event_type"]
+              _ip_address?: unknown
+              _location_info?: Json
+              _metadata?: Json
+              _severity?: string
+              _user_agent?: string
+              _user_id: string
+            }
+          | {
+              _event_type: Database["public"]["Enums"]["security_event_type"]
+              _ip_address?: unknown
+              _metadata?: Json
+              _severity?: string
+              _user_agent?: string
+              _user_id: string
+            }
         Returns: string
       }
       process_referral_payout: {
