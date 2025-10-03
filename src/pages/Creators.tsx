@@ -159,9 +159,9 @@ const Creators = () => {
         </div>
       </header>
 
-      <main className={isMobile ? "max-w-lg mx-auto px-4 py-6 space-y-4" : "container max-w-4xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6"}>
+      <main className={isMobile ? "max-w-7xl mx-auto px-4 py-6" : "container max-w-7xl mx-auto px-6 py-8"}>
         {creators.length === 0 ? (
-          <Card className="md:col-span-2">
+          <Card className="w-full">
             <CardContent className="py-16 text-center">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg text-muted-foreground">No creators yet</p>
@@ -169,90 +169,72 @@ const Creators = () => {
             </CardContent>
           </Card>
         ) : (
-          creators.map((creator) => (
-            <Card
-              key={creator.id}
-              className="group hover:shadow-xl hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden"
-              onClick={() => navigate(`/creator/${creator.user_id}`)}
-            >
-              {/* Gradient header */}
-              <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 relative">
-                <div className="absolute -bottom-12 left-6">
-                  <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
-                    <AvatarImage src={creator.profile?.avatar_url || undefined} />
-                    <AvatarFallback className="text-2xl bg-gradient-to-br from-primary/30 to-primary/10">
-                      {(creator.profile?.display_name?.charAt(0)) || 'C'}
-                    </AvatarFallback>
-                  </Avatar>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {creators.map((creator) => (
+              <Card
+                key={creator.id}
+                className="group hover:shadow-lg hover:border-primary/30 transition-all cursor-pointer overflow-hidden"
+                onClick={() => navigate(`/creator/${creator.user_id}`)}
+              >
+                {/* Gradient header */}
+                <div className="h-16 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 relative">
+                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+                    <Avatar className="w-16 h-16 border-4 border-background shadow-lg">
+                      <AvatarImage src={creator.profile?.avatar_url || undefined} />
+                      <AvatarFallback className="text-lg bg-gradient-to-br from-primary/30 to-primary/10">
+                        {(creator.profile?.display_name?.charAt(0)) || 'C'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
                 </div>
-              </div>
 
-              <CardContent className="pt-16 pb-6 px-6 space-y-3">
-                {/* Name & verification */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <h3 className="font-bold text-xl text-foreground truncate">
+                <CardContent className="pt-12 pb-4 px-3 space-y-2">
+                  {/* Name & verification */}
+                  <div className="flex items-center justify-center gap-1">
+                    <h3 className="font-semibold text-sm truncate text-center">
                       {creator.profile?.display_name || 'Creator'}
                     </h3>
                     <VerificationBadges 
                       userId={creator.user_id}
                       isCreator={true}
                       idVerified={creator.id_verified}
-                      size="md"
+                      size="sm"
                     />
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                  >
-                    View
-                  </Button>
-                </div>
 
-                {/* Bio */}
-                {creator.profile?.bio && (
-                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                    {creator.profile.bio}
-                  </p>
-                )}
-
-                {/* Location & member since */}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  {creator.profile?.age && (
-                    <span>{creator.profile.age} years</span>
-                  )}
-                  {creator.profile?.city && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {creator.profile.city}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(creator.profile?.created_at || creator.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                  </span>
-                </div>
-
-                {/* Stats & Price */}
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-semibold">{creator.subscriber_count}</span>
-                      <span className="text-muted-foreground">subscribers</span>
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-primary">
-                      ${creator.subscription_price}
-                      <span className="text-xs text-muted-foreground font-normal">/mo</span>
+                  {/* Bio - only on larger screens */}
+                  {creator.profile?.bio && (
+                    <p className="text-xs text-muted-foreground line-clamp-2 text-center hidden lg:block">
+                      {creator.profile.bio}
                     </p>
+                  )}
+
+                  {/* Location - compact */}
+                  {(creator.profile?.age || creator.profile?.city) && (
+                    <p className="text-xs text-muted-foreground text-center truncate">
+                      {creator.profile.age && `${creator.profile.age}`}
+                      {creator.profile.age && creator.profile.city && " • "}
+                      {creator.profile.city}
+                    </p>
+                  )}
+
+                  {/* Stats & Price */}
+                  <div className="flex flex-col gap-2 pt-2 border-t border-border">
+                    <div className="flex items-center justify-center gap-1 text-xs">
+                      <Users className="w-3 h-3 text-muted-foreground" />
+                      <span className="font-medium">{creator.subscriber_count}</span>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-base text-primary">
+                        ${creator.subscription_price}
+                        <span className="text-xs font-normal text-muted-foreground">/mo</span>
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </main>
 

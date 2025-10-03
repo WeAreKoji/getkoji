@@ -50,7 +50,7 @@ interface Post {
 }
 
 const CreatorFeed = () => {
-  const { creatorId } = useParams<{ creatorId: string }>();
+  const { creatorId, username } = useParams<{ creatorId?: string; username?: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -66,12 +66,13 @@ const CreatorFeed = () => {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [resolvedCreatorId, setResolvedCreatorId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (creatorId) {
+    if (creatorId || username) {
       fetchCreatorData();
     }
-  }, [creatorId]);
+  }, [creatorId, username]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -93,13 +94,42 @@ const CreatorFeed = () => {
         return;
       }
 
-      setIsOwnProfile(user.id === creatorId);
+      let actualCreatorId = creatorId;
+
+      // If username is provided instead of UUID, look it up
+      if (username && !creatorId) {
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("username", username)
+          .single();
+
+        if (profileError || !profileData) {
+          toast({
+            title: "Creator not found",
+            description: "This creator profile doesn't exist.",
+            variant: "destructive",
+          });
+          navigate("/creators");
+          return;
+        }
+
+        actualCreatorId = profileData.id;
+        setResolvedCreatorId(actualCreatorId);
+      }
+
+      if (!actualCreatorId) {
+        navigate("/creators");
+        return;
+      }
+
+      setIsOwnProfile(user.id === actualCreatorId);
 
       // Fetch creator profile
       const { data: creator } = await supabase
         .from("creator_profiles")
         .select("*")
-        .eq("user_id", creatorId)
+        .eq("user_id", actualCreatorId)
         .single();
 
       if (!creator) {
@@ -115,7 +145,7 @@ const CreatorFeed = () => {
 
       // Fetch profile using get_safe_profile to respect RLS
       const { data: safeProfile } = await supabase.rpc('get_safe_profile', { 
-        profile_id: creatorId 
+        profile_id: actualCreatorId 
       });
       const userProfile = Array.isArray(safeProfile) ? safeProfile[0] : safeProfile;
 
@@ -132,7 +162,7 @@ const CreatorFeed = () => {
       const { data: postsData } = await supabase
         .from("creator_posts")
         .select("*")
-        .eq("creator_id", creatorId)
+        .eq("creator_id", actualCreatorId)
         .order("created_at", { ascending: false });
 
       setPosts(postsData || []);
@@ -145,8 +175,9 @@ const CreatorFeed = () => {
 
   const checkSubscription = async () => {
     try {
+      const actualId = resolvedCreatorId || creatorId;
       const { data, error } = await supabase.functions.invoke("check-subscription", {
-        body: { creatorId },
+        body: { creatorId: actualId },
       });
 
       if (error) throw error;
@@ -162,9 +193,10 @@ const CreatorFeed = () => {
     setSubscribing(true);
 
     try {
+      const actualId = resolvedCreatorId || creatorId;
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
-          creatorId: creatorId,
+          creatorId: actualId,
         },
       });
 
@@ -325,7 +357,7 @@ const CreatorFeed = () => {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold">{profile.display_name}</h1>
                 <VerificationBadges 
-                  userId={creatorId}
+                  userId={resolvedCreatorId || creatorId}
                   isCreator={true}
                   idVerified={creatorProfile.id_verified}
                   size="lg"

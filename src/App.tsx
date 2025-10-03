@@ -88,9 +88,10 @@ const AppContent = () => {
               <Route path="/profile/edit" element={<ProfileEdit />} errorElement={<RouteErrorBoundary />} />
               <Route path="/creator/apply" element={<CreatorApplication />} errorElement={<RouteErrorBoundary />} />
               <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/creator/setup" element={<CreatorSetup />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/creator/:creatorId" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/admin/dashboard" element={
+            <Route path="/creator/setup" element={<CreatorSetup />} errorElement={<RouteErrorBoundary />} />
+            <Route path="/creator/:creatorId" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
+            <Route path="/creators/:username" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
+            <Route path="/admin/dashboard" element={
                 <ProtectedRoute requireAdmin>
                   <AdminDashboard />
                 </ProtectedRoute>
