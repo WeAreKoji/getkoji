@@ -67,7 +67,7 @@ const AppContent = () => {
           <>
             <AppSidebar />
             {!isMobile && (
-              <header className="fixed top-4 right-4 z-50">
+              <header className="fixed top-4 left-4 z-50">
                 <SidebarTrigger />
               </header>
             )}
