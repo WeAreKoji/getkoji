@@ -73,7 +73,7 @@ export function AppSidebar() {
       : "hover:bg-accent hover:text-accent-foreground";
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="icon" className="border-r w-56" style={{ "--sidebar-width": "14rem" } as React.CSSProperties}>
       <SidebarContent className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto">
           <SidebarGroup>
