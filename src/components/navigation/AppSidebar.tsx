@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import logo from "@/assets/logo.png";
 
 import {
@@ -20,7 +21,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Home", url: "/", icon: Home },
   { title: "Discover", url: "/discover", icon: Sparkles },
   { title: "Matches", url: "/matches", icon: Heart },
   { title: "Creators", url: "/creators", icon: Users },
@@ -100,6 +100,11 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+                <SidebarMenuItem>
+                  <div className={open ? "px-2 py-2" : "px-2 py-2 flex justify-center"}>
+                    <NotificationCenter />
+                  </div>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
