@@ -195,7 +195,7 @@ serve(async (req) => {
           `;
 
         await resend.emails.send({
-          from: "Koji <onboarding@resend.dev>",
+          from: "Koji <onboarding@getkoji.net>",
           to: [profile.email],
           subject: approved 
             ? "Your Creator Verification is Approved! 🎉"

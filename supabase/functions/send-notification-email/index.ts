@@ -59,7 +59,7 @@ serve(async (req) => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "Notifications <notifications@resend.dev>",
+      from: "Notifications <notifications@getkoji.net>",
       to: [profile.email],
       subject: title,
       html: `

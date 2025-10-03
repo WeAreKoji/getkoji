@@ -38,7 +38,7 @@ serve(async (req) => {
     `;
 
     await resend.emails.send({
-      from: "Koji <onboarding@resend.dev>",
+      from: "Koji <onboarding@getkoji.net>",
       to: [email],
       subject: "Verification Submitted - We're Reviewing Your Documents",
       html: emailHtml,
