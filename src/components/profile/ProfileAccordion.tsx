@@ -67,11 +67,13 @@ export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, ge
               <div>
                 <h4 className="text-sm font-medium mb-2">Interested In</h4>
                 <div className="flex flex-wrap gap-2">
-                  {interestedInGender.map((g) => (
-                    <Badge key={g} variant="secondary" className="text-xs">
-                      {formatGender(g)}
-                    </Badge>
-                  ))}
+                  {interestedInGender
+                    .filter(g => g === 'male' || g === 'female')
+                    .map((g) => (
+                      <Badge key={g} variant="secondary" className="text-xs">
+                        {formatGender(g)}
+                      </Badge>
+                    ))}
                 </div>
               </div>
             )}

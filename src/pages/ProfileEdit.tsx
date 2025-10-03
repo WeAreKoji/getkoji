@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import PhotoUpload from "@/components/profile/PhotoUpload";
 import { UsernameInput } from "@/components/profile/UsernameInput";
 import { logError } from "@/lib/error-logger";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface Photo {
   id?: string;
@@ -39,6 +40,7 @@ const ProfileEdit = () => {
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [interestedInGender, setInterestedInGender] = useState<string[]>(['male']);
   
   const [allInterests, setAllInterests] = useState<Interest[]>([]);
   const [selectedInterestIds, setSelectedInterestIds] = useState<string[]>([]);
@@ -75,6 +77,7 @@ const ProfileEdit = () => {
         setAge(profile.age);
         setCity(profile.city || "");
         setBio(profile.bio || "");
+        setInterestedInGender(profile.interested_in_gender || ['male']);
       }
 
       const { data: photosData } = await supabase
@@ -137,6 +140,7 @@ const ProfileEdit = () => {
         age,
         city,
         bio,
+        interested_in_gender: interestedInGender,
       };
       
       // Only update username if it's changed
@@ -332,6 +336,40 @@ const ProfileEdit = () => {
                 {bio.length}/500
               </p>
             </div>
+          </Card>
+
+          {/* Interested In */}
+          <Card className="p-4 md:p-6 space-y-4">
+            <h3 className="font-semibold text-base md:text-lg">Interested In</h3>
+            <RadioGroup
+              value={
+                interestedInGender.length === 2 &&
+                interestedInGender.includes('male') &&
+                interestedInGender.includes('female')
+                  ? 'everyone'
+                  : interestedInGender[0] || 'male'
+              }
+              onValueChange={(value) => {
+                if (value === 'everyone') {
+                  setInterestedInGender(['male', 'female']);
+                } else {
+                  setInterestedInGender([value]);
+                }
+              }}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="male" id="edit_interested_male" />
+                <Label htmlFor="edit_interested_male" className="font-normal cursor-pointer">Men</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="female" id="edit_interested_female" />
+                <Label htmlFor="edit_interested_female" className="font-normal cursor-pointer">Women</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="everyone" id="edit_interested_everyone" />
+                <Label htmlFor="edit_interested_everyone" className="font-normal cursor-pointer">Everyone</Label>
+              </div>
+            </RadioGroup>
           </Card>
 
           {/* Interests */}

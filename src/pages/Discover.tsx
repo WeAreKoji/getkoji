@@ -31,7 +31,7 @@ const Discover = () => {
     ageRange: [18, 99] as [number, number],
     distance: 50,
     interestedIn: ['open_to_dating', 'make_friends', 'support_creators'],
-    interestedInGender: ['male', 'female', 'non_binary', 'other'],
+    interestedInGender: ['male', 'female'],
     showCreatorsOnly: false,
     showVerifiedOnly: false,
   });
@@ -73,7 +73,7 @@ const Discover = () => {
           ageRange: [data.min_age || 18, data.max_age || 99],
           distance: data.max_distance_km || 50,
           interestedIn: data.interested_in || ['open_to_dating', 'make_friends', 'support_creators'],
-          interestedInGender: data.interested_in_gender || ['male', 'female', 'non_binary', 'other'],
+          interestedInGender: data.interested_in_gender || ['male', 'female'],
           showCreatorsOnly: data.show_creators_only || false,
           showVerifiedOnly: data.show_verified_only || false,
         });
@@ -221,7 +221,7 @@ const Discover = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => navigate('/settings/discovery')} 
+                onClick={() => navigate('/discovery-settings')} 
                 aria-label="Discovery settings"
               >
                 <SlidersHorizontal className="w-5 h-5" />

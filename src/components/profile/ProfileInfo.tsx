@@ -74,11 +74,13 @@ export const ProfileInfo = ({ bio, intent, interests, gender, interestedInGender
                 Interested In
               </h3>
               <div className="flex flex-wrap gap-2">
-                {interestedInGender.map((g) => (
-                  <Badge key={g} variant="secondary" className="text-sm px-3 py-1.5">
-                    {formatGender(g)}
-                  </Badge>
-                ))}
+                {interestedInGender
+                  .filter(g => g === 'male' || g === 'female')
+                  .map((g) => (
+                    <Badge key={g} variant="secondary" className="text-sm px-3 py-1.5">
+                      {formatGender(g)}
+                    </Badge>
+                  ))}
               </div>
             </Card>
           )}
