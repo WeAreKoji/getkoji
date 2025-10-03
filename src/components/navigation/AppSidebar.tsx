@@ -76,8 +76,21 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r w-56" style={{ "--sidebar-width": "14rem" } as React.CSSProperties}>
       <SidebarContent className="flex flex-col h-full">
-        <div className={open ? "px-4 py-3 pb-2 flex justify-end" : "px-2 py-3 pb-2 flex justify-center"}>
-          <SidebarTrigger />
+        {/* Header with Trigger and Notifications */}
+        <div className="relative border-b">
+          <div className={open ? "px-4 py-3 flex items-center justify-between" : "px-2 py-3 flex items-center justify-center"}>
+            <SidebarTrigger />
+            {open && (
+              <div className="absolute right-3 top-3">
+                <NotificationCenter variant="nav" />
+              </div>
+            )}
+          </div>
+          {!open && (
+            <div className="px-2 pb-2 flex justify-center">
+              <NotificationCenter variant="nav" />
+            </div>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           <SidebarGroup>
@@ -100,11 +113,6 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
-                <SidebarMenuItem>
-                  <div className={open ? "px-2 py-2" : "px-2 py-2 flex justify-center"}>
-                    <NotificationCenter variant="nav" />
-                  </div>
-                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
