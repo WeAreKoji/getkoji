@@ -72,7 +72,20 @@ const Discover = () => {
   };
   const handleSwipe = async (isLike: boolean) => {
     const currentProfile = profiles[currentIndex];
-    if (!currentProfile || !user) return;
+    if (!currentProfile || !user) {
+      console.log('⚠️ handleSwipe called without profile or user');
+      return;
+    }
+
+    console.log('🎯 handleSwipe called:', {
+      isLike,
+      profileId: currentProfile.id,
+      profileName: currentProfile.display_name,
+      userId: user.id,
+      currentIndex,
+      totalProfiles: profiles.length,
+      timestamp: new Date().toISOString()
+    });
 
     // Rate limit: 50 swipes per 5 minutes
     const rateLimit = ClientRateLimiter.checkLimit({
@@ -82,6 +95,7 @@ const Discover = () => {
     });
 
     if (!rateLimit.allowed) {
+      console.log('⚠️ Rate limit exceeded');
       toast({
         title: "Slow down!",
         description: "You're swiping too quickly. Please wait a moment.",
@@ -91,6 +105,7 @@ const Discover = () => {
     }
 
     try {
+      console.log('📤 Inserting swipe to database...');
       const {
         error
       } = await supabase.from("swipes").insert({
@@ -98,16 +113,32 @@ const Discover = () => {
         swiped_id: currentProfile.id,
         is_like: isLike
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
+
+      console.log('✅ Swipe inserted successfully');
+      
       if (isLike) {
         haptics.success();
         toast({
           title: "Liked! 💜",
           description: "You'll be notified if it's a match!"
         });
+      } else {
+        toast({
+          title: "Passed 👋",
+          description: "Keep swiping to find your match!",
+          duration: 2000
+        });
       }
+      
+      console.log('⏭️ Moving to next profile');
       setCurrentIndex(prev => prev + 1);
     } catch (error: any) {
+      console.error('❌ handleSwipe error:', error);
       toast({
         title: "Error",
         description: error.message,

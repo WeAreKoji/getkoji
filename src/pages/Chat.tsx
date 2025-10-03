@@ -35,6 +35,8 @@ const Chat = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -156,20 +158,27 @@ const Chat = () => {
           filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
+          console.log('📨 New message received via realtime:', payload.new);
           const newMessage = payload.new as Message;
           setMessages((prev) => [...prev, newMessage]);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Realtime subscription status:', status);
+        setIsConnected(status === 'SUBSCRIBED');
+      });
 
     channelRef.current = channel;
   };
 
   const sendMessage = async (content: string) => {
-    if (!currentUserId || !matchId) return;
+    if (!currentUserId || !matchId || sendingMessage) return;
+
+    setSendingMessage(true);
 
     try {
       haptics.light();
+      console.log('📤 Sending message:', { content, matchId, senderId: currentUserId });
       
       const { error } = await supabase.from("messages").insert({
         match_id: matchId,
@@ -177,17 +186,24 @@ const Chat = () => {
         content,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Failed to send message:', error);
+        throw error;
+      }
+
+      console.log('✅ Message sent successfully');
       
       // Scroll to bottom after sending
       setTimeout(() => scrollToBottom(false), 100);
     } catch (error) {
       logError(error, 'Chat.sendMessage');
       toast({
-        title: "Error",
-        description: getUserFriendlyError(error),
-        variant: "destructive",
+        title: "Failed to send",
+        description: "Check your connection and try again",
+        variant: "destructive"
       });
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -214,8 +230,14 @@ const Chat = () => {
                 <User className="w-5 h-5 text-primary" />
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="flex-1">
               <h2 className="font-semibold">{otherProfile?.display_name}</h2>
+              <div className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                <span className="text-xs text-muted-foreground">
+                  {isConnected ? 'Connected' : 'Connecting...'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -259,7 +281,7 @@ const Chat = () => {
 
           {/* Input */}
           <div className="bg-card border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-            <MessageInput onSend={sendMessage} />
+            <MessageInput onSend={sendMessage} disabled={sendingMessage || !isConnected} matchId={matchId || ''} />
           </div>
         </div>
       </BackGesture>

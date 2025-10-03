@@ -3,10 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import MatchCard from "@/components/matches/MatchCard";
 import BottomNav from "@/components/navigation/BottomNav";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { logError } from "@/lib/error-logger";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 interface Match {
   id: string;
@@ -38,6 +40,7 @@ const Matches = () => {
   const isMobile = useIsMobile();
   const [matches, setMatches] = useState<MatchWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,8 +57,10 @@ const Matches = () => {
     fetchMatches(user.id);
   };
 
-  const fetchMatches = async (userId: string) => {
+  const fetchMatches = async (userId: string, isRefresh = false) => {
     try {
+      if (isRefresh) setRefreshing(true);
+
       // Fetch matches
       const { data: matchesData, error: matchesError } = await supabase
         .from("matches")
@@ -100,14 +105,37 @@ const Matches = () => {
       logError(error, 'Matches.fetchMatches');
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    if (currentUserId && !refreshing) {
+      fetchMatches(currentUserId, true);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <SafeAreaView bottom={isMobile}>
+        <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
+          <div className={isMobile ? "px-4 py-4" : "container max-w-4xl mx-auto px-6 py-8"}>
+            <h1 className={isMobile ? "text-2xl font-bold mb-4" : "text-3xl font-bold mb-6"}>Matches</h1>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-4 bg-card rounded-lg border">
+                  <Skeleton className="w-12 h-12 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {isMobile && <BottomNav />}
+        </div>
+      </SafeAreaView>
     );
   }
 
@@ -115,7 +143,18 @@ const Matches = () => {
     <SafeAreaView bottom={isMobile}>
       <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
         <div className={isMobile ? "px-4 py-4" : "container max-w-4xl mx-auto px-6 py-8"}>
-          <h1 className={isMobile ? "text-2xl font-bold mb-4" : "text-3xl font-bold mb-6"}>Matches</h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className={isMobile ? "text-2xl font-bold" : "text-3xl font-bold"}>Matches</h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              aria-label="Refresh matches"
+            >
+              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
 
           {matches.length === 0 ? (
             <div className={isMobile ? "text-center py-8" : "text-center py-12"}>

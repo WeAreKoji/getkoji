@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ interface SwipeableCardProps {
 
 const SwipeableCard = ({ profile, onSwipe }: SwipeableCardProps) => {
   const hasSwipedRef = useRef(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [{ x, y, rotate, opacity }, api] = useSpring(() => ({
     x: 0,
@@ -34,11 +35,22 @@ const SwipeableCard = ({ profile, onSwipe }: SwipeableCardProps) => {
 
   const bind = useDrag(
     ({ active, movement: [mx, my], velocity: [vx], direction: [dx] }) => {
+      if (isProcessing) return;
+
       const trigger = vx > 0.5 || Math.abs(mx) > 150; // Swipe threshold
       const isLike = dx > 0;
 
       if (!active && trigger && !hasSwipedRef.current) {
+        console.log('🎯 Swipe gesture triggered:', { 
+          isLike, 
+          profileId: profile.id, 
+          profileName: profile.display_name,
+          velocity: vx,
+          distance: mx
+        });
+
         hasSwipedRef.current = true;
+        setIsProcessing(true);
         
         // Haptic feedback on swipe complete
         if (isLike) {
@@ -55,8 +67,10 @@ const SwipeableCard = ({ profile, onSwipe }: SwipeableCardProps) => {
           opacity: 0,
           config: { tension: 200, friction: 20 },
           onRest: () => {
+            console.log('✅ Swipe animation complete, calling onSwipe');
             onSwipe(isLike);
             hasSwipedRef.current = false;
+            setIsProcessing(false);
           },
         });
       } else {
@@ -83,7 +97,9 @@ const SwipeableCard = ({ profile, onSwipe }: SwipeableCardProps) => {
       <animated.div
         {...bind()}
         style={{ x, y, rotate, opacity, touchAction: "none" }}
-        className="card-gradient-border overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing"
+        className={`card-gradient-border overflow-hidden shadow-2xl ${
+          isProcessing ? 'pointer-events-none' : 'cursor-grab active:cursor-grabbing'
+        }`}
       >
         <div className="relative aspect-[3/4] bg-gradient-to-br from-muted to-muted/50">
           {profile.avatar_url ? (
@@ -139,16 +155,28 @@ const SwipeableCard = ({ profile, onSwipe }: SwipeableCardProps) => {
             size="icon"
             variant="swipe"
             className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10"
+            disabled={isProcessing}
             onClick={() => {
+              if (isProcessing || hasSwipedRef.current) return;
+              
+              console.log('❌ Reject button clicked:', { 
+                profileId: profile.id, 
+                profileName: profile.display_name 
+              });
+
               haptics.light();
               hasSwipedRef.current = true;
+              setIsProcessing(true);
+              
               api.start({
                 x: -(200 + window.innerWidth),
                 rotate: -20,
                 opacity: 0,
                 onRest: () => {
+                  console.log('✅ Reject animation complete');
                   onSwipe(false);
                   hasSwipedRef.current = false;
+                  setIsProcessing(false);
                 },
               });
             }}
@@ -160,16 +188,28 @@ const SwipeableCard = ({ profile, onSwipe }: SwipeableCardProps) => {
             size="icon"
             variant="swipe"
             className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10"
+            disabled={isProcessing}
             onClick={() => {
+              if (isProcessing || hasSwipedRef.current) return;
+              
+              console.log('💜 Like button clicked:', { 
+                profileId: profile.id, 
+                profileName: profile.display_name 
+              });
+
               haptics.medium();
               hasSwipedRef.current = true;
+              setIsProcessing(true);
+              
               api.start({
                 x: 200 + window.innerWidth,
                 rotate: 20,
                 opacity: 0,
                 onRest: () => {
+                  console.log('✅ Like animation complete');
                   onSwipe(true);
                   hasSwipedRef.current = false;
+                  setIsProcessing(false);
                 },
               });
             }}
