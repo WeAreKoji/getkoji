@@ -121,6 +121,15 @@ All colors MUST be HSL.
     padding-top: env(safe-area-inset-top);
     min-height: 100vh;
   }
+
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @layer utilities {

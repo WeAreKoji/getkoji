@@ -267,9 +267,11 @@ const Referrals = () => {
           <div className="container max-w-6xl mx-auto px-4 py-6 md:py-8">
             {/* Header */}
             <div className="mb-6 md:mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold">{isMobile ? "Creator Referrals" : "Koji Connect - Creator Referral Program"}</h1>
-              <p className="text-sm md:text-base text-muted-foreground mt-2">
-                Earn 7.5% commission for 9 months
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words">
+                {isMobile ? "Creator Referrals" : "Koji Connect - Creator Referral Program"}
+              </h1>
+              <p className="text-xs sm:text-sm md:text-base text-muted-foreground mt-2">
+                {isMobile ? "Earn 7.5% for 9 months" : "Earn 7.5% commission on creator referrals for 9 months"}
               </p>
             </div>
 
@@ -312,47 +314,42 @@ const Referrals = () => {
             </div>
 
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="w-full overflow-x-auto flex gap-1 md:gap-2 justify-start md:justify-center">
-                <TabsTrigger value="overview" className="flex-shrink-0 gap-2">
-                  {isMobile && <TrendingUp className="w-4 h-4" />}
-                  <span className="hidden sm:inline">Overview</span>
-                  <span className="sm:hidden">Home</span>
-                </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex-shrink-0 gap-2">
-                  {isMobile && <BarChart3 className="w-4 h-4" />}
-                  <span>Analytics</span>
-                </TabsTrigger>
-                <TabsTrigger value="creator-referrals" className="flex-shrink-0 gap-2">
-                  {isMobile && <Users className="w-4 h-4" />}
-                  <span className="hidden sm:inline">Creator Referrals</span>
-                  <span className="sm:hidden">Creators</span>
-                </TabsTrigger>
-                <TabsTrigger value="friend-referrals" className="flex-shrink-0 gap-2">
-                  {isMobile && <UserPlus className="w-4 h-4" />}
-                  <span className="hidden sm:inline">Friend Referrals</span>
-                  <span className="sm:hidden">Friends</span>
-                </TabsTrigger>
-                <TabsTrigger value="payout-history" className="flex-shrink-0 gap-2">
-                  {isMobile && <History className="w-4 h-4" />}
-                  <span className="hidden sm:inline">Payout History</span>
-                  <span className="sm:hidden">Payouts</span>
-                </TabsTrigger>
-                <TabsTrigger value="tips" className="flex-shrink-0 gap-2">
-                  {isMobile && <Lightbulb className="w-4 h-4" />}
-                  <span className="hidden md:inline">Tips & Best Practices</span>
-                  <span className="md:hidden">Tips</span>
-                </TabsTrigger>
-                <TabsTrigger value="payouts" className="flex-shrink-0 gap-2">
-                  {isMobile && <Info className="w-4 h-4" />}
-                  <span className="hidden sm:inline">Payout Info</span>
-                  <span className="sm:hidden">Info</span>
-                </TabsTrigger>
-                <TabsTrigger value="how" className="flex-shrink-0 gap-2">
-                  {isMobile && <HelpCircle className="w-4 h-4" />}
-                  <span className="hidden sm:inline">How It Works</span>
-                  <span className="sm:hidden">How</span>
-                </TabsTrigger>
-              </TabsList>
+              <div className="relative -mx-4 px-4 mb-2">
+                <TabsList className="w-full overflow-x-auto flex gap-1 justify-start no-scrollbar">
+                  <TabsTrigger value="overview" className="flex-shrink-0 gap-1.5 px-3">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="hidden sm:inline">Overview</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="analytics" className="flex-shrink-0 gap-1.5 px-3">
+                    <BarChart3 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Analytics</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="creator-referrals" className="flex-shrink-0 gap-1.5 px-3">
+                    <Users className="w-4 h-4" />
+                    <span className="hidden sm:inline">Creators</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="friend-referrals" className="flex-shrink-0 gap-1.5 px-3">
+                    <UserPlus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Friends</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="payout-history" className="flex-shrink-0 gap-1.5 px-3">
+                    <History className="w-4 h-4" />
+                    <span className="hidden sm:inline">Payouts</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="tips" className="flex-shrink-0 gap-1.5 px-3">
+                    <Lightbulb className="w-4 h-4" />
+                    <span className="hidden sm:inline">Tips</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="payouts" className="flex-shrink-0 gap-1.5 px-3">
+                    <Info className="w-4 h-4" />
+                    <span className="hidden sm:inline">Info</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="how" className="flex-shrink-0 gap-1.5 px-3">
+                    <HelpCircle className="w-4 h-4" />
+                    <span className="hidden sm:inline">How</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="mt-6 space-y-6">
