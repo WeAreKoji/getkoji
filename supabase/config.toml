@@ -71,3 +71,9 @@ verify_jwt = true
 
 [functions.moderate-content]
 verify_jwt = false
+
+[functions.update-user-location]
+verify_jwt = true
+
+[functions.get-nearby-profiles]
+verify_jwt = true

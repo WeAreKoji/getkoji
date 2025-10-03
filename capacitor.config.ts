@@ -34,6 +34,9 @@ const config: CapacitorConfig = {
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"]
+    },
+    Geolocation: {
+      // Request location permission on first use
     }
   }
 };

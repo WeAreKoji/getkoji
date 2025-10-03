@@ -1620,6 +1620,11 @@ export type Database = {
           intent: Database["public"]["Enums"]["user_intent"]
           interested_in_gender: string[] | null
           last_active: string | null
+          latitude: number | null
+          location_accuracy: string | null
+          location_sharing_enabled: boolean | null
+          location_updated_at: string | null
+          longitude: number | null
           privacy_settings: Json | null
           updated_at: string | null
           username: string | null
@@ -1638,6 +1643,11 @@ export type Database = {
           intent: Database["public"]["Enums"]["user_intent"]
           interested_in_gender?: string[] | null
           last_active?: string | null
+          latitude?: number | null
+          location_accuracy?: string | null
+          location_sharing_enabled?: boolean | null
+          location_updated_at?: string | null
+          longitude?: number | null
           privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
@@ -1656,6 +1666,11 @@ export type Database = {
           intent?: Database["public"]["Enums"]["user_intent"]
           interested_in_gender?: string[] | null
           last_active?: string | null
+          latitude?: number | null
+          location_accuracy?: string | null
+          location_sharing_enabled?: boolean | null
+          location_updated_at?: string | null
+          longitude?: number | null
           privacy_settings?: Json | null
           updated_at?: string | null
           username?: string | null
@@ -2485,6 +2500,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
       can_access_documents: {
         Args: { user_id: string }
         Returns: boolean
@@ -2637,6 +2656,36 @@ export type Database = {
           creator_subscription_price: number
           creator_tagline: string
           display_name: string
+          id: string
+          id_verified: boolean
+          intent: string
+          interests: string[]
+          is_creator: boolean
+          photo_count: number
+          photos: Json
+          privacy_settings: Json
+          updated_at: string
+          username: string
+        }[]
+      }
+      get_discover_profiles_with_distance: {
+        Args: {
+          max_count?: number
+          max_distance_km?: number
+          user_id: string
+          user_lat?: number
+          user_lon?: number
+        }
+        Returns: {
+          age: number
+          avatar_url: string
+          bio: string
+          city: string
+          created_at: string
+          creator_subscription_price: number
+          creator_tagline: string
+          display_name: string
+          distance_km: number
           id: string
           id_verified: boolean
           intent: string

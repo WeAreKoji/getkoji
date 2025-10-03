@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, X, MapPin, Sparkles, BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { haptics } from "@/lib/native";
 import { cn } from "@/lib/utils";
+import { formatDistance } from "@/lib/native-location";
 
 interface Profile {
   id: string;
@@ -22,6 +23,7 @@ interface Profile {
   creator_subscription_price: number | null;
   creator_tagline: string | null;
   id_verified: boolean;
+  distance_km?: number | null;
 }
 
 interface SwipeableCardProps {
@@ -265,10 +267,17 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
             <h2 className="text-3xl font-bold mb-2">
               {profile.display_name}, {profile.age}
             </h2>
-            {profile.city && (
+            {(profile.city || profile.distance_km) && (
               <div className="flex items-center gap-2 mb-3">
                 <MapPin className="w-4 h-4" />
-                <span>{profile.city}</span>
+                <span>
+                  {profile.city}
+                  {profile.distance_km && (
+                    <span className="text-white/70 ml-1">
+                      • {formatDistance(profile.distance_km)}
+                    </span>
+                  )}
+                </span>
               </div>
             )}
             {profile.bio && <p className="text-white/90 mb-3 line-clamp-2">{profile.bio}</p>}
