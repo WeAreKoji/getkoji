@@ -9,8 +9,10 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Loader2, SlidersHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SavedFilterPresets } from "@/components/discover/SavedFilterPresets";
 
 interface DiscoveryPreferences {
   min_age: number;
@@ -127,6 +129,10 @@ const DiscoverySettings = () => {
       console.log('Preferences saved successfully');
     }
     setSaving(false);
+  };
+
+  const loadPreset = (filters: Partial<DiscoveryPreferences>) => {
+    setPreferences((prev) => ({ ...prev, ...filters }));
   };
 
   const toggleIntent = (intent: string) => {
@@ -433,11 +439,30 @@ const DiscoverySettings = () => {
           </CardContent>
         </Card>
 
+        {/* Saved Presets */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filter Presets</CardTitle>
+            <CardDescription>
+              Save and quickly apply your favorite filter combinations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SavedFilterPresets
+              currentFilters={preferences}
+              onLoadPreset={loadPreset}
+            />
+          </CardContent>
+        </Card>
+
+        <Separator />
+
         {/* Info */}
         <Card className="bg-muted">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
               These settings will be applied the next time you load new profiles in the Discover section.
+              Save your favorite filter combinations as presets for quick access.
             </p>
           </CardContent>
         </Card>
