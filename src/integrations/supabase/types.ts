@@ -1580,21 +1580,7 @@ export type Database = {
       }
       get_discover_profiles: {
         Args: { max_count?: number; user_id: string }
-        Returns: {
-          age: number
-          avatar_url: string | null
-          bio: string | null
-          city: string | null
-          created_at: string | null
-          display_name: string
-          email: string
-          id: string
-          intent: Database["public"]["Enums"]["user_intent"]
-          privacy_settings: Json | null
-          updated_at: string | null
-          username: string | null
-          username_updated_at: string | null
-        }[]
+        Returns: Database["public"]["CompositeTypes"]["discoverable_profile_type"][]
       }
       get_moderation_stats: {
         Args: Record<PropertyKey, never>
@@ -1696,7 +1682,19 @@ export type Database = {
       verification_status: "pending" | "under_review" | "approved" | "rejected"
     }
     CompositeTypes: {
-      [_ in never]: never
+      discoverable_profile_type: {
+        id: string | null
+        display_name: string | null
+        username: string | null
+        age: number | null
+        city: string | null
+        bio: string | null
+        avatar_url: string | null
+        intent: Database["public"]["Enums"]["user_intent"] | null
+        privacy_settings: Json | null
+        created_at: string | null
+        updated_at: string | null
+      }
     }
   }
 }
