@@ -1,5 +1,11 @@
 project_id = "lipibykkywbcbsiyywet"
 
+[functions.process-notifications]
+verify_jwt = false
+
+[functions.award-activity-points]
+verify_jwt = true
+
 [functions.get-signed-document-url]
 verify_jwt = true
 

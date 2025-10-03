@@ -58,6 +58,8 @@ const BlockedUsers = lazy(() => import("./pages/BlockedUsers"));
 const AdminRefunds = lazy(() => import("./pages/AdminRefunds"));
 const AdminReports = lazy(() => import("./pages/AdminReports"));
 const TransactionDetails = lazy(() => import("./pages/TransactionDetails"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const SavedProfiles = lazy(() => import("./pages/SavedProfiles"));
 
 const queryClient = new QueryClient();
 
@@ -144,6 +146,8 @@ const AppContent = () => {
               } errorElement={<RouteErrorBoundary />} />
               <Route path="/referrals" element={<Referrals />} errorElement={<RouteErrorBoundary />} />
               <Route path="/koji-connect" element={<Navigate to="/referrals" replace />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
+              <Route path="/saved" element={<ProtectedRoute><SavedProfiles /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/notifications" element={<ProtectedRoute><NotificationsSettings /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
