@@ -153,9 +153,10 @@ const DiscoverySettings = () => {
           <Button
             onClick={savePreferences}
             disabled={saving}
-            className="min-w-[80px]"
+            size="sm"
+            className="min-w-[60px]"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
           </Button>
         </div>
       </header>
