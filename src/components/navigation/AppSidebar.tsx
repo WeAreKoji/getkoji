@@ -74,11 +74,9 @@ export function AppSidebar() {
       : "hover:bg-accent hover:text-accent-foreground";
 
   return (
-    <Sidebar collapsible="icon" className="border-r w-56" style={{ "--sidebar-width": "14rem" } as React.CSSProperties}>
+    <Sidebar collapsible="icon" className="border-r w-56 relative" style={{ "--sidebar-width": "14rem" } as React.CSSProperties}>
+      <SidebarTrigger className="absolute top-4 right-4 z-50" />
       <SidebarContent className="flex flex-col h-full">
-        <div className={open ? "px-4 py-3 pb-2 flex justify-end" : "px-2 py-3 pb-2 flex justify-center"}>
-          <SidebarTrigger />
-        </div>
         <div className="flex-1 overflow-y-auto">
           <SidebarGroup>
             <div className={open ? "px-4 pb-4 flex items-center justify-start" : "px-4 pb-4 flex items-center justify-center"}>
