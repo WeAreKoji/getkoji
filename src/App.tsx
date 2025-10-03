@@ -137,7 +137,7 @@ const AppContent = () => {
               <Route path="/koji-connect" element={<Navigate to="/referrals" replace />} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/privacy" element={<PrivacySettings />} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/security" element={<SecuritySettings />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/settings/discovery" element={<DiscoverySettings />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/discovery-settings" element={<DiscoverySettings />} errorElement={<RouteErrorBoundary />} />
               <Route path="/about" element={<About />} errorElement={<RouteErrorBoundary />} />
               <Route path="/privacy" element={<Privacy />} errorElement={<RouteErrorBoundary />} />
               <Route path="/terms" element={<Terms />} errorElement={<RouteErrorBoundary />} />
