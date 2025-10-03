@@ -61,81 +61,7 @@ const AppContent = () => {
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     }>
-      {!isMobile ? (
-        <SidebarProvider defaultOpen={true}>
-          <div className="flex min-h-screen w-full">
-            <AppSidebar />
-            <main className="flex-1 overflow-auto">
-              <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-                <div className="flex h-14 items-center px-4">
-                  <SidebarTrigger />
-                </div>
-              </div>
-              <Routes>
-                <Route path="/" element={<Home />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/auth" element={<Auth />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/reset-password" element={<ResetPassword />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/onboarding" element={<Onboarding />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/discover" element={<Discover />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/creators" element={<Creators />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/matches" element={<Matches />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/chat/:matchId" element={<Chat />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/profile" element={<Profile />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/profile/:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/@:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/profile/edit" element={<ProfileEdit />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/creator/apply" element={<CreatorApplication />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/creator/setup" element={<CreatorSetup />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/creator/:creatorId" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
-          <Route path="/admin/dashboard" element={
-            <ProtectedRoute requireAdmin>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } errorElement={<RouteErrorBoundary />} />
-          <Route path="/admin/verifications" element={
-            <ProtectedRoute requireAdmin>
-              <AdminVerifications />
-            </ProtectedRoute>
-          } errorElement={<RouteErrorBoundary />} />
-          <Route path="/admin/content-moderation" element={
-            <ProtectedRoute requireAdmin>
-              <AdminContentModeration />
-            </ProtectedRoute>
-          } errorElement={<RouteErrorBoundary />} />
-          <Route path="/admin/audit-logs" element={
-            <ProtectedRoute requireAdmin>
-              <AdminAuditLogs />
-            </ProtectedRoute>
-          } errorElement={<RouteErrorBoundary />} />
-                <Route path="/subscriptions" element={<Subscriptions />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/subscription-success" element={<SubscriptionSuccess />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} errorElement={<RouteErrorBoundary />} />
-          <Route path="/creator/dashboard" element={
-            <ProtectedRoute requireCreator>
-              <CreatorDashboard />
-            </ProtectedRoute>
-          } errorElement={<RouteErrorBoundary />} />
-          <Route path="/creator/subscribers" element={
-            <ProtectedRoute requireCreator>
-              <SubscriberManagement />
-            </ProtectedRoute>
-          } errorElement={<RouteErrorBoundary />} />
-                <Route path="/referrals" element={<Referrals />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/koji-connect" element={<KojiConnect />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/settings/privacy" element={<PrivacySettings />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/about" element={<About />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/privacy" element={<Privacy />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/terms" element={<Terms />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/community" element={<Community />} errorElement={<RouteErrorBoundary />} />
-                <Route path="/support" element={<Support />} errorElement={<RouteErrorBoundary />} />
-                <Route path="*" element={<NotFound />} errorElement={<RouteErrorBoundary />} />
-              </Routes>
-            </main>
-          </div>
-        </SidebarProvider>
-      ) : (
-        <Routes>
+      <Routes>
           <Route path="/" element={<Home />} errorElement={<RouteErrorBoundary />} />
           <Route path="/auth" element={<Auth />} errorElement={<RouteErrorBoundary />} />
           <Route path="/reset-password" element={<ResetPassword />} errorElement={<RouteErrorBoundary />} />
@@ -193,9 +119,8 @@ const AppContent = () => {
           <Route path="/terms" element={<Terms />} errorElement={<RouteErrorBoundary />} />
           <Route path="/community" element={<Community />} errorElement={<RouteErrorBoundary />} />
           <Route path="/support" element={<Support />} errorElement={<RouteErrorBoundary />} />
-          <Route path="*" element={<NotFound />} errorElement={<RouteErrorBoundary />} />
-        </Routes>
-      )}
+        <Route path="*" element={<NotFound />} errorElement={<RouteErrorBoundary />} />
+      </Routes>
     </Suspense>
   );
 };
