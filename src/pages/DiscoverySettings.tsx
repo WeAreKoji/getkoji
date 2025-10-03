@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Loader2, SlidersHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,7 +33,7 @@ const DiscoverySettings = () => {
     max_age: 99,
     max_distance_km: 50,
     interested_in: ['open_to_dating', 'make_friends', 'support_creators'],
-    interested_in_gender: ['male', 'female', 'non_binary', 'other'],
+    interested_in_gender: ['male', 'female'],
     show_verified_only: false,
     show_creators_only: false,
     show_non_creators: true,
@@ -69,7 +70,7 @@ const DiscoverySettings = () => {
         max_age: data.max_age,
         max_distance_km: data.max_distance_km,
         interested_in: data.interested_in,
-        interested_in_gender: data.interested_in_gender || ['male', 'female', 'non_binary', 'other'],
+        interested_in_gender: data.interested_in_gender || ['male', 'female'],
         show_verified_only: data.show_verified_only,
         show_creators_only: data.show_creators_only,
         show_non_creators: data.show_non_creators,
@@ -117,13 +118,12 @@ const DiscoverySettings = () => {
     });
   };
 
-  const toggleGender = (gender: string) => {
-    setPreferences(prev => {
-      const newGenders = prev.interested_in_gender.includes(gender)
-        ? prev.interested_in_gender.filter(g => g !== gender)
-        : [...prev.interested_in_gender, gender];
-      return { ...prev, interested_in_gender: newGenders };
-    });
+  const handleGenderChange = (value: string) => {
+    if (value === 'everyone') {
+      setPreferences(prev => ({ ...prev, interested_in_gender: ['male', 'female'] }));
+    } else {
+      setPreferences(prev => ({ ...prev, interested_in_gender: [value] }));
+    }
   };
 
   if (loading) {
@@ -259,39 +259,30 @@ const DiscoverySettings = () => {
               Show me profiles of these genders
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="male"
-                checked={preferences.interested_in_gender.includes('male')}
-                onCheckedChange={() => toggleGender('male')}
-              />
-              <Label htmlFor="male" className="cursor-pointer">Men</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="female"
-                checked={preferences.interested_in_gender.includes('female')}
-                onCheckedChange={() => toggleGender('female')}
-              />
-              <Label htmlFor="female" className="cursor-pointer">Women</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="non_binary"
-                checked={preferences.interested_in_gender.includes('non_binary')}
-                onCheckedChange={() => toggleGender('non_binary')}
-              />
-              <Label htmlFor="non_binary" className="cursor-pointer">Non-binary</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="other"
-                checked={preferences.interested_in_gender.includes('other')}
-                onCheckedChange={() => toggleGender('other')}
-              />
-              <Label htmlFor="other" className="cursor-pointer">Other</Label>
-            </div>
+          <CardContent>
+            <RadioGroup
+              value={
+                preferences.interested_in_gender.length === 2 &&
+                preferences.interested_in_gender.includes('male') &&
+                preferences.interested_in_gender.includes('female')
+                  ? 'everyone'
+                  : preferences.interested_in_gender[0] || 'male'
+              }
+              onValueChange={handleGenderChange}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="male" id="gender_male" />
+                <Label htmlFor="gender_male" className="font-normal cursor-pointer">Men</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="female" id="gender_female" />
+                <Label htmlFor="gender_female" className="font-normal cursor-pointer">Women</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="everyone" id="gender_everyone" />
+                <Label htmlFor="gender_everyone" className="font-normal cursor-pointer">Everyone</Label>
+              </div>
+            </RadioGroup>
           </CardContent>
         </Card>
 

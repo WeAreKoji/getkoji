@@ -221,34 +221,30 @@ const ProfileSetup = ({ data, onComplete, loading }: ProfileSetupProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label>Interested In</Label>
-          <div className="space-y-2">
-            {[
-              { value: "male", label: "Men" },
-              { value: "female", label: "Women" },
-              { value: "non_binary", label: "Non-binary" },
-              { value: "other", label: "Other" },
-            ].map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`interested_${option.value}`}
-                  checked={formData.interestedInGender?.includes(option.value)}
-                  onCheckedChange={(checked) => {
-                    const current = formData.interestedInGender || [];
-                    setFormData({
-                      ...formData,
-                      interestedInGender: checked
-                        ? [...current, option.value]
-                        : current.filter((g) => g !== option.value),
-                    });
-                  }}
-                />
-                <Label htmlFor={`interested_${option.value}`} className="font-normal cursor-pointer">
-                  {option.label}
-                </Label>
-              </div>
-            ))}
-          </div>
+          <Label>Interested In *</Label>
+          <RadioGroup
+            value={formData.interestedInGender?.[0] || 'male'}
+            onValueChange={(value) => {
+              if (value === 'everyone') {
+                setFormData({ ...formData, interestedInGender: ['male', 'female'] });
+              } else {
+                setFormData({ ...formData, interestedInGender: [value] });
+              }
+            }}
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="male" id="interested_male" />
+              <Label htmlFor="interested_male" className="font-normal cursor-pointer">Men</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="female" id="interested_female" />
+              <Label htmlFor="interested_female" className="font-normal cursor-pointer">Women</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="everyone" id="interested_everyone" />
+              <Label htmlFor="interested_everyone" className="font-normal cursor-pointer">Everyone</Label>
+            </div>
+          </RadioGroup>
         </div>
 
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
