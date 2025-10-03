@@ -281,11 +281,11 @@ const Referrals = () => {
           </div>
 
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="referrals">My Referrals</TabsTrigger>
-              <TabsTrigger value="payouts">Payout Details</TabsTrigger>
-              <TabsTrigger value="how">How It Works</TabsTrigger>
+            <TabsList className="w-full overflow-x-auto flex gap-2">
+              <TabsTrigger value="overview" className="flex-shrink-0">Overview</TabsTrigger>
+              <TabsTrigger value="referrals" className="flex-shrink-0">My Referrals</TabsTrigger>
+              <TabsTrigger value="payouts" className="flex-shrink-0">Payout Details</TabsTrigger>
+              <TabsTrigger value="how" className="flex-shrink-0">How It Works</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
