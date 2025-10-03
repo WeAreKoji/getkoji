@@ -64,7 +64,7 @@ const Subscriptions = () => {
         (data || []).map(async (sub) => {
           const [creatorProfileResult, profileResult] = await Promise.all([
             supabase
-              .from("public_creator_profiles")
+              .from("creator_profiles")
               .select("subscription_price")
               .eq("user_id", sub.creator_id)
               .single(),

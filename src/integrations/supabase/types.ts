@@ -667,6 +667,33 @@ export type Database = {
           },
         ]
       }
+      document_access_ip_whitelist: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address: unknown
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+        }
+        Relationships: []
+      }
       document_access_logs: {
         Row: {
           access_reason: string | null
@@ -2154,6 +2181,10 @@ export type Database = {
         Args: { creator_user_id: string }
         Returns: undefined
       }
+      detect_suspicious_document_access: {
+        Args: { _user_id: string; _window_minutes?: number }
+        Returns: boolean
+      }
       generate_document_token: {
         Args: {
           _document_type: string
@@ -2250,6 +2281,10 @@ export type Database = {
         Args: { creator_user_id: string }
         Returns: boolean
       }
+      is_ip_whitelisted: {
+        Args: { _ip_address: unknown }
+        Returns: boolean
+      }
       log_admin_action: {
         Args: {
           _action: string
@@ -2324,6 +2359,10 @@ export type Database = {
         Args: { application_text: string }
         Returns: Json
       }
+      revoke_expired_document_permissions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_payment_transaction_status: {
         Args: {
           _failure_reason?: string
@@ -2331,6 +2370,14 @@ export type Database = {
           _transaction_id: string
         }
         Returns: undefined
+      }
+      validate_document_access_request: {
+        Args: {
+          _access_reason?: string
+          _ip_address: unknown
+          _user_id: string
+        }
+        Returns: Json
       }
       validate_document_token: {
         Args: { _token: string }

@@ -37,7 +37,7 @@ const Creators = () => {
   const loadCreators = async () => {
     try {
       const { data, error } = await supabase
-        .from("public_creator_profiles")
+        .from("creator_profiles")
         .select(`
           *,
           profile:profiles!creator_profiles_user_id_fkey(

@@ -65,6 +65,17 @@ serve(async (req) => {
       );
     }
 
+    // Validate access reason (minimum 10 characters required for audit trail)
+    if (!accessReason || accessReason.trim().length < 10) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Access reason required (minimum 10 characters)',
+          requiresReason: true
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Validate document type
     if (!['front', 'back', 'selfie'].includes(documentType)) {
       return new Response(
@@ -74,6 +85,38 @@ serve(async (req) => {
     }
 
     console.log(`Document access requested by ${user.id} for verification ${verificationId}, document: ${documentType}`);
+
+    // Get client IP for validation and logging
+    const clientIp = req.headers.get('x-forwarded-for') || 
+                     req.headers.get('x-real-ip') || 
+                     'unknown';
+
+    // Enhanced validation using the new security function
+    const { data: validationResult, error: validationError } = await supabaseClient
+      .rpc('validate_document_access_request', {
+        _user_id: user.id,
+        _ip_address: clientIp,
+        _access_reason: accessReason
+      });
+
+    if (validationError) {
+      console.error('Validation error:', validationError);
+      return new Response(
+        JSON.stringify({ error: 'Security validation failed' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!validationResult.allowed) {
+      console.warn(`Access denied for user ${user.id}: ${validationResult.reason}`);
+      return new Response(
+        JSON.stringify({ 
+          error: validationResult.reason,
+          requiresReason: validationResult.requires_reason || false
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Check if user has permission to access documents using the new permission system
     const { data: hasPermission, error: permError } = await supabaseClient
@@ -172,10 +215,25 @@ serve(async (req) => {
       );
     }
 
-    // Generate signed URL with reduced expiration (5 minutes instead of 1 hour)
+    // Validate the one-time token before generating signed URL
+    const { data: tokenValidation, error: tokenValidationError } = await supabaseClient
+      .rpc('validate_document_token', { _token: token });
+
+    if (tokenValidationError || !tokenValidation?.is_valid) {
+      console.error('Token validation failed:', tokenValidationError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired access token' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Generate signed URL with reduced expiration (5 minutes) and enhanced headers
     const { data: signedUrlData, error: signedUrlError } = await supabaseClient.storage
       .from('id-documents')
-      .createSignedUrl(filePath, 300); // 5 minutes
+      .createSignedUrl(filePath, 300, {
+        // Enhanced security headers to prevent download and enforce view-only
+        download: false
+      });
 
     if (signedUrlError || !signedUrlData) {
       console.error('Signed URL generation error:', signedUrlError);
@@ -185,10 +243,7 @@ serve(async (req) => {
       );
     }
 
-    // Get client IP and user agent for audit logging
-    const clientIp = req.headers.get('x-forwarded-for') || 
-                     req.headers.get('x-real-ip') || 
-                     'unknown';
+    // Get user agent for audit logging
     const userAgent = req.headers.get('user-agent') || 'unknown';
 
     // Log the document access (run in background, don't block response)
