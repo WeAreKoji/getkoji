@@ -135,9 +135,16 @@ serve(async (req) => {
         );
     }
 
-    // Extract file path from full URL
-    const urlParts = documentPath.split('/id-documents/');
-    const filePath = urlParts[1];
+    // Extract file path - handle both full URLs and direct paths
+    let filePath: string;
+    if (documentPath.includes('/id-documents/')) {
+      // Full URL format
+      const urlParts = documentPath.split('/id-documents/');
+      filePath = urlParts[1];
+    } else {
+      // Already a file path
+      filePath = documentPath;
+    }
 
     if (!filePath) {
       console.error('Invalid document path:', documentPath);
