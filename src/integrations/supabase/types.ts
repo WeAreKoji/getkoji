@@ -53,6 +53,13 @@ export type Database = {
             foreignKeyName: "audit_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -172,6 +179,13 @@ export type Database = {
             foreignKeyName: "creator_posts_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_posts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -224,6 +238,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "creator_profiles_user_id_fkey"
             columns: ["user_id"]
@@ -604,7 +625,21 @@ export type Database = {
             foreignKeyName: "matches_user1_id_fkey"
             columns: ["user1_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "discoverable_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -647,6 +682,13 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "discoverable_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -849,6 +891,13 @@ export type Database = {
             foreignKeyName: "profile_access_logs_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_access_logs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -877,6 +926,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profile_photos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profile_photos_user_id_fkey"
             columns: ["user_id"]
@@ -1198,7 +1254,21 @@ export type Database = {
             foreignKeyName: "subscriptions_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "discoverable_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1237,7 +1307,21 @@ export type Database = {
             foreignKeyName: "swipes_swiped_id_fkey"
             columns: ["swiped_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swipes_swiped_id_fkey"
+            columns: ["swiped_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swipes_swiper_id_fkey"
+            columns: ["swiper_id"]
+            isOneToOne: false
+            referencedRelation: "discoverable_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1304,6 +1388,13 @@ export type Database = {
             foreignKeyName: "user_interests_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1333,6 +1424,13 @@ export type Database = {
             foreignKeyName: "user_roles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1340,7 +1438,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      discoverable_profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          intent: Database["public"]["Enums"]["user_intent"] | null
+          privacy_settings: Json | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          intent?: Database["public"]["Enums"]["user_intent"] | null
+          privacy_settings?: Json | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          intent?: Database["public"]["Enums"]["user_intent"] | null
+          privacy_settings?: Json | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_creator_referral: {
