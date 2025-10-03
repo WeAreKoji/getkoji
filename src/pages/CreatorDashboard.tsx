@@ -21,6 +21,7 @@ import { SubscriberList } from "@/components/creator/SubscriberList";
 import { ContentPerformance } from "@/components/creator/ContentPerformance";
 import { GoalsTracking } from "@/components/creator/GoalsTracking";
 import { TransactionHistory } from "@/components/payments/TransactionHistory";
+import { MobileEarningsChart } from "@/components/creator/MobileEarningsChart";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
@@ -724,6 +725,11 @@ const CreatorDashboard = () => {
             </CardContent>
           </Card>
 
+          {/* Mobile-Optimized Performance Charts */}
+          {isMobile && revenueData.length > 0 && (
+            <MobileEarningsChart revenueData={revenueData} period="7d" />
+          )}
+
           {/* Subscriber Growth Chart */}
           {chartData.length > 0 && !isMobile && (
             <Card>
@@ -897,6 +903,9 @@ const CreatorDashboard = () => {
               currentRevenue={stats.totalEarnings}
             />
           )}
+
+          {/* Transaction History */}
+          <TransactionHistory />
 
           {/* Payout Settings */}
           {userId && (

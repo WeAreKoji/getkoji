@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, DollarSign, RefreshCcw, AlertCircle, CreditCard } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, DollarSign, RefreshCcw, AlertCircle, CreditCard, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { logError, getUserFriendlyError } from "@/lib/error-logger";
 
@@ -19,6 +21,7 @@ interface Transaction {
 }
 
 export const TransactionHistory = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -97,7 +100,11 @@ export const TransactionHistory = () => {
       <h2 className="text-2xl font-semibold">Transaction History</h2>
       <div className="space-y-3">
         {transactions.map((transaction) => (
-          <Card key={transaction.id} className="p-4">
+          <Card 
+            key={transaction.id} 
+            className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => navigate(`/transaction/${transaction.id}`)}
+          >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
                 <div className="mt-1">{getTypeIcon(transaction.transaction_type)}</div>
@@ -124,14 +131,17 @@ export const TransactionHistory = () => {
                   )}
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-semibold">
-                  {transaction.transaction_type === "refund" ? "-" : ""}$
-                  {transaction.amount.toFixed(2)}
-                </p>
-                <p className="text-xs text-muted-foreground uppercase">
-                  {transaction.currency}
-                </p>
+              <div className="text-right flex items-start gap-2">
+                <div>
+                  <p className="font-semibold">
+                    {transaction.transaction_type === "refund" ? "-" : ""}$
+                    {transaction.amount.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground uppercase">
+                    {transaction.currency}
+                  </p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-muted-foreground mt-1" />
               </div>
             </div>
           </Card>

@@ -53,6 +53,7 @@ const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const DiscoverySettings = lazy(() => import("./pages/DiscoverySettings"));
 const AdminRefunds = lazy(() => import("./pages/AdminRefunds"));
 const AdminReports = lazy(() => import("./pages/AdminReports"));
+const TransactionDetails = lazy(() => import("./pages/TransactionDetails"));
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const AppContent = () => {
               <Route path="/subscriptions" element={<Subscriptions />} errorElement={<RouteErrorBoundary />} />
               <Route path="/subscription-success" element={<SubscriptionSuccess />} errorElement={<RouteErrorBoundary />} />
               <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/transaction/:id" element={<TransactionDetails />} errorElement={<RouteErrorBoundary />} />
               <Route path="/creator/dashboard" element={
                 <ProtectedRoute requireCreator>
                   <CreatorDashboard />
