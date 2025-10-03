@@ -2216,7 +2216,21 @@ export type Database = {
         Returns: string
       }
       get_creators_with_profiles: {
-        Args: { p_limit?: number; p_offset?: number }
+        Args: {
+          p_gender?: string
+          p_limit?: number
+          p_location?: string
+          p_max_age?: number
+          p_max_price?: number
+          p_min_age?: number
+          p_min_price?: number
+          p_min_subscribers?: number
+          p_offset?: number
+          p_search?: string
+          p_sort_by?: string
+          p_sort_direction?: string
+          p_verified_only?: boolean
+        }
         Returns: {
           age: number
           avatar_url: string
