@@ -26,6 +26,8 @@ interface CreatorProfile {
   user_id: string;
   subscription_price: number;
   subscriber_count: number;
+  id_verified: boolean;
+  created_at: string;
 }
 
 interface Profile {

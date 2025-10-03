@@ -14,6 +14,8 @@ interface Creator {
   user_id: string;
   subscription_price: number;
   subscriber_count: number;
+  id_verified: boolean;
+  created_at: string;
   profile: {
     display_name: string;
     avatar_url: string | null;
