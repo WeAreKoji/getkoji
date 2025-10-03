@@ -15,7 +15,8 @@ interface Subscriber {
   subscriber_id: string;
   status: string;
   stripe_subscription_id: string;
-  subscription_end: string | null;
+  expires_at: string | null;
+  started_at: string;
   profile: {
     display_name: string;
     avatar_url: string | null;
@@ -47,8 +48,9 @@ export const SubscriberList = ({ creatorId, limit = 10 }: SubscriberListProps) =
           id,
           subscriber_id,
           status,
+          started_at,
           stripe_subscription_id,
-          subscription_end,
+          expires_at,
           profiles!subscriptions_subscriber_id_fkey (
             display_name,
             avatar_url,
@@ -57,7 +59,7 @@ export const SubscriberList = ({ creatorId, limit = 10 }: SubscriberListProps) =
           )
         `)
         .eq("creator_id", creatorId)
-        .order("subscription_end", { ascending: false })
+        .order("started_at", { ascending: false })
         .limit(limit);
 
       if (error) throw error;
@@ -66,8 +68,9 @@ export const SubscriberList = ({ creatorId, limit = 10 }: SubscriberListProps) =
         id: sub.id,
         subscriber_id: sub.subscriber_id,
         status: sub.status,
+        started_at: sub.started_at,
         stripe_subscription_id: sub.stripe_subscription_id,
-        subscription_end: sub.subscription_end,
+        expires_at: sub.expires_at,
         profile: Array.isArray(sub.profiles) ? sub.profiles[0] : sub.profiles
       })) || []);
     } catch (error) {
@@ -94,7 +97,7 @@ export const SubscriberList = ({ creatorId, limit = 10 }: SubscriberListProps) =
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/subscriber-management")}
+          onClick={() => navigate("/creator/subscribers")}
         >
           View All
         </Button>
