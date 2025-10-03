@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,12 +13,19 @@ import { logError } from "@/lib/error-logger";
 const CreatorApplication = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [application, setApplication] = useState("");
   const [isAlreadyCreator, setIsAlreadyCreator] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   useEffect(() => {
+    // Capture referral code from URL
+    const refCode = searchParams.get("ref");
+    if (refCode) {
+      setReferralCode(refCode);
+    }
     checkCreatorStatus();
   }, []);
 
@@ -77,6 +84,34 @@ const CreatorApplication = () => {
       
       if (!result?.success) {
         throw new Error(result?.message || "Failed to grant creator role");
+      }
+
+      // Create creator referral if referral code exists
+      if (referralCode) {
+        try {
+          // Get referrer from referral code
+          const { data: referralCodeData } = await supabase
+            .from("referral_codes")
+            .select("user_id")
+            .eq("code", referralCode)
+            .eq("referral_type", "creator")
+            .maybeSingle();
+
+          if (referralCodeData) {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            // Create creator referral entry
+            await supabase.from("creator_referrals").insert({
+              referrer_id: referralCodeData.user_id,
+              referred_creator_id: user!.id,
+              referral_code: referralCode,
+              status: "pending", // Will activate when they verify and publish first post
+            });
+          }
+        } catch (error) {
+          console.error("Error creating referral:", error);
+          // Don't fail the application if referral creation fails
+        }
       }
 
       toast({

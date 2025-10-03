@@ -211,7 +211,7 @@ const Creators = () => {
                 </p>
               </div>
               <Button
-                onClick={() => navigate('/creator-application')}
+                onClick={() => navigate('/creator/apply')}
                 size="lg"
                 className="hidden md:flex"
               >

@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Copy, Check, DollarSign, Users, TrendingUp, Calendar, Gift, ShieldAlert, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Loader2, Copy, Check, DollarSign, Users, TrendingUp, Calendar, Gift, ShieldAlert, AlertCircle, CheckCircle, Clock, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import BottomNav from "@/components/navigation/BottomNav";
 import { logError } from "@/lib/error-logger";
+import { FriendReferralsTab } from "@/components/referrals/FriendReferralsTab";
+import { PayoutHistoryTab } from "@/components/referrals/PayoutHistoryTab";
+import { ShareReferralLink } from "@/components/referrals/ShareReferralLink";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface CreatorReferral {
   id: string;
@@ -47,6 +51,10 @@ const Referrals = () => {
     nextPayoutDate: "",
     nextPayoutAmount: 0,
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     checkAuth();
@@ -58,6 +66,7 @@ const Referrals = () => {
       navigate("/auth");
       return;
     }
+    setUserId(user.id);
     await fetchData(user.id);
   };
 
@@ -178,7 +187,7 @@ const Referrals = () => {
   };
 
   const getCreatorReferralLink = () => {
-    return `${window.location.origin}/creator-application?ref=${referralCode}`;
+    return `${window.location.origin}/creator/apply?ref=${referralCode}`;
   };
 
   const handleCopy = async () => {
@@ -221,6 +230,17 @@ const Referrals = () => {
       return { label: "Pending Verification", variant: "outline" as const, icon: Clock };
     }
   };
+
+  // Filter referrals based on search and status
+  const filteredReferrals = referrals.filter(ref => {
+    const matchesSearch = !debouncedSearch || 
+      ref.referred_creator.display_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      ref.referred_creator.username?.toLowerCase().includes(debouncedSearch.toLowerCase());
+    
+    const matchesStatus = !filterStatus || ref.status === filterStatus;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -283,8 +303,10 @@ const Referrals = () => {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="w-full overflow-x-auto flex gap-2">
               <TabsTrigger value="overview" className="flex-shrink-0">Overview</TabsTrigger>
-              <TabsTrigger value="referrals" className="flex-shrink-0">My Referrals</TabsTrigger>
-              <TabsTrigger value="payouts" className="flex-shrink-0">Payout Details</TabsTrigger>
+              <TabsTrigger value="creator-referrals" className="flex-shrink-0">Creator Referrals</TabsTrigger>
+              <TabsTrigger value="friend-referrals" className="flex-shrink-0">Friend Referrals</TabsTrigger>
+              <TabsTrigger value="payout-history" className="flex-shrink-0">Payout History</TabsTrigger>
+              <TabsTrigger value="payouts" className="flex-shrink-0">Payout Info</TabsTrigger>
               <TabsTrigger value="how" className="flex-shrink-0">How It Works</TabsTrigger>
             </TabsList>
 
@@ -302,7 +324,12 @@ const Referrals = () => {
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <ShareReferralLink 
+                  url={getCreatorReferralLink()} 
+                  title="Become a Creator on Koji!" 
+                  text="Join Koji and start earning from your content. Use my referral link to get started!"
+                />
+                <p className="text-sm text-muted-foreground mt-4">
                   Share this link with creators. When they complete verification and publish their first exclusive post, you'll earn 7.5% of their earnings for 9 months!
                 </p>
               </Card>
@@ -354,16 +381,109 @@ const Referrals = () => {
               </Card>
             </TabsContent>
 
-            {/* My Referrals Tab */}
-            <TabsContent value="referrals" className="mt-6">
+            {/* Creator Referrals Tab */}
+            <TabsContent value="creator-referrals" className="mt-6">
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Your Creator Referrals</h2>
-                {referrals.length === 0 ? (
+                
+                {/* Search and Filter */}
+                {referrals.length > 0 && (
+                  <div className="flex gap-2 mb-4 flex-wrap">
+                    <div className="relative flex-1 min-w-[200px]">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by creator name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={filterStatus === null ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilterStatus(null)}
+                      >
+                        All
+                      </Button>
+                      <Button
+                        variant={filterStatus === "active" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilterStatus("active")}
+                      >
+                        Active
+                      </Button>
+                      <Button
+                        variant={filterStatus === "pending" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilterStatus("pending")}
+                      >
+                        Pending
+                      </Button>
+                      <Button
+                        variant={filterStatus === "expired" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilterStatus("expired")}
+                      >
+                        Expired
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {filteredReferrals.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No creator referrals yet. Share your link to get started!</p>
+                    <p>{searchTerm || filterStatus ? "No matching referrals found" : "No creator referrals yet. Share your link to get started!"}</p>
                   </div>
                 ) : (
+                  <>
+                    {/* Mobile: Card Layout */}
+                    {isMobile ? (
+                      <div className="space-y-3">
+                        {filteredReferrals.map((ref) => {
+                          const statusInfo = getStatusBadge(ref);
+                          const StatusIcon = statusInfo.icon;
+                          return (
+                            <Card key={ref.id} className="p-4">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <p className="font-medium">{ref.referred_creator.display_name}</p>
+                                  {ref.referred_creator.username && (
+                                    <p className="text-xs text-muted-foreground">
+                                      @{ref.referred_creator.username}
+                                    </p>
+                                  )}
+                                </div>
+                                <Badge variant={statusInfo.variant} className="gap-1">
+                                  <StatusIcon className="w-3 h-3" />
+                                  {statusInfo.label}
+                                </Badge>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Joined:</span>
+                                  <span>{formatDate(ref.created_at)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Expires:</span>
+                                  <span>{formatDate(ref.expires_at)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Avg Monthly:</span>
+                                  <span>${calculateMonthlyEarnings(ref).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between font-medium pt-2 border-t">
+                                  <span>Your Commission:</span>
+                                  <span className="text-green-600">${ref.total_commission_earned.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      /* Desktop: Table Layout */
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
@@ -377,7 +497,7 @@ const Referrals = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {referrals.map((ref) => {
+                        {filteredReferrals.map((ref) => {
                           const statusInfo = getStatusBadge(ref);
                           const StatusIcon = statusInfo.icon;
                           return (
@@ -411,9 +531,21 @@ const Referrals = () => {
                         })}
                       </tbody>
                     </table>
-                  </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </Card>
+            </TabsContent>
+
+            {/* Friend Referrals Tab */}
+            <TabsContent value="friend-referrals" className="mt-6">
+              <FriendReferralsTab userId={userId} />
+            </TabsContent>
+
+            {/* Payout History Tab */}
+            <TabsContent value="payout-history" className="mt-6">
+              <PayoutHistoryTab userId={userId} />
             </TabsContent>
 
             {/* Payout Details Tab */}
@@ -496,7 +628,7 @@ const Referrals = () => {
                         <p className="text-sm text-muted-foreground mb-3">
                           Creators can receive payouts directly through Stripe Connect along with their creator earnings.
                         </p>
-                        <Button size="sm" onClick={() => navigate('/creator-application')}>Apply to Become a Creator</Button>
+                        <Button size="sm" onClick={() => navigate('/creator/apply')}>Apply to Become a Creator</Button>
                       </div>
                     </>
                   )}
