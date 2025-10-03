@@ -83,13 +83,13 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
       onMouseLeave={handleMouseLeave}
     >
       {/* Video/Cover Section */}
-      <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background overflow-hidden rounded-t-lg">
+      <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background rounded-t-lg">
         {creator.welcome_video_url ? (
           <>
             <video
               ref={videoRef}
               src={creator.welcome_video_url}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-t-lg"
               loop
               muted={isMuted}
               playsInline
@@ -123,7 +123,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
             <img
               src={creator.cover_image_url}
               alt={creator.display_name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-t-lg"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </>
@@ -146,7 +146,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         </div>
       </div>
 
-      <CardContent className="pt-12 sm:pt-16 pb-6 px-4 sm:px-6 space-y-3 sm:space-y-4">
+      <CardContent className="pt-16 sm:pt-20 pb-6 px-4 sm:px-6 space-y-3 sm:space-y-4">
         {/* Name and Verification */}
         <div>
           <div className="flex items-center gap-2 mb-1">
