@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, LogOut, SlidersHorizontal } from "lucide-react";
+import { Sparkles, LogOut } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import SwipeableCard from "@/components/discover/SwipeableCard";
 import { PageTransition } from "@/components/transitions/PageTransition";
@@ -213,19 +213,9 @@ const Discover = () => {
               alt="Koji" 
               className="h-10 w-auto"
             />
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => navigate('/discovery-settings')} 
-                aria-label="Discovery settings"
-              >
-                <SlidersHorizontal className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
-                <LogOut className="w-5 h-5" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
+              <LogOut className="w-5 h-5" />
+            </Button>
           </div>
 
           {/* Active Filters Display */}
@@ -258,19 +248,9 @@ const Discover = () => {
               alt="Koji" 
               className="h-10 w-auto"
             />
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => navigate('/discovery-settings')} 
-                aria-label="Discovery settings"
-              >
-                <SlidersHorizontal className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
-                <LogOut className="w-5 h-5" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
+              <LogOut className="w-5 h-5" />
+            </Button>
           </div>
 
           {/* Active Filters Display */}
