@@ -102,7 +102,7 @@ export function AppSidebar() {
                 ))}
                 <SidebarMenuItem>
                   <div className={open ? "px-2 py-2" : "px-2 py-2 flex justify-center"}>
-                    <NotificationCenter />
+                    <NotificationCenter variant="nav" />
                   </div>
                 </SidebarMenuItem>
               </SidebarMenu>
