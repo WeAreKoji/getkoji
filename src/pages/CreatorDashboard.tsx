@@ -29,6 +29,10 @@ import { DashboardHeader } from "@/components/creator/dashboard/DashboardHeader"
 import { DashboardAlerts } from "@/components/creator/dashboard/DashboardAlerts";
 import { DashboardMetrics } from "@/components/creator/dashboard/DashboardMetrics";
 import { DashboardCharts } from "@/components/creator/dashboard/DashboardCharts";
+import { QuickActionsMenu } from "@/components/creator/QuickActionsMenu";
+import { SubscriberDemographics } from "@/components/creator/analytics/SubscriberDemographics";
+import { EnhancedContentAnalytics } from "@/components/creator/analytics/EnhancedContentAnalytics";
+import { BulkMessageDialog } from "@/components/creator/BulkMessageDialog";
 
 interface PayoutInfo {
   connected: boolean;
@@ -58,6 +62,7 @@ const CreatorDashboard = () => {
   const [payoutInfo, setPayoutInfo] = useState<PayoutInfo | null>(null);
   const [showPriceEditor, setShowPriceEditor] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
+  const [showBulkMessage, setShowBulkMessage] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
@@ -192,6 +197,29 @@ const CreatorDashboard = () => {
     refetch();
   };
 
+  const handleBulkMessage = async (message: string) => {
+    if (!userId) return;
+
+    // Create notifications for all active subscribers
+    const { data: activeSubscribers } = await supabase
+      .from("subscriptions")
+      .select("subscriber_id")
+      .eq("creator_id", userId)
+      .eq("status", "active");
+
+    if (activeSubscribers) {
+      for (const sub of activeSubscribers) {
+        await supabase.from("notifications").insert({
+          user_id: sub.subscriber_id,
+          type: "creator_message",
+          title: "Message from Creator",
+          message: message,
+          data: { creator_id: userId },
+        });
+      }
+    }
+  };
+
   const exportToCSV = () => {
     if (!stats) return;
 
@@ -259,13 +287,13 @@ const CreatorDashboard = () => {
                   <Plus className="w-4 h-4 mr-2" />
                   Create Post
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowPriceEditor(true)}
-                  className="flex-1"
-                >
-                  Edit Price
-                </Button>
+                <QuickActionsMenu
+                  onCreatePost={() => setShowPostDialog(true)}
+                  onEditPrice={() => setShowPriceEditor(true)}
+                  onExportData={exportToCSV}
+                  onMessageSubscribers={() => setShowBulkMessage(true)}
+                  onViewSettings={() => navigate("/creator/setup")}
+                />
               </div>
 
               <DashboardMetrics
@@ -328,9 +356,19 @@ const CreatorDashboard = () => {
                 />
               )}
 
+              {/* Subscriber Demographics */}
+              {stats.subscriberCount > 0 && (
+                <SubscriberDemographics creatorId={userId} />
+              )}
+
               {/* Subscriber Management */}
               {stats.subscriberCount > 0 && (
                 <SubscriberList creatorId={userId} limit={5} />
+              )}
+
+              {/* Enhanced Content Analytics */}
+              {stats.postCount > 0 && (
+                <EnhancedContentAnalytics creatorId={userId} />
               )}
 
               {/* Content Performance */}
@@ -412,6 +450,13 @@ const CreatorDashboard = () => {
           open={showPostDialog}
           onOpenChange={setShowPostDialog}
           onPostCreated={handlePostCreated}
+        />
+
+        <BulkMessageDialog
+          open={showBulkMessage}
+          onOpenChange={setShowBulkMessage}
+          subscriberCount={stats.subscriberCount}
+          onSend={handleBulkMessage}
         />
       </SafeAreaView>
     </RetryBoundary>

@@ -25,6 +25,7 @@ import {
 import { formatDistanceToNow, format } from "date-fns";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { SubscriberDetailsModal } from "@/components/creator/SubscriberDetailsModal";
+import { AdvancedSubscriberFilters, SubscriberFilters } from "@/components/creator/AdvancedSubscriberFilters";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import BottomNav from "@/components/navigation/BottomNav";
@@ -49,9 +50,14 @@ export default function SubscriberManagement() {
   const [loading, setLoading] = useState(true);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [filteredSubscribers, setFilteredSubscribers] = useState<Subscriber[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("joined_desc");
+  const [filters, setFilters] = useState<SubscriberFilters>({
+    search: "",
+    status: "all",
+    dateFrom: undefined,
+    dateTo: undefined,
+    sortBy: "started_at",
+    sortDirection: "desc",
+  });
   const [selectedSubscriber, setSelectedSubscriber] = useState<{
     subscriberId: string;
     subscriptionId: string;
@@ -69,7 +75,7 @@ export default function SubscriberManagement() {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [subscribers, searchTerm, statusFilter, sortBy]);
+  }, [subscribers, filters]);
 
   const checkAuthAndFetch = async () => {
     try {
@@ -157,30 +163,42 @@ export default function SubscriberManagement() {
     let filtered = [...subscribers];
 
     // Apply search filter
-    if (searchTerm) {
+    if (filters.search) {
       filtered = filtered.filter(
         (sub) =>
-          sub.profile?.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          sub.profile?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+          sub.profile?.display_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          sub.profile?.email?.toLowerCase().includes(filters.search.toLowerCase())
       );
     }
 
     // Apply status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((sub) => sub.status === statusFilter);
+    if (filters.status !== "all") {
+      filtered = filtered.filter((sub) => sub.status === filters.status);
+    }
+
+    // Apply date range filter
+    if (filters.dateFrom) {
+      filtered = filtered.filter(
+        (sub) => new Date(sub.started_at) >= filters.dateFrom!
+      );
+    }
+    if (filters.dateTo) {
+      filtered = filtered.filter(
+        (sub) => new Date(sub.started_at) <= filters.dateTo!
+      );
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "joined_desc":
-          return new Date(b.profile?.created_at || 0).getTime() - new Date(a.profile?.created_at || 0).getTime();
-        case "joined_asc":
-          return new Date(a.profile?.created_at || 0).getTime() - new Date(b.profile?.created_at || 0).getTime();
-        case "name_asc":
-          return (a.profile?.display_name || "").localeCompare(b.profile?.display_name || "");
-        case "name_desc":
-          return (b.profile?.display_name || "").localeCompare(a.profile?.display_name || "");
+      const direction = filters.sortDirection === "asc" ? 1 : -1;
+      
+      switch (filters.sortBy) {
+        case "started_at":
+          return (new Date(b.started_at).getTime() - new Date(a.started_at).getTime()) * direction;
+        case "display_name":
+          return (a.profile?.display_name || "").localeCompare(b.profile?.display_name || "") * direction;
+        case "status":
+          return (a.status || "").localeCompare(b.status || "") * direction;
         default:
           return 0;
       }
@@ -282,49 +300,13 @@ export default function SubscriberManagement() {
             </Card>
           </div>
 
-          {/* Filters */}
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <h3 className="font-semibold">Filters & Search</h3>
-            </div>
-            
-            <div className={isMobile ? "space-y-3" : "grid grid-cols-3 gap-4"}>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                  <SelectItem value="past_due">Past Due</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="joined_desc">Newest First</SelectItem>
-                  <SelectItem value="joined_asc">Oldest First</SelectItem>
-                  <SelectItem value="name_asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="name_desc">Name (Z-A)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </Card>
+          {/* Advanced Filters */}
+          <AdvancedSubscriberFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            totalCount={subscribers.length}
+            filteredCount={filteredSubscribers.length}
+          />
 
           {/* Subscribers List */}
           <Card className="p-4">
@@ -335,7 +317,7 @@ export default function SubscriberManagement() {
             <div className="space-y-3">
               {filteredSubscribers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-12">
-                  {searchTerm || statusFilter !== "all"
+                  {filters.search || filters.status !== "all"
                     ? "No subscribers match your filters"
                     : "No subscribers yet"}
                 </p>
