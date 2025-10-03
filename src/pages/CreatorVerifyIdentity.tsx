@@ -487,6 +487,11 @@ export default function CreatorVerifyIdentity() {
                           onSelect={setDateOfBirth}
                           initialFocus
                           className="pointer-events-auto"
+                          captionLayout="dropdown"
+                          fromYear={1900}
+                          toYear={new Date().getFullYear() - 18}
+                          defaultMonth={new Date(new Date().getFullYear() - 30, 0)}
+                          disabled={{ after: new Date() }}
                         />
                       </PopoverContent>
                     </Popover>
