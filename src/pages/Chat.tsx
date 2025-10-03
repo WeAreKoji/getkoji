@@ -134,6 +134,9 @@ const Chat = () => {
 
       if (messagesError) throw messagesError;
       setMessages(messagesData || []);
+
+      // Mark unread messages as read
+      await markMessagesAsRead(userId);
     } catch (error) {
       logError(error, 'Chat.fetchMatchData');
       toast({
@@ -143,6 +146,20 @@ const Chat = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markMessagesAsRead = async (userId: string) => {
+    try {
+      await supabase
+        .from("messages")
+        .update({ read_at: new Date().toISOString() })
+        .eq("match_id", matchId)
+        .neq("sender_id", userId)
+        .is("read_at", null);
+    } catch (error) {
+      // Silent fail - not critical to user experience
+      logError(error, 'Chat.markMessagesAsRead');
     }
   };
 
@@ -161,6 +178,11 @@ const Chat = () => {
           console.log('📨 New message received via realtime:', payload.new);
           const newMessage = payload.new as Message;
           setMessages((prev) => [...prev, newMessage]);
+          
+          // Mark as read if it's not from current user
+          if (newMessage.sender_id !== currentUserId && currentUserId) {
+            setTimeout(() => markMessagesAsRead(currentUserId), 100);
+          }
         }
       )
       .subscribe((status) => {

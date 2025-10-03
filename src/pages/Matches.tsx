@@ -3,42 +3,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import MatchCard from "@/components/matches/MatchCard";
 import BottomNav from "@/components/navigation/BottomNav";
-import { Loader2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { logError } from "@/lib/error-logger";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
-interface Match {
-  id: string;
-  user1_id: string;
-  user2_id: string;
+interface MatchData {
+  match_id: string;
   matched_at: string;
-}
-
-interface Profile {
-  id: string;
-  display_name: string;
-  avatar_url: string | null;
-  bio: string | null;
-}
-
-interface LastMessage {
-  content: string;
-  created_at: string;
-}
-
-interface MatchWithProfile {
-  match: Match;
-  profile: Profile;
-  lastMessage?: LastMessage;
+  other_user_id: string;
+  other_user_name: string;
+  other_user_avatar: string | null;
+  other_user_bio: string | null;
+  last_message_content: string | null;
+  last_message_created_at: string | null;
+  last_message_sender_id: string | null;
+  unread_count: number;
 }
 
 const Matches = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [matches, setMatches] = useState<MatchWithProfile[]>([]);
+  const [matches, setMatches] = useState<MatchData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -46,6 +35,62 @@ const Matches = () => {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    // Subscribe to matches changes
+    const matchesChannel = supabase
+      .channel('matches-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: `user1_id=eq.${currentUserId},user2_id=eq.${currentUserId}`,
+        },
+        () => {
+          fetchMatches(currentUserId, false);
+        }
+      )
+      .subscribe();
+
+    // Subscribe to messages changes
+    const messagesChannel = supabase
+      .channel('messages-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        () => {
+          fetchMatches(currentUserId, false);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          // Update unread count when messages are marked as read
+          if (payload.new.read_at) {
+            fetchMatches(currentUserId, false);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(matchesChannel);
+      supabase.removeChannel(messagesChannel);
+    };
+  }, [currentUserId]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -61,51 +106,54 @@ const Matches = () => {
     try {
       if (isRefresh) setRefreshing(true);
 
-      // Fetch matches
-      const { data: matchesData, error: matchesError } = await supabase
-        .from("matches")
-        .select("*")
-        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-        .order("matched_at", { ascending: false });
+      const { data, error } = await supabase.rpc('get_matches_with_details', {
+        p_user_id: userId
+      });
 
-      if (matchesError) throw matchesError;
+      if (error) throw error;
 
-      // Fetch profiles and last messages for each match
-      const matchesWithProfiles = await Promise.all(
-        (matchesData || []).map(async (match) => {
-          const otherUserId =
-            match.user1_id === userId ? match.user2_id : match.user1_id;
-
-          // Fetch other user's profile
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("id, display_name, avatar_url, bio")
-            .eq("id", otherUserId)
-            .single();
-
-          // Fetch last message
-          const { data: lastMessage } = await supabase
-            .from("messages")
-            .select("content, created_at")
-            .eq("match_id", match.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          return {
-            match,
-            profile: profile!,
-            lastMessage: lastMessage || undefined,
-          };
-        })
-      );
-
-      setMatches(matchesWithProfiles);
+      setMatches(data || []);
     } catch (error) {
       logError(error, 'Matches.fetchMatches');
+      toast({
+        title: "Error loading matches",
+        description: "Please try again later",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleUnmatch = async (matchId: string, otherUserId: string) => {
+    if (!currentUserId) return;
+
+    try {
+      const { error } = await supabase
+        .from('matches')
+        .update({
+          deleted_by_user1: currentUserId < otherUserId ? true : undefined,
+          deleted_by_user2: currentUserId > otherUserId ? true : undefined,
+        })
+        .eq('id', matchId);
+
+      if (error) throw error;
+
+      // Optimistically remove from UI
+      setMatches(prev => prev.filter(m => m.match_id !== matchId));
+
+      toast({
+        title: "Unmatched successfully",
+        description: "This match has been removed",
+      });
+    } catch (error) {
+      logError(error, 'Matches.handleUnmatch');
+      toast({
+        title: "Error unmatching",
+        description: "Please try again later",
+        variant: "destructive",
+      });
     }
   };
 
@@ -165,12 +213,24 @@ const Matches = () => {
             </div>
           ) : (
             <div className={isMobile ? "space-y-2" : "space-y-3"}>
-              {matches.map(({ match, profile, lastMessage }) => (
+              {matches.map((match) => (
                 <MatchCard
-                  key={match.id}
-                  matchId={match.id}
-                  profile={profile}
-                  lastMessage={lastMessage}
+                  key={match.match_id}
+                  matchId={match.match_id}
+                  profile={{
+                    id: match.other_user_id,
+                    display_name: match.other_user_name,
+                    avatar_url: match.other_user_avatar,
+                    bio: match.other_user_bio,
+                  }}
+                  lastMessage={match.last_message_content ? {
+                    content: match.last_message_content,
+                    created_at: match.last_message_created_at!,
+                    sender_id: match.last_message_sender_id!,
+                  } : undefined}
+                  unreadCount={match.unread_count}
+                  currentUserId={currentUserId!}
+                  onUnmatch={() => handleUnmatch(match.match_id, match.other_user_id)}
                 />
               ))}
             </div>

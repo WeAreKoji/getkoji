@@ -940,19 +940,34 @@ export type Database = {
       }
       matches: {
         Row: {
+          deleted_by_user1: boolean | null
+          deleted_by_user2: boolean | null
           id: string
+          last_message_at: string | null
+          last_message_content: string | null
+          last_message_sender_id: string | null
           matched_at: string | null
           user1_id: string
           user2_id: string
         }
         Insert: {
+          deleted_by_user1?: boolean | null
+          deleted_by_user2?: boolean | null
           id?: string
+          last_message_at?: string | null
+          last_message_content?: string | null
+          last_message_sender_id?: string | null
           matched_at?: string | null
           user1_id: string
           user2_id: string
         }
         Update: {
+          deleted_by_user1?: boolean | null
+          deleted_by_user2?: boolean | null
           id?: string
+          last_message_at?: string | null
+          last_message_content?: string | null
+          last_message_sender_id?: string | null
           matched_at?: string | null
           user1_id?: string
           user2_id?: string
@@ -981,6 +996,7 @@ export type Database = {
           id: string
           is_scanned: boolean | null
           match_id: string
+          read_at: string | null
           sender_id: string
         }
         Insert: {
@@ -989,6 +1005,7 @@ export type Database = {
           id?: string
           is_scanned?: boolean | null
           match_id: string
+          read_at?: string | null
           sender_id: string
         }
         Update: {
@@ -997,6 +1014,7 @@ export type Database = {
           id?: string
           is_scanned?: boolean | null
           match_id?: string
+          read_at?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -2375,6 +2393,21 @@ export type Database = {
           privacy_settings: Json
           updated_at: string
           username: string
+        }[]
+      }
+      get_matches_with_details: {
+        Args: { p_user_id: string }
+        Returns: {
+          last_message_content: string
+          last_message_created_at: string
+          last_message_sender_id: string
+          match_id: string
+          matched_at: string
+          other_user_avatar: string
+          other_user_bio: string
+          other_user_id: string
+          other_user_name: string
+          unread_count: number
         }[]
       }
       get_moderation_stats: {
