@@ -2250,8 +2250,10 @@ export type Database = {
           created_at: string
           display_name: string
           email: string
+          gender: string
           id: string
           intent: string
+          interested_in_gender: string[]
           username: string
         }[]
       }
