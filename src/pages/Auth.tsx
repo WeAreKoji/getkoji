@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
 import logo from "@/assets/logo.png";
 import { validateAuthSignup, validateAuthLogin } from "@/lib/auth-validation";
 import { logError, getUserFriendlyError } from "@/lib/error-logger";
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,8 +19,12 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const HCAPTCHA_SITE_KEY = "27e08e88-27e2-4dac-896c-d14c86da4f92";
 
   // Check for referral code in URL on mount
   useEffect(() => {
@@ -30,9 +35,41 @@ const Auth = () => {
     }
   }, []);
 
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
+  };
+
+  const handleCaptchaError = () => {
+    setCaptchaToken(null);
+    toast({
+      title: "Captcha Error",
+      description: "Please complete the captcha verification",
+      variant: "destructive",
+    });
+  };
+
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    captchaRef.current?.resetCaptcha();
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    
+    // Validate captcha
+    if (!captchaToken) {
+      toast({
+        title: "Captcha Required",
+        description: "Please complete the captcha verification",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Validate inputs
     const validation = isLogin 
@@ -51,6 +88,9 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
+          options: {
+            captchaToken,
+          },
         });
 
         if (error) throw error;
@@ -79,6 +119,7 @@ const Auth = () => {
           email,
           password,
           options: {
+            captchaToken,
             emailRedirectTo: `${window.location.origin}/onboarding`,
           },
         });
@@ -114,6 +155,7 @@ const Auth = () => {
         navigate("/onboarding");
       }
     } catch (error: any) {
+      resetCaptcha();
       logError(error, 'Auth');
       toast({
         title: "Error",
@@ -184,12 +226,22 @@ const Auth = () => {
               )}
             </div>
 
+            <div className="space-y-2">
+              <HCaptcha
+                sitekey={HCAPTCHA_SITE_KEY}
+                onVerify={handleCaptchaVerify}
+                onExpire={handleCaptchaExpire}
+                onError={handleCaptchaError}
+                ref={captchaRef}
+              />
+            </div>
+
             <Button
               type="submit"
               className="w-full"
               variant="hero"
               size="lg"
-              disabled={loading}
+              disabled={loading || !captchaToken}
             >
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
@@ -203,7 +255,10 @@ const Auth = () => {
 
           <div className="mt-6 text-center text-sm">
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                resetCaptcha();
+              }}
               className="text-primary hover:underline"
             >
               {isLogin
