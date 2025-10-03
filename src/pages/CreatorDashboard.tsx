@@ -14,11 +14,21 @@ import PayoutSettings from "@/components/creator/PayoutSettings";
 import { VerificationStatusBanner } from "@/components/creator/VerificationStatusBanner";
 import { VerificationGate } from "@/components/creator/VerificationGate";
 import { EnhancedPayoutDisplay } from "@/components/creator/EnhancedPayoutDisplay";
+import { KojiConnectCard } from "@/components/referrals/KojiConnectCard";
+import { TrendIndicator } from "@/components/creator/TrendIndicator";
+import { DateRangeSelector } from "@/components/creator/DateRangeSelector";
+import { SubscriberList } from "@/components/creator/SubscriberList";
+import { ContentPerformance } from "@/components/creator/ContentPerformance";
+import { GoalsTracking } from "@/components/creator/GoalsTracking";
+import { TransactionHistory } from "@/components/payments/TransactionHistory";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { RetryBoundary } from "@/components/shared/RetryBoundary";
 import { logError } from "@/lib/error-logger";
+import { useCreatorAnalytics } from "@/hooks/useCreatorAnalytics";
+import { DateRange } from "react-day-picker";
+import { subDays } from "date-fns";
 
 interface CreatorStats {
   subscriberCount: number;
@@ -80,6 +90,12 @@ const CreatorDashboard = () => {
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<CreatorStats | null>(null);
+  const [previousStats, setPreviousStats] = useState<CreatorStats>({
+    subscriberCount: 0,
+    totalEarnings: 0,
+    subscriptionPrice: 0,
+    postCount: 0,
+  });
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
@@ -88,6 +104,17 @@ const CreatorDashboard = () => {
   const [showPriceEditor, setShowPriceEditor] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  });
+  const [kojiStats, setKojiStats] = useState({
+    activeReferrals: 0,
+    totalCommission: 0,
+    pendingCommission: 0,
+  });
+  
+  const { analytics, loading: analyticsLoading } = useCreatorAnalytics(userId);
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -164,17 +191,36 @@ const CreatorDashboard = () => {
         return;
       }
 
-      // Fetch post count
-      const { count: postCount } = await supabase
-        .from("creator_posts")
-        .select("*", { count: "exact", head: true })
-        .eq("creator_id", creatorId);
+      // Fetch current and previous period stats for trend indicators
+      const thirtyDaysAgo = subDays(new Date(), 30);
+      const sixtyDaysAgo = subDays(new Date(), 60);
 
-      setStats({
+      const [postCount, prevSubsResult] = await Promise.all([
+        supabase
+          .from("creator_posts")
+          .select("*", { count: "exact", head: true })
+          .eq("creator_id", creatorId),
+        supabase
+          .from("subscriptions")
+          .select("id", { count: "exact", head: true })
+          .eq("creator_id", creatorId)
+          .eq("status", "active")
+          .lt("started_at", thirtyDaysAgo.toISOString()),
+      ]);
+
+      const currentStats = {
         subscriberCount: creatorProfile.subscriber_count,
         totalEarnings: creatorProfile.total_earnings,
         subscriptionPrice: creatorProfile.subscription_price,
-        postCount: postCount || 0,
+        postCount: postCount.count || 0,
+      };
+
+      setStats(currentStats);
+      setPreviousStats({
+        subscriberCount: prevSubsResult.count || 0,
+        totalEarnings: 0,
+        subscriptionPrice: creatorProfile.subscription_price,
+        postCount: postCount.count || 0,
       });
 
       // Fetch subscriber growth data (last 30 days)
@@ -256,6 +302,29 @@ const CreatorDashboard = () => {
       );
 
       setRevenueData(revenueChartData);
+
+      // Fetch Koji Connect stats
+      const { data: referralData } = await supabase
+        .from("creator_referrals")
+        .select(`
+          *,
+          creator_referral_commissions(commission_amount)
+        `)
+        .eq("referrer_id", creatorId);
+
+      if (referralData) {
+        const activeReferrals = referralData.filter((r: any) => r.status === "active").length;
+        const totalCommission = referralData.reduce((sum: number, r: any) => {
+          const commissions = r.creator_referral_commissions || [];
+          return sum + commissions.reduce((s: number, c: any) => s + (c.commission_amount || 0), 0);
+        }, 0);
+        
+        setKojiStats({
+          activeReferrals,
+          totalCommission,
+          pendingCommission: totalCommission * 0.1,
+        });
+      }
 
       // Fetch payout info
       const { data: payoutData, error: payoutError } = await supabase.functions.invoke(
@@ -373,8 +442,12 @@ const CreatorDashboard = () => {
             </Alert>
           )}
           
-          {/* Export Button */}
-          <div className="flex justify-end">
+          {/* Date Range and Export */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <DateRangeSelector 
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+            />
             <Button variant="outline" size="sm" onClick={exportToCSV}>
               <Download className="w-4 h-4 mr-2" />
               Export Analytics
@@ -391,7 +464,10 @@ const CreatorDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className={isMobile ? "p-3 pt-0" : ""}>
-                <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>{stats.subscriberCount}</div>
+                <div className="flex items-center justify-between">
+                  <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>{stats.subscriberCount}</div>
+                  <TrendIndicator current={stats.subscriberCount} previous={previousStats.subscriberCount} />
+                </div>
               </CardContent>
             </Card>
 
@@ -403,8 +479,10 @@ const CreatorDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className={isMobile ? "p-3 pt-0" : ""}>
-                <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>${stats.totalEarnings.toFixed(2)}</div>
-                {!isMobile && <p className="text-xs text-muted-foreground mt-1">Total lifetime</p>}
+                <div className="space-y-1">
+                  <div className={isMobile ? "text-xl font-bold" : "text-2xl font-bold"}>${stats.totalEarnings.toFixed(2)}</div>
+                  {!isMobile && <p className="text-xs text-muted-foreground">Total lifetime</p>}
+                </div>
               </CardContent>
             </Card>
 
@@ -753,6 +831,72 @@ const CreatorDashboard = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Advanced Analytics from useCreatorAnalytics Hook */}
+          {analytics && !analyticsLoading && (
+            <div className={isMobile ? "space-y-4" : "grid md:grid-cols-3 gap-4"}>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Avg. Subscription Duration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.avgSubscriptionDuration.toFixed(1)} months</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Churn Rate
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.churnRate.toFixed(1)}%</div>
+                  <TrendIndicator current={analytics.churnRate} previous={analytics.churnRate * 1.2} inverse />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Engagement Rate
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.engagementRate.toFixed(1)}%</div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Koji Connect Card */}
+          {kojiStats.activeReferrals > 0 && (
+            <KojiConnectCard 
+              activeReferrals={kojiStats.activeReferrals}
+              totalCommission={kojiStats.totalCommission}
+              pendingCommission={kojiStats.pendingCommission}
+            />
+          )}
+
+          {/* Subscriber Management */}
+          {userId && stats.subscriberCount > 0 && (
+            <SubscriberList creatorId={userId} limit={5} />
+          )}
+
+          {/* Content Performance */}
+          {userId && stats.postCount > 0 && (
+            <ContentPerformance creatorId={userId} />
+          )}
+
+          {/* Goals & Progress */}
+          {userId && (
+            <GoalsTracking 
+              currentSubscribers={stats.subscriberCount}
+              currentRevenue={stats.totalEarnings}
+            />
+          )}
 
           {/* Payout Settings */}
           {userId && (

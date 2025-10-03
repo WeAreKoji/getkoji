@@ -42,10 +42,17 @@ export const ProfileStats = ({ userId, isCreator }: ProfileStatsProps) => {
             .eq("creator_id", userId),
         ]);
 
+        // Get actual earnings from creator profile
+        const { data: profileData } = await supabase
+          .from("creator_profiles")
+          .select("total_earnings")
+          .eq("user_id", userId)
+          .single();
+
         setStats({
           subscribers: subsResult.count || 0,
           posts: postsResult.count || 0,
-          earnings: 0, // This would come from Stripe data
+          earnings: profileData?.total_earnings || 0,
         });
       }
     } catch (error) {
