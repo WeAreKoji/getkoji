@@ -87,9 +87,9 @@ const CreatorFeed = () => {
 
       setIsOwnProfile(user.id === creatorId);
 
-      // Fetch creator profile
+      // Fetch creator profile (public data - financial data only visible to owner/admin)
       const { data: creator } = await supabase
-        .from("creator_profiles")
+        .from("public_creator_profiles")
         .select("*")
         .eq("user_id", creatorId)
         .single();

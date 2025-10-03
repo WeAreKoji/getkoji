@@ -30,9 +30,9 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
 
   const fetchCreatorData = async () => {
     try {
-      // Fetch creator profile
+      // Fetch creator profile (public data)
       const { data: creatorProfile } = await supabase
-        .from("creator_profiles")
+        .from("public_creator_profiles")
         .select("subscription_price, subscriber_count")
         .eq("user_id", creatorId)
         .single();

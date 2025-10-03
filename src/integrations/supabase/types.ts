@@ -1480,6 +1480,45 @@ export type Database = {
         }
         Relationships: []
       }
+      public_creator_profiles: {
+        Row: {
+          created_at: string | null
+          id_verified: boolean | null
+          subscriber_count: number | null
+          subscription_price: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id_verified?: boolean | null
+          subscriber_count?: number | null
+          subscription_price?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id_verified?: boolean | null
+          subscriber_count?: number | null
+          subscription_price?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "discoverable_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       activate_creator_referral: {
