@@ -17,11 +17,24 @@ interface ProfileHeroProps {
   age: number;
   city: string | null;
   isCreator?: boolean;
+  welcomeVideoUrl?: string | null;
+  coverImageUrl?: string | null;
+  tagline?: string | null;
 }
 
-export const ProfileHero = ({ photos, displayName, age, city, isCreator }: ProfileHeroProps) => {
+export const ProfileHero = ({ 
+  photos, 
+  displayName, 
+  age, 
+  city, 
+  isCreator,
+  welcomeVideoUrl,
+  coverImageUrl,
+  tagline
+}: ProfileHeroProps) => {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const isMobile = useIsMobile();
 
   const handlePhotoClick = (index: number) => {
@@ -31,6 +44,7 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
   };
 
   const mainPhoto = photos[0] || null;
+  const displayCoverImage = coverImageUrl || mainPhoto?.photo_url;
 
   return (
     <>
@@ -38,10 +52,10 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
         "relative w-full bg-gradient-to-br from-primary/20 to-secondary/20",
         isMobile ? "aspect-[3/4]" : "aspect-[16/7] max-h-[150px]"
       )}>
-        {/* Main Photo */}
-        {mainPhoto ? (
+        {/* Cover Image or Main Photo */}
+        {displayCoverImage ? (
           <img
-            src={mainPhoto.photo_url}
+            src={displayCoverImage}
             alt={displayName}
             className="w-full h-full object-cover cursor-pointer"
             style={{ objectPosition: 'center 25%' }}
@@ -105,6 +119,14 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
               )} />
             )}
           </div>
+          {tagline && (
+            <p className={cn(
+              "text-white/90 drop-shadow-lg italic mb-2",
+              isMobile ? "text-sm" : "text-base"
+            )}>
+              "{tagline}"
+            </p>
+          )}
           {city && (
             <div className={cn(
               "flex items-center gap-2 text-white/90 drop-shadow-lg",
@@ -116,6 +138,22 @@ export const ProfileHero = ({ photos, displayName, age, city, isCreator }: Profi
           )}
         </div>
       </div>
+
+      {/* Welcome Video Section */}
+      {isCreator && welcomeVideoUrl && (
+        <div className="mt-4">
+          <h3 className="font-semibold mb-2 px-4">Welcome Video</h3>
+          <div className="rounded-lg overflow-hidden bg-black">
+            <video
+              src={welcomeVideoUrl}
+              className="w-full aspect-video"
+              controls
+              playsInline
+              poster={coverImageUrl || undefined}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Image Viewer */}
       {photos.length > 0 && (

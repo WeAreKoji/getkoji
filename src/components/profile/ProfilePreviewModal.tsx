@@ -115,6 +115,7 @@ export const ProfilePreviewModal = ({
             interests={showInterests ? interests : []}
             photos={showPhotos ? photos : []}
             isCreator={isCreator}
+            userId={profile.id}
           />
         ) : (
           <ProfileTabs

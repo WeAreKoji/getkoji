@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import PhotoGrid from "./PhotoGrid";
 import { ProfileInfo } from "./ProfileInfo";
+import { CreatorPostsDisplay } from "./CreatorPostsDisplay";
 
 interface Interest {
   id: string;
@@ -26,9 +25,10 @@ interface ProfileTabsProps {
   userId: string;
   gender?: string | null;
   interestedInGender?: string[] | null;
+  isOwnProfile?: boolean;
 }
 
-export const ProfileTabs = ({ bio, intent, interests, photos, isCreator, userId, gender, interestedInGender }: ProfileTabsProps) => {
+export const ProfileTabs = ({ bio, intent, interests, photos, isCreator, userId, gender, interestedInGender, isOwnProfile }: ProfileTabsProps) => {
   return (
     <Tabs defaultValue="about" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
@@ -58,9 +58,7 @@ export const ProfileTabs = ({ bio, intent, interests, photos, isCreator, userId,
         <TabsContent value="posts">
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Creator Posts</h3>
-            <p className="text-muted-foreground">
-              Subscribe to see exclusive content from this creator
-            </p>
+            <CreatorPostsDisplay creatorId={userId} isOwnProfile={isOwnProfile} />
           </Card>
         </TabsContent>
       )}

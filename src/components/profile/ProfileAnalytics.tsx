@@ -59,12 +59,47 @@ export const ProfileAnalytics = ({ userId }: ProfileAnalyticsProps) => {
         ? ((matches?.length || 0) / swipes.length) * 100
         : 0;
 
-      setAnalytics({
-        totalViews: views?.length || 0,
-        viewsThisMonth,
-        matchRate: Math.round(matchRate),
-        responseRate: 75, // Placeholder - would need message data
-      });
+      // Calculate real response rate from messages
+      const { data: userMatches } = await supabase
+        .from("matches")
+        .select("id")
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
+      if (userMatches && userMatches.length > 0) {
+        const matchIds = userMatches.map(m => m.id);
+        
+        // Get messages received (others sent to user)
+        const { data: receivedMessages } = await supabase
+          .from("messages")
+          .select("id")
+          .in("match_id", matchIds)
+          .neq("sender_id", userId);
+
+        // Get messages sent (user replied)
+        const { data: sentMessages } = await supabase
+          .from("messages")
+          .select("id")
+          .in("match_id", matchIds)
+          .eq("sender_id", userId);
+
+        const responseRate = receivedMessages?.length
+          ? ((sentMessages?.length || 0) / receivedMessages.length) * 100
+          : 0;
+
+        setAnalytics({
+          totalViews: views?.length || 0,
+          viewsThisMonth,
+          matchRate: Math.round(matchRate),
+          responseRate: Math.round(Math.min(responseRate, 100)),
+        });
+      } else {
+        setAnalytics({
+          totalViews: views?.length || 0,
+          viewsThisMonth,
+          matchRate: Math.round(matchRate),
+          responseRate: 0,
+        });
+      }
     } catch (error) {
       logError(error, 'ProfileAnalytics.fetchAnalytics');
     } finally {

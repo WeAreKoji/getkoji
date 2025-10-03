@@ -67,6 +67,11 @@ const Profile = () => {
   const [stats, setStats] = useState<{ subscribers?: number; posts?: number; earnings?: number }>({});
   const [statsLoading, setStatsLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
+  const [creatorProfile, setCreatorProfile] = useState<{
+    welcomeVideoUrl?: string | null;
+    coverImageUrl?: string | null;
+    tagline?: string | null;
+  }>({});
 
   useEffect(() => {
     checkAuth();
@@ -166,6 +171,22 @@ const Profile = () => {
         .filter(Boolean);
       setInterests(interestsData);
 
+      // Fetch creator profile data
+      const { data: creatorData } = await supabase
+        .from("creator_profiles")
+        .select("welcome_video_url, cover_image_url, tagline")
+        .eq("user_id", profileId)
+        .maybeSingle();
+
+      if (creatorData) {
+        setCreatorProfile({
+          welcomeVideoUrl: creatorData.welcome_video_url,
+          coverImageUrl: creatorData.cover_image_url,
+          tagline: creatorData.tagline,
+        });
+        setIsCreator(true);
+      }
+
       // Fetch stats for creators
       if (isOwnProfile && isCreator) {
         const [subsResult, postsResult] = await Promise.all([
@@ -226,6 +247,9 @@ const Profile = () => {
             age={profile.age}
             city={profile.city}
             isCreator={isCreator}
+            welcomeVideoUrl={creatorProfile.welcomeVideoUrl}
+            coverImageUrl={creatorProfile.coverImageUrl}
+            tagline={creatorProfile.tagline}
           />
 
           {/* Content */}
@@ -285,8 +309,10 @@ const Profile = () => {
                   interests={interests}
                   photos={photos}
                   isCreator={isCreator}
+                  userId={profile.id}
                   gender={profile.gender}
                   interestedInGender={profile.interested_in_gender}
+                  isOwnProfile={isOwnProfile}
                 />
               </div>
             ) : (
@@ -353,6 +379,7 @@ const Profile = () => {
                   userId={profile.id}
                   gender={profile.gender}
                   interestedInGender={profile.interested_in_gender}
+                  isOwnProfile={isOwnProfile}
                 />
               </div>
             )}

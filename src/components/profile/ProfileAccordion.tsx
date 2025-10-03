@@ -1,8 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, Heart, Image as ImageIcon, Sparkles } from "lucide-react";
 import PhotoGrid from "./PhotoGrid";
+import { CreatorPostsDisplay } from "./CreatorPostsDisplay";
 
 interface Interest {
   id: string;
@@ -22,11 +22,13 @@ interface ProfileAccordionProps {
   interests: Interest[];
   photos: Photo[];
   isCreator: boolean;
+  userId: string;
   gender?: string | null;
   interestedInGender?: string[] | null;
+  isOwnProfile?: boolean;
 }
 
-export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, gender, interestedInGender }: ProfileAccordionProps) => {
+export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, userId, gender, interestedInGender, isOwnProfile }: ProfileAccordionProps) => {
   const formatGender = (g: string) => {
     return g.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -133,9 +135,7 @@ export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, ge
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
-            <p className="text-sm text-muted-foreground">
-              Subscribe to see exclusive content from this creator
-            </p>
+            <CreatorPostsDisplay creatorId={userId} isOwnProfile={isOwnProfile} />
           </AccordionContent>
         </AccordionItem>
       )}
