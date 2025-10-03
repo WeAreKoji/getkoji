@@ -129,7 +129,7 @@ export const ProfileHeader = ({ isOwnProfile, isCreator, userId, username, displ
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/support" className="flex items-center cursor-pointer" onClick={() => haptics.light()}>
+              <Link to="/settings" className="flex items-center cursor-pointer" onClick={() => haptics.light()}>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
               </Link>

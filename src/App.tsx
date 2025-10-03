@@ -51,6 +51,10 @@ const Referrals = lazy(() => import("./pages/Referrals"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const DiscoverySettings = lazy(() => import("./pages/DiscoverySettings"));
+const Settings = lazy(() => import("./pages/Settings"));
+const NotificationsSettings = lazy(() => import("./pages/NotificationsSettings"));
+const AccountSettings = lazy(() => import("./pages/AccountSettings"));
+const BlockedUsers = lazy(() => import("./pages/BlockedUsers"));
 const AdminRefunds = lazy(() => import("./pages/AdminRefunds"));
 const AdminReports = lazy(() => import("./pages/AdminReports"));
 const TransactionDetails = lazy(() => import("./pages/TransactionDetails"));
@@ -140,6 +144,10 @@ const AppContent = () => {
               } errorElement={<RouteErrorBoundary />} />
               <Route path="/referrals" element={<Referrals />} errorElement={<RouteErrorBoundary />} />
               <Route path="/koji-connect" element={<Navigate to="/referrals" replace />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
+              <Route path="/settings/notifications" element={<ProtectedRoute><NotificationsSettings /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
+              <Route path="/settings/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
+              <Route path="/settings/blocked-users" element={<ProtectedRoute><BlockedUsers /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/privacy" element={<PrivacySettings />} errorElement={<RouteErrorBoundary />} />
               <Route path="/settings/security" element={<SecuritySettings />} errorElement={<RouteErrorBoundary />} />
               <Route path="/discovery-settings" element={<DiscoverySettings />} errorElement={<RouteErrorBoundary />} />
