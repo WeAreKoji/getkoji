@@ -64,14 +64,7 @@ const AppContent = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         {!isHomePage && (
-          <>
-            <AppSidebar />
-            {!isMobile && (
-              <header className="fixed top-4 left-4 z-50">
-                <SidebarTrigger />
-              </header>
-            )}
-          </>
+          <AppSidebar />
         )}
         
         <main className="flex-1">

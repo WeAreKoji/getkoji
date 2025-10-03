@@ -15,6 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -77,12 +78,13 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto">
           <SidebarGroup>
-            <div className={open ? "px-4 py-3 pb-4 flex items-center" : "px-4 py-3 pb-4 flex items-center justify-center"}>
+            <div className={open ? "px-4 py-3 pb-4 flex items-center justify-between" : "px-4 py-3 pb-4 flex items-center justify-center"}>
               <img 
                 src={logo} 
                 alt="Koji" 
                 className={open ? "h-10 w-auto" : "h-8 w-8"}
               />
+              {open && <SidebarTrigger />}
             </div>
             <SidebarGroupContent className="space-y-1">
               <SidebarMenu>
