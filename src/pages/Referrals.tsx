@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Copy, Check, DollarSign, Users, TrendingUp, Calendar, Gift, ShieldAlert, AlertCircle, CheckCircle, Clock, Search } from "lucide-react";
+import { Loader2, Copy, Check, DollarSign, Users, TrendingUp, Calendar, Gift, ShieldAlert, AlertCircle, CheckCircle, Clock, Search, BarChart3, UserPlus, History, Lightbulb, Info, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -19,6 +19,7 @@ import { ReferralAnalytics } from "@/components/referrals/ReferralAnalytics";
 import { ReferralTips } from "@/components/referrals/ReferralTips";
 import { EnhancedEmptyState } from "@/components/referrals/EnhancedEmptyState";
 import { useDebounce } from "@/hooks/useDebounce";
+import { PullToRefresh } from "@/components/mobile/PullToRefresh";
 
 interface CreatorReferral {
   id: string;
@@ -253,137 +254,185 @@ const Referrals = () => {
     );
   }
 
+  const handleRefresh = async () => {
+    if (userId) {
+      await fetchData(userId);
+    }
+  };
+
   return (
     <SafeAreaView bottom={isMobile}>
-      <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
-        <div className="container max-w-6xl mx-auto px-4 py-6">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Koji Connect - Creator Referral Program</h1>
-            <p className="text-muted-foreground mt-2">
-              Earn 7.5% commission on creator referrals for 9 months
-            </p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-muted-foreground">Active Referrals</span>
-              </div>
-              <p className="text-2xl font-bold">{stats.activeReferrals}</p>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4 text-primary" />
-                <span className="text-sm text-muted-foreground">Total Earned</span>
-              </div>
-              <p className="text-2xl font-bold">${stats.totalCommission.toFixed(2)}</p>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-orange-500" />
-                <span className="text-sm text-muted-foreground">Pending Commission</span>
-              </div>
-              <p className="text-2xl font-bold">${stats.pendingCommission.toFixed(2)}</p>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Gift className="w-4 h-4 text-purple-500" />
-                <span className="text-sm text-muted-foreground">Next Payout</span>
-              </div>
-              <p className="text-lg font-bold">${stats.nextPayoutAmount.toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.pendingCommission < 25 ? `$${(25 - stats.pendingCommission).toFixed(2)} to minimum` : stats.nextPayoutDate}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className={isMobile ? "min-h-screen bg-background pb-20" : "min-h-screen bg-background"}>
+          <div className="container max-w-6xl mx-auto px-4 py-6 md:py-8">
+            {/* Header */}
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold">{isMobile ? "Creator Referrals" : "Koji Connect - Creator Referral Program"}</h1>
+              <p className="text-sm md:text-base text-muted-foreground mt-2">
+                Earn 7.5% commission for 9 months
               </p>
-            </Card>
-          </div>
+            </div>
 
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="w-full overflow-x-auto flex gap-2">
-              <TabsTrigger value="overview" className="flex-shrink-0">Overview</TabsTrigger>
-              <TabsTrigger value="analytics" className="flex-shrink-0">Analytics</TabsTrigger>
-              <TabsTrigger value="creator-referrals" className="flex-shrink-0">Creator Referrals</TabsTrigger>
-              <TabsTrigger value="friend-referrals" className="flex-shrink-0">Friend Referrals</TabsTrigger>
-              <TabsTrigger value="payout-history" className="flex-shrink-0">Payout History</TabsTrigger>
-              <TabsTrigger value="tips" className="flex-shrink-0">Tips & Best Practices</TabsTrigger>
-              <TabsTrigger value="payouts" className="flex-shrink-0">Payout Info</TabsTrigger>
-              <TabsTrigger value="how" className="flex-shrink-0">How It Works</TabsTrigger>
-            </TabsList>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+              <Card className="p-5 md:p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-5 h-5 md:w-4 md:h-4 text-green-500" />
+                  <span className="text-sm md:text-xs text-muted-foreground">Active</span>
+                </div>
+                <p className="text-3xl md:text-2xl font-bold">{stats.activeReferrals}</p>
+              </Card>
 
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="mt-6 space-y-6">
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Your Creator Referral Link</h2>
-                <div className="flex gap-2 mb-4">
-                  <Input
-                    value={getCreatorReferralLink()}
-                    readOnly
-                    className="font-mono text-sm"
+              <Card className="p-5 md:p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <DollarSign className="w-5 h-5 md:w-4 md:h-4 text-primary" />
+                  <span className="text-sm md:text-xs text-muted-foreground">Earned</span>
+                </div>
+                <p className="text-3xl md:text-2xl font-bold">${stats.totalCommission.toFixed(2)}</p>
+              </Card>
+
+              <Card className="p-5 md:p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar className="w-5 h-5 md:w-4 md:h-4 text-orange-500" />
+                  <span className="text-sm md:text-xs text-muted-foreground">Pending</span>
+                </div>
+                <p className="text-3xl md:text-2xl font-bold">${stats.pendingCommission.toFixed(2)}</p>
+              </Card>
+
+              <Card className="p-5 md:p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Gift className="w-5 h-5 md:w-4 md:h-4 text-purple-500" />
+                  <span className="text-sm md:text-xs text-muted-foreground">Next Payout</span>
+                </div>
+                <p className="text-2xl md:text-lg font-bold">${stats.nextPayoutAmount.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats.pendingCommission < 25 ? `$${(25 - stats.pendingCommission).toFixed(2)} to minimum` : stats.nextPayoutDate}
+                </p>
+              </Card>
+            </div>
+
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="w-full overflow-x-auto flex gap-1 md:gap-2 justify-start md:justify-center">
+                <TabsTrigger value="overview" className="flex-shrink-0 gap-2">
+                  {isMobile && <TrendingUp className="w-4 h-4" />}
+                  <span className="hidden sm:inline">Overview</span>
+                  <span className="sm:hidden">Home</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex-shrink-0 gap-2">
+                  {isMobile && <BarChart3 className="w-4 h-4" />}
+                  <span>Analytics</span>
+                </TabsTrigger>
+                <TabsTrigger value="creator-referrals" className="flex-shrink-0 gap-2">
+                  {isMobile && <Users className="w-4 h-4" />}
+                  <span className="hidden sm:inline">Creator Referrals</span>
+                  <span className="sm:hidden">Creators</span>
+                </TabsTrigger>
+                <TabsTrigger value="friend-referrals" className="flex-shrink-0 gap-2">
+                  {isMobile && <UserPlus className="w-4 h-4" />}
+                  <span className="hidden sm:inline">Friend Referrals</span>
+                  <span className="sm:hidden">Friends</span>
+                </TabsTrigger>
+                <TabsTrigger value="payout-history" className="flex-shrink-0 gap-2">
+                  {isMobile && <History className="w-4 h-4" />}
+                  <span className="hidden sm:inline">Payout History</span>
+                  <span className="sm:hidden">Payouts</span>
+                </TabsTrigger>
+                <TabsTrigger value="tips" className="flex-shrink-0 gap-2">
+                  {isMobile && <Lightbulb className="w-4 h-4" />}
+                  <span className="hidden md:inline">Tips & Best Practices</span>
+                  <span className="md:hidden">Tips</span>
+                </TabsTrigger>
+                <TabsTrigger value="payouts" className="flex-shrink-0 gap-2">
+                  {isMobile && <Info className="w-4 h-4" />}
+                  <span className="hidden sm:inline">Payout Info</span>
+                  <span className="sm:hidden">Info</span>
+                </TabsTrigger>
+                <TabsTrigger value="how" className="flex-shrink-0 gap-2">
+                  {isMobile && <HelpCircle className="w-4 h-4" />}
+                  <span className="hidden sm:inline">How It Works</span>
+                  <span className="sm:hidden">How</span>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="mt-6 space-y-6">
+                <Card className="p-5 md:p-6">
+                  <h2 className="text-lg md:text-xl font-semibold mb-4">Your Creator Referral Link</h2>
+                  <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                    <Input
+                      value={getCreatorReferralLink()}
+                      readOnly
+                      className="font-mono text-xs md:text-sm"
+                    />
+                    <Button onClick={handleCopy} className="shrink-0 h-11 md:h-10 w-full sm:w-auto">
+                      {copied ? (
+                        <>
+                          <Check className="w-4 h-4 mr-2" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy Link
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <ShareReferralLink 
+                    url={getCreatorReferralLink()} 
+                    title="Become a Creator on Koji!" 
+                    text="Join Koji and start earning from your content. Use my referral link to get started!"
                   />
-                  <Button onClick={handleCopy} size="icon" className="shrink-0">
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </Button>
-                </div>
-                <ShareReferralLink 
-                  url={getCreatorReferralLink()} 
-                  title="Become a Creator on Koji!" 
-                  text="Join Koji and start earning from your content. Use my referral link to get started!"
-                />
-                <p className="text-sm text-muted-foreground mt-4">
-                  Share this link with creators. When they complete verification and publish their first exclusive post, you'll earn 7.5% of their earnings for 9 months!
-                </p>
-              </Card>
+                  <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
+                    Share this link with creators. When they complete verification and publish their first exclusive post, you'll earn 7.5% of their earnings for 9 months!
+                  </p>
+                </Card>
 
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Quick Summary</h2>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span className="text-sm">Active Referrals Earning:</span>
-                    <span className="font-bold">{stats.activeReferrals}</span>
+                <Card className="p-5 md:p-6">
+                  <h2 className="text-lg md:text-xl font-semibold mb-4">Quick Summary</h2>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
+                      <span className="text-sm md:text-sm">Active Referrals:</span>
+                      <span className="text-lg md:text-base font-bold">{stats.activeReferrals}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
+                      <span className="text-sm md:text-sm">Lifetime Earnings:</span>
+                      <span className="text-lg md:text-base font-bold text-green-600">${stats.totalCommission.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
+                      <span className="text-sm md:text-sm">Pending Payout:</span>
+                      <span className="text-lg md:text-base font-bold text-orange-600">${stats.pendingCommission.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
+                      <span className="text-sm md:text-sm">Next Payout Date:</span>
+                      <span className="text-lg md:text-base font-bold">{stats.nextPayoutDate}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span className="text-sm">Lifetime Earnings:</span>
-                    <span className="font-bold text-green-600">${stats.totalCommission.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span className="text-sm">Pending Payout:</span>
-                    <span className="font-bold text-orange-600">${stats.pendingCommission.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span className="text-sm">Next Payout Date:</span>
-                    <span className="font-bold">{stats.nextPayoutDate}</span>
-                  </div>
-                </div>
-              </Card>
+                </Card>
 
-              <Card className="p-6 bg-primary/5 border-primary/20">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  Commission Calculator
-                </h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Potential monthly earnings based on creator performance:
-                </p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Creator earns $500/month:</span>
-                    <span className="font-bold">You earn $37.50/month</span>
+                <Card className="p-5 md:p-6 bg-primary/5 border-primary/20">
+                  <h3 className="text-base md:text-lg font-semibold mb-2 flex items-center gap-2">
+                    <DollarSign className="w-5 h-5" />
+                    Commission Calculator
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Potential monthly earnings based on creator performance:
+                  </p>
+                  <div className="space-y-3 md:space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-sm">Creator earns $500/month:</span>
+                      <span className="font-bold text-primary">You earn $37.50/month</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-sm">Creator earns $1,000/month:</span>
+                      <span className="font-bold text-primary">You earn $75/month</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-sm">Creator earns $2,000/month:</span>
+                      <span className="font-bold text-primary">You earn $150/month</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Creator earns $1,000/month:</span>
-                    <span className="font-bold">You earn $75/month</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Creator earns $2,000/month:</span>
-                    <span className="font-bold">You earn $150/month</span>
-                  </div>
-                </div>
-              </Card>
+                </Card>
             </TabsContent>
 
             {/* Analytics Tab */}
@@ -391,36 +440,38 @@ const Referrals = () => {
               <ReferralAnalytics stats={stats} referrals={referrals} />
             </TabsContent>
 
-            {/* Creator Referrals Tab */}
-            <TabsContent value="creator-referrals" className="mt-6">
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Your Creator Referrals</h2>
-                
-                {/* Search and Filter */}
-                {referrals.length > 0 && (
-                  <div className="flex gap-2 mb-4 flex-wrap">
-                    <div className="relative flex-1 min-w-[200px]">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search by creator name..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={filterStatus === null ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilterStatus(null)}
-                      >
-                        All
-                      </Button>
-                      <Button
-                        variant={filterStatus === "active" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilterStatus("active")}
-                      >
+              {/* Creator Referrals Tab */}
+              <TabsContent value="creator-referrals" className="mt-6">
+                <Card className="p-5 md:p-6">
+                  <h2 className="text-lg md:text-xl font-semibold mb-4">Your Creator Referrals</h2>
+                  
+                  {/* Search and Filter */}
+                  {referrals.length > 0 && (
+                    <div className="flex flex-col md:flex-row gap-3 md:gap-2 mb-4">
+                      <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search by creator name..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-9 h-11 md:h-10"
+                        />
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        <Button
+                          variant={filterStatus === null ? "default" : "outline"}
+                          size={isMobile ? "default" : "sm"}
+                          onClick={() => setFilterStatus(null)}
+                          className="h-11 md:h-10 px-6 md:px-4"
+                        >
+                          All
+                        </Button>
+                        <Button
+                          variant={filterStatus === "active" ? "default" : "outline"}
+                          size={isMobile ? "default" : "sm"}
+                          onClick={() => setFilterStatus("active")}
+                          className="h-11 md:h-10 px-6 md:px-4"
+                        >
                         Active
                       </Button>
                       <Button
@@ -845,9 +896,9 @@ const Referrals = () => {
             </TabsContent>
           </Tabs>
         </div>
-
-        {isMobile && <BottomNav />}
       </div>
+      </PullToRefresh>
+      {isMobile && <BottomNav />}
     </SafeAreaView>
   );
 };

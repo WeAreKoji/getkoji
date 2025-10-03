@@ -145,28 +145,38 @@ export const FriendReferralsTab = ({ userId }: FriendReferralsTabProps) => {
 
   return (
     <div className="space-y-6">
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Your Friend Referral Link</h2>
-        <div className="flex gap-2 mb-4">
+      <Card className="p-5 md:p-6">
+        <h2 className="text-lg md:text-xl font-semibold mb-4">Your Friend Referral Link</h2>
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
           <Input
             value={getFriendReferralLink()}
             readOnly
-            className="font-mono text-sm"
+            className="font-mono text-xs md:text-sm"
           />
-          <Button onClick={handleCopy} size="icon" className="shrink-0">
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          <Button onClick={handleCopy} className="shrink-0 h-11 md:h-10 w-full sm:w-auto">
+            {copied ? (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Link
+              </>
+            )}
           </Button>
         </div>
         <ShareReferralLink url={getFriendReferralLink()} title="Join me on Koji!" />
-        <p className="text-sm text-muted-foreground mt-4">
+        <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
           Share this link with friends. When they sign up and complete their profile, you'll both earn credits!
         </p>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Friend Referrals</h2>
-          <Badge variant="secondary">{totalCreditsEarned} Credits Earned</Badge>
+      <Card className="p-5 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">Friend Referrals</h2>
+          <Badge variant="secondary" className="self-start sm:self-auto text-base py-2 px-4">{totalCreditsEarned} Credits Earned</Badge>
         </div>
 
         {referrals.length > 0 && (
@@ -176,7 +186,7 @@ export const FriendReferralsTab = ({ userId }: FriendReferralsTabProps) => {
               placeholder="Search by name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
+              className="pl-9 h-11 md:h-10"
             />
           </div>
         )}
@@ -194,23 +204,23 @@ export const FriendReferralsTab = ({ userId }: FriendReferralsTabProps) => {
             {isMobile ? (
               <div className="space-y-3">
                 {filteredReferrals.map((ref) => (
-                  <Card key={ref.id} className="p-4">
-                    <div className="flex items-start justify-between mb-2">
+                  <Card key={ref.id} className="p-5">
+                    <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="font-medium">{ref.referred_user.display_name}</p>
+                        <p className="font-medium text-base">{ref.referred_user.display_name}</p>
                         {ref.referred_user.username && (
-                          <p className="text-xs text-muted-foreground">@{ref.referred_user.username}</p>
+                          <p className="text-sm text-muted-foreground">@{ref.referred_user.username}</p>
                         )}
                       </div>
-                      <Badge variant={ref.status === "completed" ? "default" : "secondary"}>
+                      <Badge variant={ref.status === "completed" ? "default" : "secondary"} className="text-sm py-1">
                         {ref.status === "completed" ? "Completed" : "Pending"}
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-sm pt-3 border-t">
                       <span className="text-muted-foreground">
                         {new Date(ref.created_at).toLocaleDateString()}
                       </span>
-                      <span className="font-medium">{ref.credits_earned} credits</span>
+                      <span className="font-semibold text-primary text-base">{ref.credits_earned} credits</span>
                     </div>
                   </Card>
                 ))}
