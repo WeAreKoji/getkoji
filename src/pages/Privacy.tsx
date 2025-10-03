@@ -83,7 +83,7 @@ const Privacy = () => {
             </CardHeader>
             <CardContent className="text-muted-foreground">
               <p>
-                If you have questions about this Privacy Policy, please contact us at privacy@koji.app
+                If you have questions about this Privacy Policy, please contact us at privacy@getkoji.net
               </p>
             </CardContent>
           </Card>

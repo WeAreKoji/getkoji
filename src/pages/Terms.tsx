@@ -160,7 +160,7 @@ const Terms = () => {
 
               <p className="font-semibold mt-4">Dispute Resolution:</p>
               <p>
-                Disputes regarding referral attribution, commission calculations, or payouts must be submitted within 30 days of the disputed event. Contact support@koji.app with referral details for review.
+                Disputes regarding referral attribution, commission calculations, or payouts must be submitted within 30 days of the disputed event. Contact support@getkoji.net with referral details for review.
               </p>
 
               <p className="font-semibold mt-4">Cookies & Attribution:</p>

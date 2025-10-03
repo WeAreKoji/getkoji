@@ -30,7 +30,7 @@ const Support = () => {
           </CardHeader>
           <CardContent className="text-muted-foreground">
             <p className="mb-2">Need help? We're here for you!</p>
-            <p>Email us at: <a href="mailto:support@koji.app" className="text-primary hover:underline">support@koji.app</a></p>
+            <p>Email us at: <a href="mailto:support@getkoji.net" className="text-primary hover:underline">support@getkoji.net</a></p>
           </CardContent>
         </Card>
 
@@ -58,7 +58,7 @@ const Support = () => {
               </div>
               <div>
                 <p className="font-medium text-foreground mb-1">How do I delete my account?</p>
-                <p>Contact support at support@koji.app to request account deletion.</p>
+                <p>Contact support at support@getkoji.net to request account deletion.</p>
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -127,7 +127,7 @@ const Support = () => {
             <AccordionContent className="text-muted-foreground space-y-3">
               <div>
                 <p className="font-medium text-foreground mb-1">How do I report someone?</p>
-                <p>Currently, please email support@koji.app with details. In-app reporting is coming soon.</p>
+                <p>Currently, please email support@getkoji.net with details. In-app reporting is coming soon.</p>
               </div>
               <div>
                 <p className="font-medium text-foreground mb-1">Is my payment information safe?</p>

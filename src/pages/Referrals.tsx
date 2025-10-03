@@ -656,7 +656,7 @@ const Referrals = () => {
                   <div>
                     <h4 className="font-medium mb-1">Dispute Resolution</h4>
                     <p className="text-muted-foreground">
-                      For any questions or disputes regarding commissions, contact support@koji.com. We'll review your case within 14 business days and provide a resolution. All decisions are final.
+                      For any questions or disputes regarding commissions, contact support@getkoji.net. We'll review your case within 14 business days and provide a resolution. All decisions are final.
                     </p>
                   </div>
                 </div>
