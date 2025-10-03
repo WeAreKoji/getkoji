@@ -36,7 +36,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   // Get all photos - prefer photos array, fallback to avatar_url
-  const allPhotos = profile.photos.length > 0 
+  const allPhotos = profile.photos?.length > 0 
     ? profile.photos 
     : profile.avatar_url 
       ? [{ id: 'avatar', photo_url: profile.avatar_url, order_index: 0 }]
@@ -228,18 +228,18 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           )}
 
           {/* Creator Badge */}
-          {profile.is_creator && (
+          {profile.is_creator === true && (
             <div className="absolute top-6 left-4 flex items-center gap-2 bg-accent/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
               <Sparkles className="w-4 h-4 text-white" />
               <span className="text-white font-semibold text-sm">Creator</span>
-              {profile.id_verified && (
+              {profile.id_verified === true && (
                 <BadgeCheck className="w-4 h-4 text-white" />
               )}
             </div>
           )}
 
           {/* Subscription Price */}
-          {profile.is_creator && profile.creator_subscription_price && (
+          {profile.is_creator === true && profile.creator_subscription_price && (
             <div className="absolute top-6 right-4 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm font-semibold shadow-lg">
               ${profile.creator_subscription_price}/mo
             </div>
@@ -276,20 +276,20 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
               <Badge variant="outline" className={cn("capitalize", getIntentColor(profile.intent))}>
                 {profile.intent.replace("_", " ")}
               </Badge>
-              {profile.id_verified && (
+              {profile.id_verified === true && (
                 <Badge variant="outline" className="bg-green-500/20 border-green-500 text-green-500">
                   <BadgeCheck className="w-3 h-3 mr-1" />
                   Verified
                 </Badge>
               )}
-              {profile.interests.slice(0, 2).map((interest) => (
+              {profile.interests?.slice(0, 2).map((interest) => (
                 <Badge key={interest} variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white">
                   {interest}
                 </Badge>
               ))}
-              {profile.interests.length > 2 && (
+              {(profile.interests?.length || 0) > 2 && (
                 <Badge variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white">
-                  +{profile.interests.length - 2} more
+                  +{(profile.interests?.length || 0) - 2} more
                 </Badge>
               )}
             </div>

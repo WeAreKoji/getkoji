@@ -161,15 +161,24 @@ const Discover = () => {
   const loadProfiles = async (userId: string) => {
     try {
       // Use RPC function for smart filtering (excludes own profile and already swiped)
-      const {
-        data,
-        error
-      } = await supabase.rpc("get_discover_profiles", {
+      const { data, error } = await supabase.rpc("get_discover_profiles", {
         user_id: userId,
         max_count: 10
       });
+
       if (error) throw error;
-      setProfiles(data || []);
+
+      // Cast the data to match our Profile interface
+      const profiles = (data || []).map((profile: any) => ({
+        ...profile,
+        photos: Array.isArray(profile.photos) ? profile.photos : [],
+        interests: Array.isArray(profile.interests) ? profile.interests : [],
+        photo_count: profile.photo_count || 0,
+        is_creator: profile.is_creator === true,
+        id_verified: profile.id_verified === true,
+      }));
+
+      setProfiles(profiles);
     } catch (error: any) {
       toast({
         title: "Error loading profiles",

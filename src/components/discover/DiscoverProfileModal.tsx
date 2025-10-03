@@ -42,7 +42,7 @@ export const DiscoverProfileModal = ({
 
   if (!profile) return null;
 
-  const allPhotos = profile.photos.length > 0
+  const allPhotos = profile.photos?.length > 0
     ? profile.photos
     : profile.avatar_url
       ? [{ id: 'avatar', photo_url: profile.avatar_url, order_index: 0 }]
@@ -98,18 +98,18 @@ export const DiscoverProfileModal = ({
               )}
 
               {/* Creator Badge */}
-              {profile.is_creator && (
+              {profile.is_creator === true && (
                 <div className="absolute top-8 left-4 flex items-center gap-2 bg-accent/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
                   <Sparkles className="w-4 h-4 text-white" />
                   <span className="text-white font-semibold text-sm">Creator</span>
-                  {profile.id_verified && (
+                  {profile.id_verified === true && (
                     <BadgeCheck className="w-4 h-4 text-white" />
                   )}
                 </div>
               )}
 
               {/* Subscription Price */}
-              {profile.is_creator && profile.creator_subscription_price && (
+              {profile.is_creator === true && profile.creator_subscription_price && (
                 <div className="absolute top-8 right-4 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm font-semibold shadow-lg">
                   ${profile.creator_subscription_price}/mo
                 </div>
@@ -158,7 +158,7 @@ export const DiscoverProfileModal = ({
             <Badge variant="outline" className={cn("capitalize", getIntentColor(profile.intent))}>
               {profile.intent.replace("_", " ")}
             </Badge>
-            {profile.id_verified && (
+            {profile.id_verified === true && (
               <Badge variant="outline" className="bg-green-500/20 border-green-500 text-green-500">
                 <BadgeCheck className="w-3 h-3 mr-1" />
                 Verified
@@ -167,11 +167,11 @@ export const DiscoverProfileModal = ({
           </div>
 
           {/* Interests */}
-          {profile.interests.length > 0 && (
+          {(profile.interests?.length || 0) > 0 && (
             <div>
               <h3 className="font-semibold mb-2">Interests</h3>
               <div className="flex flex-wrap gap-2">
-                {profile.interests.map((interest) => (
+                {profile.interests?.map((interest) => (
                   <Badge key={interest} variant="secondary">
                     {interest}
                   </Badge>
