@@ -81,7 +81,7 @@ export function AppSidebar() {
         </div>
         <div className="flex-1 overflow-y-auto">
           <SidebarGroup>
-            <div className={open ? "px-4 pb-4 flex items-center justify-center" : "px-4 pb-4 flex items-center justify-center"}>
+            <div className={open ? "px-4 pb-4 flex items-center justify-start" : "px-4 pb-4 flex items-center justify-center"}>
               <img 
                 src={logo} 
                 alt="Koji" 
