@@ -4,10 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
 import { logError, getUserFriendlyError } from "@/lib/error-logger";
+import { TransactionHistory } from "@/components/payments/TransactionHistory";
+import { RefundRequest } from "@/components/payments/RefundRequest";
 
 interface Subscription {
   id: string;
@@ -135,8 +138,14 @@ const Subscriptions = () => {
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
-          {subscriptions.length === 0 ? (
+        <Tabs defaultValue="active" className="p-4">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="active">Active Subscriptions</TabsTrigger>
+            <TabsTrigger value="history">Transaction History</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active" className="space-y-4">
+            {subscriptions.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground mb-4">You don't have any active subscriptions</p>
               <Button onClick={() => navigate("/creators")}>
@@ -181,6 +190,11 @@ const Subscriptions = () => {
                     >
                       View Creator
                     </Button>
+                    <RefundRequest
+                      subscriptionId={sub.id}
+                      amount={sub.creator_profile.subscription_price}
+                      onSuccess={fetchSubscriptions}
+                    />
                   </div>
                 </Card>
               ))}
@@ -210,7 +224,12 @@ const Subscriptions = () => {
               </Card>
             </>
           )}
-        </div>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <TransactionHistory />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <BottomNav />

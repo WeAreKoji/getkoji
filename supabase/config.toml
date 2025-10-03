@@ -56,3 +56,9 @@ verify_jwt = true
 
 [functions.disable-2fa]
 verify_jwt = true
+
+[functions.process-refund]
+verify_jwt = true
+
+[functions.accept-compliance]
+verify_jwt = true

@@ -104,6 +104,39 @@ export type Database = {
           },
         ]
       }
+      compliance_acceptances: {
+        Row: {
+          accepted_at: string | null
+          document_type: string
+          document_version: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          document_type: string
+          document_version: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          document_type?: string
+          document_version?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       creator_id_verification: {
         Row: {
           created_at: string | null
@@ -921,6 +954,119 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          billing_details: Json | null
+          card_brand: string | null
+          card_exp_month: number | null
+          card_exp_year: number | null
+          card_last4: string | null
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          stripe_payment_method_id: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_details?: Json | null
+          card_brand?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          card_last4?: string | null
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          stripe_payment_method_id: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_details?: Json | null
+          card_brand?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          card_last4?: string | null
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          stripe_payment_method_id?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          creator_id: string | null
+          currency: string
+          failure_reason: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_invoice_id: string | null
+          stripe_payment_intent_id: string | null
+          subscription_id: string | null
+          transaction_type: string
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          status: string
+          stripe_charge_id?: string | null
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subscription_id?: string | null
+          transaction_type: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subscription_id?: string | null
+          transaction_type?: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_revenue: {
         Row: {
           created_at: string | null
@@ -1280,6 +1426,72 @@ export type Database = {
           status?: string | null
         }
         Relationships: []
+      }
+      refund_requests: {
+        Row: {
+          admin_notes: string | null
+          amount_requested: number
+          created_at: string | null
+          currency: string
+          id: string
+          payment_transaction_id: string | null
+          processed_at: string | null
+          processed_by: string | null
+          reason: string
+          status: string
+          stripe_refund_id: string | null
+          subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_requested: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          payment_transaction_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          reason: string
+          status?: string
+          stripe_refund_id?: string | null
+          subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_requested?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          payment_transaction_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          reason?: string
+          status?: string
+          stripe_refund_id?: string | null
+          subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_requests_payment_transaction_id_fkey"
+            columns: ["payment_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_events: {
         Row: {
@@ -1849,6 +2061,15 @@ export type Database = {
           total_posts: number
         }[]
       }
+      get_payment_stats: {
+        Args: { _user_id: string }
+        Returns: {
+          active_subscriptions: number
+          failed_payments: number
+          total_refunded: number
+          total_spent: number
+        }[]
+      }
       get_safe_profile: {
         Args: { profile_id: string }
         Returns: {
@@ -1880,6 +2101,14 @@ export type Database = {
           rejected_verifications: number
           total_verifications: number
         }[]
+      }
+      has_accepted_compliance: {
+        Args: {
+          _document_type: string
+          _document_version?: string
+          _user_id: string
+        }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -1920,6 +2149,24 @@ export type Database = {
         }
         Returns: string
       }
+      log_payment_transaction: {
+        Args: {
+          _amount: number
+          _creator_id?: string
+          _currency?: string
+          _ip_address?: unknown
+          _metadata?: Json
+          _status?: string
+          _stripe_charge_id?: string
+          _stripe_invoice_id?: string
+          _stripe_payment_intent_id?: string
+          _subscription_id?: string
+          _transaction_type: string
+          _user_agent?: string
+          _user_id: string
+        }
+        Returns: string
+      }
       log_profile_access: {
         Args: {
           _access_type?: string
@@ -1955,6 +2202,14 @@ export type Database = {
       request_creator_role: {
         Args: { application_text: string }
         Returns: Json
+      }
+      update_payment_transaction_status: {
+        Args: {
+          _failure_reason?: string
+          _status: string
+          _transaction_id: string
+        }
+        Returns: undefined
       }
       validate_document_token: {
         Args: { _token: string }

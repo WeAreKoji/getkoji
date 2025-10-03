@@ -50,6 +50,7 @@ const Referrals = lazy(() => import("./pages/Referrals"));
 const KojiConnect = lazy(() => import("./pages/KojiConnect"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
+const AdminRefunds = lazy(() => import("./pages/AdminRefunds"));
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,11 @@ const AppContent = () => {
           <Route path="/admin/audit-logs" element={
             <ProtectedRoute requireAdmin>
               <AdminAuditLogs />
+            </ProtectedRoute>
+          } errorElement={<RouteErrorBoundary />} />
+          <Route path="/admin/refunds" element={
+            <ProtectedRoute requireAdmin>
+              <AdminRefunds />
             </ProtectedRoute>
           } errorElement={<RouteErrorBoundary />} />
           <Route path="/subscriptions" element={<Subscriptions />} errorElement={<RouteErrorBoundary />} />
