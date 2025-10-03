@@ -57,18 +57,18 @@ export const ProfileInfoBar = ({
   };
 
   return (
-    <Card className="p-6 shadow-sm">
-      <div className="flex items-center justify-between gap-6">
+    <Card className="p-4 md:p-6 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
         {/* Left: Member Since + Username */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4 h-4" />
-            <span className="text-sm font-medium">Member since {memberSince}</span>
+            <span className="text-xs md:text-sm font-medium">Member since {memberSince}</span>
           </div>
           
           {username && (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-mono text-muted-foreground">@{username}</span>
+              <span className="text-xs md:text-sm font-mono text-muted-foreground">@{username}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -87,29 +87,31 @@ export const ProfileInfoBar = ({
 
         {/* Center: Stats (if creator) */}
         {isCreator && (
-          <div className="flex items-center gap-6">
+          <div className="grid grid-cols-3 gap-3 md:flex md:items-center md:gap-6">
             {loading ? (
               <>
                 {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-6 w-20" />
+                  <Skeleton key={i} className="h-12 md:h-6 w-full md:w-20" />
                 ))}
               </>
             ) : (
               <>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-2">
                   <Users className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-semibold">{stats?.subscribers || 0}</span>
-                  <span className="text-xs text-muted-foreground">Subscribers</span>
+                  <span className="text-sm md:text-sm font-semibold">{stats?.subscribers || 0}</span>
+                  <span className="text-xs text-muted-foreground hidden md:inline">Subscribers</span>
+                  <span className="text-xs text-muted-foreground md:hidden">Subs</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-2">
                   <FileText className="w-4 h-4 text-secondary" />
-                  <span className="text-sm font-semibold">{stats?.posts || 0}</span>
+                  <span className="text-sm md:text-sm font-semibold">{stats?.posts || 0}</span>
                   <span className="text-xs text-muted-foreground">Posts</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-2">
                   <DollarSign className="w-4 h-4 text-accent" />
-                  <span className="text-sm font-semibold">${stats?.earnings || 0}</span>
-                  <span className="text-xs text-muted-foreground">Earnings</span>
+                  <span className="text-sm md:text-sm font-semibold">${stats?.earnings || 0}</span>
+                  <span className="text-xs text-muted-foreground hidden md:inline">Earnings</span>
+                  <span className="text-xs text-muted-foreground md:hidden">Earned</span>
                 </div>
               </>
             )}
@@ -117,7 +119,7 @@ export const ProfileInfoBar = ({
         )}
 
         {/* Right: Action Button */}
-        <div className="ml-auto">
+        <div className="w-full md:w-auto md:ml-auto">
           {children}
         </div>
       </div>
