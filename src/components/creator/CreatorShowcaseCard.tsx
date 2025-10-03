@@ -77,13 +77,13 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
 
   return (
     <Card
-      className="group overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border bg-card"
+      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border bg-card"
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Video/Cover Section */}
-      <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background overflow-hidden">
+      <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background overflow-hidden rounded-t-lg">
         {creator.welcome_video_url ? (
           <>
             <video
@@ -137,16 +137,16 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         )}
 
         {/* Profile Image Overlay */}
-        <div className="absolute left-6 -bottom-12">
+        <div className="absolute left-4 sm:left-6 -bottom-10 sm:-bottom-12 z-10">
           <img
             src={creator.avatar_url || "/placeholder.svg"}
             alt={creator.display_name}
-            className="w-24 h-24 rounded-lg border-4 border-background object-cover shadow-xl"
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg border-4 border-background object-cover shadow-xl"
           />
         </div>
       </div>
 
-      <CardContent className="pt-16 pb-6 px-6 space-y-4">
+      <CardContent className="pt-12 sm:pt-16 pb-6 px-4 sm:px-6 space-y-3 sm:space-y-4">
         {/* Name and Verification */}
         <div>
           <div className="flex items-center gap-2 mb-1">
