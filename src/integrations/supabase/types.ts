@@ -1364,6 +1364,27 @@ export type Database = {
           },
         ]
       }
+      profile_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          liked_id: string
+          liker_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          liked_id: string
+          liker_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          liked_id?: string
+          liker_id?: string
+        }
+        Relationships: []
+      }
       profile_photos: {
         Row: {
           created_at: string | null

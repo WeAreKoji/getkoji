@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { MessageCircle, Heart, Share2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,6 +12,10 @@ import { haptics } from "@/lib/native";
 import { shareContent, canShare } from "@/lib/share";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/lib/error-logger";
+import { ReportProfileDialog } from "./ReportProfileDialog";
+import { cn } from "@/lib/utils";
 
 interface ProfileActionsProps {
   userId: string;
@@ -22,18 +27,97 @@ export const ProfileActions = ({ userId, displayName }: ProfileActionsProps) => 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const showShare = canShare();
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  useEffect(() => {
+    checkIfLiked();
+  }, [userId]);
+
+  const checkIfLiked = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("profile_likes")
+        .select("id")
+        .eq("liker_id", user.id)
+        .eq("liked_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      setIsLiked(!!data);
+    } catch (error) {
+      logError(error, "ProfileActions.checkIfLiked");
+    }
+  };
 
   const handleMessage = () => {
     haptics.medium();
     navigate(`/chat/${userId}`);
   };
 
-  const handleLike = () => {
-    haptics.light();
-    toast({
-      title: "Liked!",
-      description: `You liked ${displayName}'s profile`,
-    });
+  const handleLike = async () => {
+    if (likeLoading) return;
+    
+    try {
+      haptics.light();
+      setLikeLoading(true);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to like profiles",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (isLiked) {
+        // Unlike
+        const { error } = await supabase
+          .from("profile_likes")
+          .delete()
+          .eq("liker_id", user.id)
+          .eq("liked_id", userId);
+
+        if (error) throw error;
+
+        setIsLiked(false);
+        toast({
+          title: "Unliked",
+          description: `You unliked ${displayName}'s profile`,
+        });
+      } else {
+        // Like
+        const { error } = await supabase
+          .from("profile_likes")
+          .insert({
+            liker_id: user.id,
+            liked_id: userId,
+          });
+
+        if (error) throw error;
+
+        setIsLiked(true);
+        toast({
+          title: "Liked!",
+          description: `You liked ${displayName}'s profile`,
+        });
+      }
+    } catch (error) {
+      logError(error, "ProfileActions.handleLike");
+      toast({
+        title: "Error",
+        description: "Failed to update like status. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLikeLoading(false);
+    }
   };
 
   const handleShare = async () => {
@@ -56,10 +140,7 @@ export const ProfileActions = ({ userId, displayName }: ProfileActionsProps) => 
 
   const handleReport = () => {
     haptics.light();
-    toast({
-      title: "Report submitted",
-      description: "Thank you for helping keep our community safe",
-    });
+    setReportDialogOpen(true);
   };
 
   return (
@@ -78,10 +159,19 @@ export const ProfileActions = ({ userId, displayName }: ProfileActionsProps) => 
       <Button
         variant="outline"
         size="lg"
-        className={isMobile ? "h-12 border-2" : "h-14 border-2"}
+        className={cn(
+          isMobile ? "h-12 border-2" : "h-14 border-2",
+          isLiked && "bg-primary/10 border-primary"
+        )}
         onClick={handleLike}
+        disabled={likeLoading}
       >
-        <Heart className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
+        <Heart 
+          className={cn(
+            isMobile ? "w-5 h-5" : "w-6 h-6",
+            isLiked && "fill-primary text-primary"
+          )} 
+        />
       </Button>
 
       {/* More Actions */}
@@ -103,6 +193,14 @@ export const ProfileActions = ({ userId, displayName }: ProfileActionsProps) => 
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Report Dialog */}
+      <ReportProfileDialog
+        userId={userId}
+        displayName={displayName}
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { Eye, Heart, MessageCircle, TrendingUp } from "lucide-react";
 import { LoadingCard } from "@/components/shared/LoadingCard";
 import { RetryBoundary } from "@/components/shared/RetryBoundary";
 import { logError } from "@/lib/error-logger";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface ProfileAnalyticsProps {
   userId: string;
@@ -28,6 +29,32 @@ export const ProfileAnalytics = ({ userId }: ProfileAnalyticsProps) => {
 
   useEffect(() => {
     fetchAnalytics();
+
+    // Set up realtime subscription for profile views
+    const channel: RealtimeChannel = supabase
+      .channel('profile-views-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'profile_views',
+          filter: `profile_id=eq.${userId}`
+        },
+        (payload) => {
+          // Increment view count when new view is added
+          setAnalytics(prev => ({
+            ...prev,
+            totalViews: prev.totalViews + 1,
+            viewsThisMonth: prev.viewsThisMonth + 1,
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   const fetchAnalytics = async () => {
