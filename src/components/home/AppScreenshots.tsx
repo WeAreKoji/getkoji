@@ -38,16 +38,16 @@ export const AppScreenshots = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {screenshots.map((screenshot, index) => (
-            <Card key={index} className="p-4 sm:p-6 bg-card border-border h-full">
-              <div className="aspect-[4/3] sm:aspect-[9/16] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl mb-2 sm:mb-3 flex items-center justify-center relative overflow-hidden">
+            <Card key={index} className="p-3 sm:p-4 bg-card border-border h-full">
+              <div className="aspect-[4/3] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-2 flex items-center justify-center relative overflow-hidden">
                 <img 
                   src="/logo.png" 
                   alt={screenshot.alt}
-                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain opacity-50"
+                  className="w-12 h-12 sm:w-16 sm:h-16 object-contain opacity-50"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               </div>
-              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1 sm:mb-1.5 md:mb-2 text-foreground">
+              <h3 className="text-base sm:text-lg font-semibold mb-1 text-foreground">
                 {screenshot.title}
               </h3>
               <p className="text-muted-foreground text-xs sm:text-sm">
