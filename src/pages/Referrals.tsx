@@ -472,7 +472,7 @@ const Referrals = () => {
                           <p className="text-sm text-muted-foreground mb-3">
                             Since you're a creator, your commissions will be paid directly to your connected Stripe account along with your creator earnings.
                           </p>
-                          <Button size="sm" variant="outline">View Stripe Settings</Button>
+                          <Button size="sm" variant="outline" onClick={() => navigate('/creator/dashboard')}>View Stripe Settings</Button>
                         </div>
                       </div>
                     </div>
@@ -483,7 +483,12 @@ const Referrals = () => {
                         <p className="text-sm text-muted-foreground mb-3">
                           Receive your commissions via PayPal. Fast and secure payments to your PayPal account.
                         </p>
-                        <Button size="sm" variant="outline">Connect PayPal Account</Button>
+                        <Button size="sm" variant="outline" onClick={() => {
+                          toast({
+                            title: "Coming Soon",
+                            description: "PayPal integration is currently in development. For now, you can become a creator to use Stripe Connect.",
+                          });
+                        }}>Connect PayPal Account</Button>
                       </div>
                       
                       <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg">
@@ -491,7 +496,7 @@ const Referrals = () => {
                         <p className="text-sm text-muted-foreground mb-3">
                           Creators can receive payouts directly through Stripe Connect along with their creator earnings.
                         </p>
-                        <Button size="sm">Apply to Become a Creator</Button>
+                        <Button size="sm" onClick={() => navigate('/creator-application')}>Apply to Become a Creator</Button>
                       </div>
                     </>
                   )}
