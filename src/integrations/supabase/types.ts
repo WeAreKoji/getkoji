@@ -356,49 +356,64 @@ export type Database = {
       }
       creator_profiles: {
         Row: {
+          card_style: Json | null
+          cover_image_url: string | null
           created_at: string | null
           id: string
           id_verification_date: string | null
           id_verified: boolean | null
           payouts_enabled: boolean | null
+          showcase_bio: string | null
           stripe_account_id: string | null
           stripe_onboarding_complete: boolean | null
           stripe_price_id: string | null
           stripe_product_id: string | null
           subscriber_count: number | null
           subscription_price: number
+          tagline: string | null
           total_earnings: number | null
           user_id: string
+          welcome_video_url: string | null
         }
         Insert: {
+          card_style?: Json | null
+          cover_image_url?: string | null
           created_at?: string | null
           id?: string
           id_verification_date?: string | null
           id_verified?: boolean | null
           payouts_enabled?: boolean | null
+          showcase_bio?: string | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean | null
           stripe_price_id?: string | null
           stripe_product_id?: string | null
           subscriber_count?: number | null
           subscription_price: number
+          tagline?: string | null
           total_earnings?: number | null
           user_id: string
+          welcome_video_url?: string | null
         }
         Update: {
+          card_style?: Json | null
+          cover_image_url?: string | null
           created_at?: string | null
           id?: string
           id_verification_date?: string | null
           id_verified?: boolean | null
           payouts_enabled?: boolean | null
+          showcase_bio?: string | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean | null
           stripe_price_id?: string | null
           stripe_product_id?: string | null
           subscriber_count?: number | null
           subscription_price?: number
+          tagline?: string | null
           total_earnings?: number | null
           user_id?: string
+          welcome_video_url?: string | null
         }
         Relationships: [
           {

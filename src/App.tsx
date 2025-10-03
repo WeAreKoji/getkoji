@@ -31,6 +31,7 @@ const ProfileEdit = lazy(() => import("./pages/ProfileEdit"));
 const CreatorApplication = lazy(() => import("./pages/CreatorApplication"));
 const CreatorVerifyIdentity = lazy(() => import("./pages/CreatorVerifyIdentity"));
 const CreatorSetup = lazy(() => import("./pages/CreatorSetup"));
+const CreatorCustomizeCard = lazy(() => import("./pages/CreatorCustomizeCard"));
 const CreatorFeed = lazy(() => import("./pages/CreatorFeed"));
 const AdminVerifications = lazy(() => import("./pages/AdminVerifications"));
 const AdminContentModeration = lazy(() => import("./pages/AdminContentModeration"));
@@ -89,6 +90,7 @@ const AppContent = () => {
               <Route path="/creator/apply" element={<CreatorApplication />} errorElement={<RouteErrorBoundary />} />
               <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} errorElement={<RouteErrorBoundary />} />
             <Route path="/creator/setup" element={<CreatorSetup />} errorElement={<RouteErrorBoundary />} />
+            <Route path="/creator/customize-card" element={<CreatorCustomizeCard />} errorElement={<RouteErrorBoundary />} />
             <Route path="/creator/:creatorId" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
             <Route path="/creators/:username" element={<CreatorFeed />} errorElement={<RouteErrorBoundary />} />
             <Route path="/admin/dashboard" element={
