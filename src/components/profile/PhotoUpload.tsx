@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
-import { Camera, X } from "lucide-react";
+import { Camera, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { validateFile } from "@/lib/upload-validation";
 import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import { logError } from "@/lib/error-logger";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Photo {
   id?: string;
@@ -24,6 +25,7 @@ interface PhotoUploadProps {
 
 const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUploadProps) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +146,23 @@ const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUpl
     setDraggedIndex(null);
   };
 
+  const handleMovePhoto = (index: number, direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= photos.length) return;
+
+    const updatedPhotos = [...photos];
+    const temp = updatedPhotos[index];
+    updatedPhotos[index] = updatedPhotos[newIndex];
+    updatedPhotos[newIndex] = temp;
+
+    const reorderedPhotos = updatedPhotos.map((photo, i) => ({
+      ...photo,
+      order_index: i,
+    }));
+
+    onPhotosChange(reorderedPhotos);
+  };
+
   const slots = Array.from({ length: maxPhotos }, (_, i) => photos[i] || null);
 
   return (
@@ -166,15 +185,52 @@ const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUpl
                   alt={`Photo ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
+                
+                {/* Desktop: hover to remove */}
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 w-9 h-9 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 w-9 h-9 opacity-0 md:group-hover:opacity-100 transition-opacity hidden md:flex"
                   onClick={() => handleRemove(index)}
                   aria-label="Remove photo"
                 >
                   <X className="w-4 h-4" />
                 </Button>
+
+                {/* Mobile: always visible controls */}
+                {isMobile && (
+                  <div className="absolute inset-0 flex items-center justify-between p-2">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="w-9 h-9 bg-background/80 backdrop-blur-sm"
+                      onClick={() => handleMovePhoto(index, 'left')}
+                      disabled={index === 0}
+                      aria-label="Move photo left"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="w-9 h-9 bg-destructive/90 backdrop-blur-sm"
+                      onClick={() => handleRemove(index)}
+                      aria-label="Remove photo"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="w-9 h-9 bg-background/80 backdrop-blur-sm"
+                      onClick={() => handleMovePhoto(index, 'right')}
+                      disabled={index === photos.length - 1}
+                      aria-label="Move photo right"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : index === photos.length ? (
               <label className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors">
@@ -196,7 +252,7 @@ const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUpl
         ))}
       </div>
       <p className="text-sm text-muted-foreground text-center">
-        {photos.length}/{maxPhotos} photos • Drag to reorder
+        {photos.length}/{maxPhotos} photos • {isMobile ? "Tap arrows to reorder" : "Drag to reorder"}
       </p>
     </div>
   );

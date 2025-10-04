@@ -15,6 +15,8 @@ import { logError } from "@/lib/error-logger";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { SafeAreaView } from "@/components/layout/SafeAreaView";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Photo {
   id?: string;
@@ -32,6 +34,7 @@ interface Interest {
 const ProfileEdit = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -401,17 +404,21 @@ const ProfileEdit = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-6">
+    <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom)+80px)] md:pb-6">
       <div className="container max-w-2xl mx-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3 flex items-center justify-between safe-top">
-          <Link to={`/profile/${userId}`} aria-label="Back to profile">
-            <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
-          </Link>
-          <h1 className="font-semibold">Edit Profile</h1>
-          <Button onClick={handleSave} disabled={saving} size="sm">
-            {saving ? "Saving..." : "Save"}
-          </Button>
+        <div className="sticky z-10" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+          <SafeAreaView top={true} bottom={false}>
+            <div className="bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between">
+              <Link to={`/profile/${userId}`} aria-label="Back to profile">
+                <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
+              </Link>
+              <h1 className="font-semibold">Edit Profile</h1>
+              <Button onClick={handleSave} disabled={saving} size={isMobile ? "default" : "sm"} className="min-h-[44px] min-w-[44px]">
+                {saving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </SafeAreaView>
         </div>
 
         <div className="px-4 py-6 space-y-6">
@@ -432,7 +439,8 @@ const ProfileEdit = () => {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Your name"
-                className="h-11 md:h-10"
+                className="h-11"
+                onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
               />
             </div>
 
@@ -452,7 +460,8 @@ const ProfileEdit = () => {
                   max="120"
                   value={age}
                   onChange={(e) => setAge(parseInt(e.target.value) || 18)}
-                  className="h-11 md:h-10"
+                  className="h-11"
+                  onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                 />
               </div>
 
@@ -463,7 +472,8 @@ const ProfileEdit = () => {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Your city"
-                  className="h-11 md:h-10"
+                  className="h-11"
+                  onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                 />
               </div>
             </div>
@@ -478,6 +488,7 @@ const ProfileEdit = () => {
                 rows={4}
                 maxLength={500}
                 className="text-base min-h-[100px] md:min-h-[80px]"
+                onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
               />
               <p className="text-xs text-muted-foreground text-right">
                 {bio.length}/500
@@ -532,13 +543,14 @@ const ProfileEdit = () => {
               placeholder="Search interests..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-11 md:h-10"
+              className="h-11"
+              onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
             />
 
-            <div className="space-y-4 max-h-[500px] md:max-h-[400px] overflow-y-auto">
+            <div className="space-y-4 md:max-h-[400px] md:overflow-y-auto">
               {Object.entries(groupedInterests).map(([category, interests]) => (
                 <div key={category}>
-                  <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2 sticky top-0 bg-background py-1">
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2 md:sticky md:top-0 bg-background py-1">
                     {category}
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -611,7 +623,7 @@ const ProfileEdit = () => {
                     accept="video/*"
                     onChange={handleVideoUpload}
                     disabled={isUploadingMedia}
-                    className="cursor-pointer h-11 md:h-10"
+                    className="cursor-pointer h-11"
                   />
                   {isUploadingMedia && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -658,7 +670,7 @@ const ProfileEdit = () => {
                     accept="image/*"
                     onChange={handleCoverImageUpload}
                     disabled={isUploadingMedia}
-                    className="cursor-pointer h-11 md:h-10"
+                    className="cursor-pointer h-11"
                   />
                   {coverImageUrl && (
                     <div className="w-full max-h-[300px] overflow-hidden rounded-lg border border-border">
@@ -696,7 +708,8 @@ const ProfileEdit = () => {
                   onChange={(e) => setTagline(e.target.value.slice(0, 100))}
                   placeholder="e.g., Exclusive fitness content & meal plans"
                   maxLength={100}
-                  className="h-11 md:h-10"
+                  className="h-11"
+                  onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                 />
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-1">
                   <p className="text-xs text-muted-foreground">
@@ -731,6 +744,7 @@ const ProfileEdit = () => {
                   maxLength={300}
                   rows={4}
                   className="text-base min-h-[100px] md:min-h-[80px]"
+                  onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                 />
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-1">
                   <p className="text-xs text-muted-foreground flex-1">
@@ -745,6 +759,31 @@ const ProfileEdit = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Bottom Save Bar */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 backdrop-blur-sm">
+          <SafeAreaView top={false} bottom={true}>
+            <div className="px-4 py-3">
+              <Button 
+                onClick={handleSave} 
+                disabled={saving} 
+                size="lg"
+                className="w-full min-h-[44px]"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
+          </SafeAreaView>
+        </div>
+      )}
     </div>
   );
 };
