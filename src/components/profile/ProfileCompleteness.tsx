@@ -12,10 +12,22 @@ interface ProfileCompletenessProps {
   };
   photosCount: number;
   interestsCount: number;
+  isCreator?: boolean;
+  creatorData?: {
+    tagline: string | null;
+    showcase_bio: string | null;
+    welcome_video_url: string | null;
+  };
 }
 
-export const ProfileCompleteness = ({ profile, photosCount, interestsCount }: ProfileCompletenessProps) => {
-  const checks = [
+export const ProfileCompleteness = ({ 
+  profile, 
+  photosCount, 
+  interestsCount,
+  isCreator = false,
+  creatorData
+}: ProfileCompletenessProps) => {
+  const baseChecks = [
     { label: "Add profile photo", completed: photosCount > 0 },
     { label: "Add at least 3 photos", completed: photosCount >= 3 },
     { label: "Write a bio", completed: !!profile.bio },
@@ -23,6 +35,14 @@ export const ProfileCompleteness = ({ profile, photosCount, interestsCount }: Pr
     { label: "Add city", completed: !!profile.city },
     { label: "Select 5+ interests", completed: interestsCount >= 5 },
   ];
+
+  const creatorChecks = isCreator ? [
+    { label: "Add welcome video", completed: !!creatorData?.welcome_video_url },
+    { label: "Write creator tagline", completed: !!creatorData?.tagline },
+    { label: "Write showcase bio", completed: !!creatorData?.showcase_bio },
+  ] : [];
+
+  const checks = [...baseChecks, ...creatorChecks];
 
   const completedCount = checks.filter(c => c.completed).length;
   const percentage = Math.round((completedCount / checks.length) * 100);

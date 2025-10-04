@@ -7,12 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, HelpCircle, Video, Image as ImageIcon, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoUpload from "@/components/profile/PhotoUpload";
 import { UsernameInput } from "@/components/profile/UsernameInput";
 import { logError } from "@/lib/error-logger";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Photo {
   id?: string;
@@ -45,6 +47,14 @@ const ProfileEdit = () => {
   const [allInterests, setAllInterests] = useState<Interest[]>([]);
   const [selectedInterestIds, setSelectedInterestIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Creator-specific fields
+  const [isCreator, setIsCreator] = useState(false);
+  const [tagline, setTagline] = useState("");
+  const [showcaseBio, setShowcaseBio] = useState("");
+  const [welcomeVideoUrl, setWelcomeVideoUrl] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -60,7 +70,28 @@ const ProfileEdit = () => {
     await Promise.all([
       fetchProfile(user.id),
       fetchInterests(),
+      checkCreatorStatus(user.id),
     ]);
+  };
+
+  const checkCreatorStatus = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("creator_profiles")
+        .select("tagline, showcase_bio, welcome_video_url, cover_image_url")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (data) {
+        setIsCreator(true);
+        setTagline(data.tagline || "");
+        setShowcaseBio(data.showcase_bio || "");
+        setWelcomeVideoUrl(data.welcome_video_url || "");
+        setCoverImageUrl(data.cover_image_url || "");
+      }
+    } catch (error) {
+      logError(error, 'ProfileEdit.checkCreatorStatus');
+    }
   };
 
   const fetchProfile = async (userId: string) => {
@@ -216,6 +247,21 @@ const ProfileEdit = () => {
 
       if (interestsError) throw interestsError;
 
+      // Update creator profile if applicable
+      if (isCreator) {
+        const { error: creatorError } = await supabase
+          .from("creator_profiles")
+          .update({
+            tagline: tagline || null,
+            showcase_bio: showcaseBio || null,
+            welcome_video_url: welcomeVideoUrl || null,
+            cover_image_url: coverImageUrl || null,
+          })
+          .eq("user_id", userId);
+
+        if (creatorError) throw creatorError;
+      }
+
       toast({
         title: "Profile updated!",
         description: "Your changes have been saved.",
@@ -243,7 +289,108 @@ const ProfileEdit = () => {
     }
     acc[interest.category].push(interest);
     return acc;
-  }, {} as Record<string, Interest[]>);
+    }, {} as Record<string, Interest[]>);
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a video file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Video must be under 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingMedia(true);
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("creator-welcome-videos")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("creator-welcome-videos")
+        .getPublicUrl(fileName);
+
+      setWelcomeVideoUrl(publicUrl);
+
+      toast({
+        title: "Success",
+        description: "Welcome video uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
+
+  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingMedia(true);
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("creator-content")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("creator-content")
+        .getPublicUrl(fileName);
+
+      setCoverImageUrl(publicUrl);
+
+      toast({
+        title: "Success",
+        description: "Cover image uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -413,6 +560,184 @@ const ProfileEdit = () => {
               ))}
             </div>
           </Card>
+
+          {/* Creator Settings - Only visible to creators */}
+          {isCreator && (
+            <Card className="p-4 md:p-6 space-y-4 border-primary/20">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-semibold text-base md:text-lg">Creator Settings</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Customize how your creator profile appears to potential subscribers
+                  </p>
+                </div>
+              </div>
+
+              {/* Creator Tips Collapsible */}
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                    <Lightbulb className="w-4 h-4" />
+                    Tips for an Engaging Creator Profile
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-3 space-y-2 text-sm text-muted-foreground p-3 bg-muted/50 rounded-md">
+                  <p>✨ <strong>Welcome video:</strong> Creators with videos get 3x more profile views</p>
+                  <p>🎯 <strong>Tagline:</strong> Mention what makes your content unique (e.g., "Daily fitness routines & meal plans")</p>
+                  <p>📝 <strong>Showcase bio:</strong> Focus on what subscribers will get, not just who you are</p>
+                  <p>🖼️ <strong>Cover image:</strong> Use a high-quality image that represents your brand</p>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Welcome Video */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="welcome-video" className="text-sm md:text-base">Welcome Video</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>A 10-15 second video introducing yourself. Max 10MB. This significantly boosts profile engagement!</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Input
+                    id="welcome-video"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    disabled={isUploadingMedia}
+                    className="cursor-pointer h-11 md:h-10"
+                  />
+                  {isUploadingMedia && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading...
+                    </div>
+                  )}
+                  {welcomeVideoUrl && (
+                    <video
+                      src={welcomeVideoUrl}
+                      className="w-full max-w-md rounded-lg border border-border"
+                      controls
+                      playsInline
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Recommended: 10-15 seconds, vertical or square format
+                </p>
+              </div>
+
+              {/* Cover Image */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="cover-image" className="text-sm md:text-base">Cover Image</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>Shows when no video is available. Use a professional, eye-catching image.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Input
+                    id="cover-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverImageUpload}
+                    disabled={isUploadingMedia}
+                    className="cursor-pointer h-11 md:h-10"
+                  />
+                  {coverImageUrl && (
+                    <img
+                      src={coverImageUrl}
+                      alt="Cover preview"
+                      className="w-full max-w-md rounded-lg border border-border object-cover"
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  High-resolution image (min 800x800px recommended)
+                </p>
+              </div>
+
+              {/* Tagline */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="tagline" className="text-sm md:text-base">Tagline</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>A catchy one-liner that describes your content. Make it specific!</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="tagline"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value.slice(0, 100))}
+                  placeholder="e.g., Exclusive fitness content & meal plans"
+                  maxLength={100}
+                  className="h-11 md:h-10"
+                />
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    Example: "Daily workouts + nutrition tips for busy professionals"
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {tagline.length}/100
+                  </p>
+                </div>
+              </div>
+
+              {/* Showcase Bio */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="showcase-bio" className="text-sm md:text-base">Showcase Bio</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>Tell potential subscribers what they'll get. Focus on benefits, not just who you are.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Textarea
+                  id="showcase-bio"
+                  value={showcaseBio}
+                  onChange={(e) => setShowcaseBio(e.target.value.slice(0, 300))}
+                  placeholder="Write a compelling bio for the creators page..."
+                  maxLength={300}
+                  rows={4}
+                  className="text-base min-h-[100px] md:min-h-[80px]"
+                />
+                <div className="flex justify-between items-start gap-2">
+                  <p className="text-xs text-muted-foreground flex-1">
+                    Focus on: What content you create, posting frequency, and unique value
+                  </p>
+                  <p className="text-xs text-muted-foreground whitespace-nowrap">
+                    {showcaseBio.length}/300
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       </div>
     </div>
