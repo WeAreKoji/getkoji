@@ -319,7 +319,11 @@ const CreatorDashboard = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{analytics.avgSubscriptionDuration?.toFixed(0) ?? 'N/A'} days</div>
+                      <div className="text-2xl font-bold">
+                        {analytics.avgSubscriptionDuration !== null 
+                          ? analytics.avgSubscriptionDuration.toFixed(0) 
+                          : 'N/A'} days
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -330,7 +334,11 @@ const CreatorDashboard = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{analytics.churnRate?.toFixed(1) ?? 'N/A'}%</div>
+                      <div className="text-2xl font-bold">
+                        {analytics.churnRate !== null 
+                          ? analytics.churnRate.toFixed(1) 
+                          : 'N/A'}%
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -341,7 +349,11 @@ const CreatorDashboard = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{analytics.engagementRate?.toFixed(1) ?? 'N/A'}%</div>
+                      <div className="text-2xl font-bold">
+                        {analytics.engagementRate !== null 
+                          ? analytics.engagementRate.toFixed(1) 
+                          : 'N/A'}%
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
