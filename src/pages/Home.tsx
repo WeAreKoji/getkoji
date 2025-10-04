@@ -297,7 +297,7 @@ const Home = () => {
               <a href="/community" className="block text-muted-foreground hover:text-primary transition-colors">
                 Community Guidelines
               </a>
-              <a href="/creator/apply" className="block text-muted-foreground hover:text-primary transition-colors">
+              <a href="/creator-recruitment" className="block text-muted-foreground hover:text-primary transition-colors">
                 Become a Creator
               </a>
             </nav>

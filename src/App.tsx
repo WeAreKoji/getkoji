@@ -24,6 +24,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Discover = lazy(() => import("./pages/Discover"));
 const Creators = lazy(() => import("./pages/Creators"));
+const CreatorRecruitment = lazy(() => import("./pages/CreatorRecruitment"));
 const Matches = lazy(() => import("./pages/Matches"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -88,6 +89,7 @@ const AppContent = () => {
               <Route path="/onboarding" element={<Onboarding />} errorElement={<RouteErrorBoundary />} />
               <Route path="/discover" element={<Discover />} errorElement={<RouteErrorBoundary />} />
               <Route path="/creators" element={<Creators />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/creator-recruitment" element={<CreatorRecruitment />} errorElement={<RouteErrorBoundary />} />
               <Route path="/matches" element={<Matches />} errorElement={<RouteErrorBoundary />} />
               <Route path="/chat/:matchId" element={<Chat />} errorElement={<RouteErrorBoundary />} />
               <Route path="/profile" element={<Profile />} errorElement={<RouteErrorBoundary />} />
