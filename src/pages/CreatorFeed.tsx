@@ -22,6 +22,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { SafeAreaView } from "@/components/layout/SafeAreaView";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CreatorProfile {
   id: string;
@@ -67,6 +69,8 @@ const CreatorFeed = () => {
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [resolvedCreatorId, setResolvedCreatorId] = useState<string | null>(null);
+  const isMobile = useIsMobile();
+  const showMobileCTA = isMobile && !isSubscribed && !isOwnProfile;
 
   useEffect(() => {
     if (creatorId || username) {
@@ -322,22 +326,24 @@ const CreatorFeed = () => {
   if (!creatorProfile || !profile) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={`min-h-screen bg-background ${showMobileCTA ? 'pb-[calc(env(safe-area-inset-bottom)+80px)]' : 'pb-20'}`}>
       <div className="container max-w-2xl mx-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Link to="/discover" aria-label="Back to discover">
-              <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
-            </Link>
-            {isOwnProfile && (
-              <Link to="/creator/dashboard">
-                <Button variant="outline" size="sm">
-                  Dashboard
-                </Button>
+        <div className="sticky z-10" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+          <SafeAreaView top={true} bottom={false}>
+            <div className="bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between">
+              <Link to="/discover" aria-label="Back to discover">
+                <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
               </Link>
-            )}
-          </div>
+              {isOwnProfile ? (
+                <Link to="/creator/dashboard">
+                  <Button variant="outline" size="sm">Dashboard</Button>
+                </Link>
+              ) : (
+                <div />
+              )}
+            </div>
+          </SafeAreaView>
         </div>
 
         {/* Creator Info */}
@@ -355,7 +361,7 @@ const CreatorFeed = () => {
                 </AvatarFallback>
               </Avatar>
               
-              {!isOwnProfile && (
+              {!isOwnProfile && !showMobileCTA && (
                 <Button
                   onClick={handleSubscribe}
                   disabled={subscribing || isSubscribed}
@@ -515,6 +521,8 @@ const CreatorFeed = () => {
                             <video
                               src={post.media_url}
                               className="w-full aspect-video object-cover rounded-lg mb-3"
+                              playsInline
+                              preload="metadata"
                             />
                           ) : (
                             <img
@@ -546,6 +554,8 @@ const CreatorFeed = () => {
                             src={post.media_url}
                             controls
                             className="w-full aspect-video object-cover rounded-lg mb-3"
+                            playsInline
+                            preload="metadata"
                           />
                         ) : (
                           <img
@@ -567,6 +577,31 @@ const CreatorFeed = () => {
           )}
         </div>
       </div>
+
+      {showMobileCTA && (
+        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 backdrop-blur-sm">
+          <SafeAreaView top={false} bottom={true}>
+            <div className="px-4 py-3 flex items-center gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-medium">Subscribe</p>
+                <p className="text-xs text-muted-foreground">
+                  ${creatorProfile?.subscription_price}/month • {creatorProfile?.subscriber_count} subscribers
+                </p>
+              </div>
+              <Button onClick={handleSubscribe} disabled={subscribing} size="lg" className="min-w-[140px]">
+                {subscribing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Subscribe"
+                )}
+              </Button>
+            </div>
+          </SafeAreaView>
+        </div>
+      )}
 
       <BottomNav />
 
