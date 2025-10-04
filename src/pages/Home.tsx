@@ -7,6 +7,7 @@ import { PlatformAvailability } from "@/components/home/PlatformAvailability";
 import { FAQ } from "@/components/home/FAQ";
 import { SocialProof } from "@/components/home/SocialProof";
 import { AppScreenshots } from "@/components/home/AppScreenshots";
+import { CreatorStatsLive } from "@/components/home/CreatorStatsLive";
 import heroImage from "@/assets/hero-bg.webp";
 import logo from "@/assets/logo.webp";
 
@@ -187,6 +188,9 @@ const Home = () => {
 
       {/* Creator Monetization Section */}
       <CreatorMonetization />
+
+      {/* Live Creator Stats & Featured Creators */}
+      <CreatorStatsLive />
 
       {/* App Screenshots */}
       <AppScreenshots />

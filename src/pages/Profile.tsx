@@ -22,6 +22,7 @@ import { MutualConnections } from "@/components/profile/MutualConnections";
 import { LastActiveIndicator } from "@/components/profile/LastActiveIndicator";
 import { EnhancedPhotoManagement } from "@/components/profile/EnhancedPhotoManagement";
 import { EnhancedAnalyticsCharts } from "@/components/profile/EnhancedAnalyticsCharts";
+import { ReferralDashboardCard } from "@/components/referrals/ReferralDashboardCard";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -76,6 +77,7 @@ const Profile = () => {
     welcomeVideoUrl?: string | null;
     coverImageUrl?: string | null;
     tagline?: string | null;
+    showcaseBio?: string | null;
   }>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -187,7 +189,7 @@ const Profile = () => {
       // Fetch creator profile data
       const { data: creatorData } = await supabase
         .from("creator_profiles")
-        .select("welcome_video_url, cover_image_url, tagline")
+        .select("welcome_video_url, cover_image_url, tagline, showcase_bio")
         .eq("user_id", profileId)
         .maybeSingle();
 
@@ -196,6 +198,7 @@ const Profile = () => {
           welcomeVideoUrl: creatorData.welcome_video_url,
           coverImageUrl: creatorData.cover_image_url,
           tagline: creatorData.tagline,
+          showcaseBio: creatorData.showcase_bio,
         });
         setIsCreator(true);
       }
@@ -320,7 +323,7 @@ const Profile = () => {
                 {/* Referral & Analytics for own profile */}
                 {isOwnProfile && (
                   <>
-                    <ReferralCard userId={profile.id} />
+                    <ReferralDashboardCard userId={profile.id} compact={true} />
                     <EnhancedAnalyticsCharts userId={profile.id} />
                     <EnhancedPhotoManagement 
                       photos={photos} 
@@ -352,6 +355,12 @@ const Profile = () => {
                     profile={profile}
                     photosCount={photos.length}
                     interestsCount={interests.length}
+                    isCreator={isCreator}
+                    creatorData={{
+                      tagline: creatorProfile.tagline,
+                      showcase_bio: creatorProfile.showcaseBio,
+                      welcome_video_url: creatorProfile.welcomeVideoUrl,
+                    }}
                   />
                 )}
 
@@ -404,7 +413,7 @@ const Profile = () => {
                 )}
 
                 {/* Referral Card for own profile */}
-                {isOwnProfile && <ReferralCard userId={profile.id} />}
+                {isOwnProfile && <ReferralDashboardCard userId={profile.id} />}
                 
                 {/* Analytics for own profile */}
                 {isOwnProfile && (

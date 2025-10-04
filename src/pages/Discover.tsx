@@ -14,6 +14,8 @@ import { haptics } from "@/lib/native";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import { ActiveFilters } from "@/components/discover/ActiveFilters";
+import { InviteEarnModal } from "@/components/referrals/InviteEarnModal";
+import { useOnboardingModal } from "@/hooks/useOnboardingModal";
 import logo from "@/assets/logo.webp";
 
 interface Profile {
@@ -53,6 +55,10 @@ const Discover = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  
+  // Onboarding modal for referrals
+  const { shouldShow: shouldShowInviteModal, markAsShown: markInviteModalShown, referralLink } = useOnboardingModal(user?.id || null);
+  
   useEffect(() => {
     checkUser();
   }, []);
@@ -384,6 +390,19 @@ const Discover = () => {
           onOpenChange={setShowMatchCelebration}
           matchedProfile={matchedProfile}
           currentUserAvatar={currentUserProfile?.avatar_url || null}
+        />
+
+        {/* Invite & Earn Modal - Post Onboarding */}
+        <InviteEarnModal
+          open={shouldShowInviteModal}
+          onOpenChange={(open) => {
+            if (!open) markInviteModalShown();
+          }}
+          referralLink={referralLink}
+          onNavigateToReferrals={() => {
+            markInviteModalShown();
+            navigate("/referrals");
+          }}
         />
         
         {isMobile && <BottomNav />}
