@@ -26,9 +26,10 @@ interface ProfileAccordionProps {
   gender?: string | null;
   interestedInGender?: string[] | null;
   isOwnProfile?: boolean;
+  showcaseBio?: string | null;
 }
 
-export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, userId, gender, interestedInGender, isOwnProfile }: ProfileAccordionProps) => {
+export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, userId, gender, interestedInGender, isOwnProfile, showcaseBio }: ProfileAccordionProps) => {
   const formatGender = (g: string) => {
     return g.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -49,6 +50,15 @@ export const ProfileAccordion = ({ bio, intent, interests, photos, isCreator, us
               <div>
                 <h4 className="text-sm font-medium mb-2">Bio</h4>
                 <p className="text-sm text-muted-foreground leading-relaxed">{bio}</p>
+              </div>
+            )}
+            {isCreator && showcaseBio && (
+              <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                <h4 className="text-sm font-medium mb-2 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  Creator Showcase
+                </h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">{showcaseBio}</p>
               </div>
             )}
             <div>

@@ -401,10 +401,10 @@ const ProfileEdit = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24 md:pb-6">
       <div className="container max-w-2xl mx-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3 flex items-center justify-between">
+        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3 flex items-center justify-between safe-top">
           <Link to={`/profile/${userId}`} aria-label="Back to profile">
             <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
           </Link>
@@ -574,14 +574,14 @@ const ProfileEdit = () => {
               </div>
 
               {/* Creator Tips Collapsible */}
-              <Collapsible>
+              <Collapsible defaultOpen>
                 <CollapsibleTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-sm md:text-base">
                     <Lightbulb className="w-4 h-4" />
                     Tips for an Engaging Creator Profile
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="mt-3 space-y-2 text-sm text-muted-foreground p-3 bg-muted/50 rounded-md">
+                <CollapsibleContent className="mt-3 space-y-2 text-sm text-muted-foreground p-3 md:p-4 bg-primary/5 rounded-lg border border-primary/10">
                   <p>✨ <strong>Welcome video:</strong> Creators with videos get 3x more profile views</p>
                   <p>🎯 <strong>Tagline:</strong> Mention what makes your content unique (e.g., "Daily fitness routines & meal plans")</p>
                   <p>📝 <strong>Showcase bio:</strong> Focus on what subscribers will get, not just who you are</p>
@@ -620,12 +620,15 @@ const ProfileEdit = () => {
                     </div>
                   )}
                   {welcomeVideoUrl && (
-                    <video
-                      src={welcomeVideoUrl}
-                      className="w-full max-w-md rounded-lg border border-border"
-                      controls
-                      playsInline
-                    />
+                    <div className="w-full max-h-[300px] overflow-hidden rounded-lg border border-border bg-black">
+                      <video
+                        src={welcomeVideoUrl}
+                        className="w-full h-full object-contain aspect-video"
+                        controls
+                        playsInline
+                        preload="metadata"
+                      />
+                    </div>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -658,11 +661,13 @@ const ProfileEdit = () => {
                     className="cursor-pointer h-11 md:h-10"
                   />
                   {coverImageUrl && (
-                    <img
-                      src={coverImageUrl}
-                      alt="Cover preview"
-                      className="w-full max-w-md rounded-lg border border-border object-cover"
-                    />
+                    <div className="w-full max-h-[300px] overflow-hidden rounded-lg border border-border">
+                      <img
+                        src={coverImageUrl}
+                        alt="Cover preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -693,11 +698,11 @@ const ProfileEdit = () => {
                   maxLength={100}
                   className="h-11 md:h-10"
                 />
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-1">
                   <p className="text-xs text-muted-foreground">
                     Example: "Daily workouts + nutrition tips for busy professionals"
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs font-medium text-primary whitespace-nowrap">
                     {tagline.length}/100
                   </p>
                 </div>
@@ -727,11 +732,11 @@ const ProfileEdit = () => {
                   rows={4}
                   className="text-base min-h-[100px] md:min-h-[80px]"
                 />
-                <div className="flex justify-between items-start gap-2">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-1">
                   <p className="text-xs text-muted-foreground flex-1">
                     Focus on: What content you create, posting frequency, and unique value
                   </p>
-                  <p className="text-xs text-muted-foreground whitespace-nowrap">
+                  <p className="text-xs font-medium text-primary whitespace-nowrap">
                     {showcaseBio.length}/300
                   </p>
                 </div>

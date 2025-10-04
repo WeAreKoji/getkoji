@@ -40,6 +40,7 @@ interface ProfilePreviewModalProps {
   photos: Photo[];
   interests: Interest[];
   isCreator: boolean;
+  showcaseBio?: string | null;
 }
 
 export const ProfilePreviewModal = ({
@@ -49,6 +50,7 @@ export const ProfilePreviewModal = ({
   photos,
   interests,
   isCreator,
+  showcaseBio,
 }: ProfilePreviewModalProps) => {
   const isMobile = useIsMobile();
   const memberSince = profile.created_at 
@@ -116,6 +118,7 @@ export const ProfilePreviewModal = ({
             photos={showPhotos ? photos : []}
             isCreator={isCreator}
             userId={profile.id}
+            showcaseBio={showcaseBio}
           />
         ) : (
           <ProfileTabs

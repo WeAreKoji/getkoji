@@ -141,14 +141,18 @@ export const ProfileHero = ({
 
       {/* Welcome Video Section */}
       {isCreator && welcomeVideoUrl && (
-        <div className="mt-4">
-          <h3 className="font-semibold mb-2 px-4">Welcome Video</h3>
-          <div className="rounded-lg overflow-hidden bg-black">
+        <div className={cn("mt-4", isMobile ? "px-4" : "px-0")}>
+          <h3 className="font-semibold mb-3 text-base">Welcome Video</h3>
+          <div className={cn(
+            "rounded-lg overflow-hidden bg-black",
+            isMobile && "aspect-[4/3]"
+          )}>
             <video
               src={welcomeVideoUrl}
-              className="w-full aspect-video"
+              className="w-full h-full object-contain"
               controls
               playsInline
+              preload="metadata"
               poster={coverImageUrl || undefined}
             />
           </div>

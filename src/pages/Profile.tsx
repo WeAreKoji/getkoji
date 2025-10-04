@@ -344,6 +344,7 @@ const Profile = () => {
                   gender={profile.gender}
                   interestedInGender={profile.interested_in_gender}
                   isOwnProfile={isOwnProfile}
+                  showcaseBio={creatorProfile.showcaseBio}
                 />
               </div>
             ) : (
@@ -451,6 +452,7 @@ const Profile = () => {
             photos={photos}
             interests={interests}
             isCreator={isCreator}
+            showcaseBio={creatorProfile.showcaseBio}
           />
 
           {isMobile && <BottomNav />}
