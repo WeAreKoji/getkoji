@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Check, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { logError } from "@/lib/error-logger";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UsernameInputProps {
   value: string;
@@ -15,6 +16,7 @@ export const UsernameInput = ({ value, onChange, currentUsername }: UsernameInpu
   const [checking, setChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState<string>("");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const checkAvailability = async () => {
@@ -78,7 +80,11 @@ export const UsernameInput = ({ value, onChange, currentUsername }: UsernameInpu
           value={value}
           onChange={(e) => onChange(e.target.value.toLowerCase())}
           placeholder="your_username"
-          className={error && value ? "border-destructive" : isAvailable ? "border-green-500" : ""}
+          className={`h-11 ${error && value ? "border-destructive" : isAvailable ? "border-green-500" : ""}`}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          onFocus={(e) => isMobile && e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' })}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           {checking && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}

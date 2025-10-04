@@ -173,10 +173,10 @@ const PhotoUpload = ({ photos, onPhotosChange, userId, maxPhotos = 9 }: PhotoUpl
             key={photo?.id || `slot-${index}`}
             ratio={1}
             className="bg-muted rounded-lg overflow-hidden"
-            draggable={!!photo}
-            onDragStart={() => photo && handleDragStart(index)}
-            onDragOver={handleDragOver}
-            onDrop={() => handleDrop(index)}
+            draggable={!isMobile && !!photo}
+            onDragStart={() => !isMobile && photo && handleDragStart(index)}
+            onDragOver={(e) => { if (!isMobile) handleDragOver(e); }}
+            onDrop={() => { if (!isMobile) handleDrop(index); }}
           >
             {photo ? (
               <div className="relative w-full h-full group">
