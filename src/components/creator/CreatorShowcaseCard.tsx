@@ -148,7 +148,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
 
       <CardContent className="pt-16 sm:pt-20 pb-6 px-4 sm:px-6 space-y-3 sm:space-y-4">
         {/* Name and Verification */}
-        <div>
+        <div className="sm:ml-28">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-xl font-bold text-foreground">{creator.display_name}</h3>
             <VerificationBadges 
