@@ -31,8 +31,14 @@ export const CreatorActiveFilters = ({
   if (filters.minPrice !== 0 || filters.maxPrice !== 100) {
     activeFilters.push({ key: "minPrice", label: `Price: $${filters.minPrice}-$${filters.maxPrice}` });
   }
+  if (filters.minSubscribers !== 0) {
+    activeFilters.push({ key: "minSubscribers", label: `Min Subscribers: ${filters.minSubscribers}+` });
+  }
   if (filters.verifiedOnly) {
     activeFilters.push({ key: "verifiedOnly", label: "Verified Only" });
+  }
+  if (filters.interests.length > 0) {
+    activeFilters.push({ key: "interests", label: `Interests (${filters.interests.length})` });
   }
 
   if (activeFilters.length === 0) return null;

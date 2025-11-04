@@ -8,6 +8,8 @@ import BottomNav from "@/components/navigation/BottomNav";
 import { CreatorShowcaseCard } from "@/components/creator/CreatorShowcaseCard";
 import { CreatorFilters, CreatorFilterState } from "@/components/creator/CreatorFilters";
 import { CreatorActiveFilters } from "@/components/creator/CreatorActiveFilters";
+import { CreatorQuickFilters } from "@/components/creator/CreatorQuickFilters";
+import { CreatorSavedPresets } from "@/components/creator/CreatorSavedPresets";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Creator {
@@ -49,7 +51,9 @@ const Creators = () => {
     maxAge: parseInt(searchParams.get("maxAge") || "99"),
     minPrice: parseInt(searchParams.get("minPrice") || "0"),
     maxPrice: parseInt(searchParams.get("maxPrice") || "100"),
+    minSubscribers: parseInt(searchParams.get("minSubscribers") || "0"),
     verifiedOnly: searchParams.get("verifiedOnly") === "true",
+    interests: searchParams.get("interests")?.split(",").filter(Boolean) || [],
     sortBy: (searchParams.get("sortBy") as CreatorFilterState["sortBy"]) || "created_at",
     sortDirection: (searchParams.get("sortDirection") as CreatorFilterState["sortDirection"]) || "desc",
   }));
@@ -64,7 +68,9 @@ const Creators = () => {
     if (filters.maxAge !== 99) params.set("maxAge", filters.maxAge.toString());
     if (filters.minPrice !== 0) params.set("minPrice", filters.minPrice.toString());
     if (filters.maxPrice !== 100) params.set("maxPrice", filters.maxPrice.toString());
+    if (filters.minSubscribers !== 0) params.set("minSubscribers", filters.minSubscribers.toString());
     if (filters.verifiedOnly) params.set("verifiedOnly", "true");
+    if (filters.interests.length > 0) params.set("interests", filters.interests.join(","));
     if (filters.sortBy !== "created_at") params.set("sortBy", filters.sortBy);
     if (filters.sortDirection !== "desc") params.set("sortDirection", filters.sortDirection);
     
@@ -94,6 +100,7 @@ const Creators = () => {
         p_max_age: filters.maxAge !== 99 ? filters.maxAge : null,
         p_min_price: filters.minPrice !== 0 ? filters.minPrice : null,
         p_max_price: filters.maxPrice !== 100 ? filters.maxPrice : null,
+        p_min_subscribers: filters.minSubscribers !== 0 ? filters.minSubscribers : null,
         p_verified_only: filters.verifiedOnly,
         p_sort_by: filters.sortBy,
         p_sort_direction: filters.sortDirection,
@@ -146,6 +153,14 @@ const Creators = () => {
     setFilters(newFilters);
   };
 
+  const handleApplyPreset = (preset: Partial<CreatorFilterState>) => {
+    setFilters({ ...filters, ...preset });
+  };
+
+  const handleLoadPreset = (presetFilters: CreatorFilterState) => {
+    setFilters(presetFilters);
+  };
+
   const handleClearFilters = () => {
     setFilters({
       search: "",
@@ -155,7 +170,9 @@ const Creators = () => {
       maxAge: 99,
       minPrice: 0,
       maxPrice: 100,
+      minSubscribers: 0,
       verifiedOnly: false,
+      interests: [],
       sortBy: "created_at",
       sortDirection: "desc",
     });
@@ -170,7 +187,9 @@ const Creators = () => {
       maxAge: 99,
       minPrice: 0,
       maxPrice: 100,
+      minSubscribers: 0,
       verifiedOnly: false,
+      interests: [],
       sortBy: "created_at",
       sortDirection: "desc",
     };
@@ -190,7 +209,9 @@ const Creators = () => {
     filters.location,
     filters.minAge !== 18 || filters.maxAge !== 99,
     filters.minPrice !== 0 || filters.maxPrice !== 100,
+    filters.minSubscribers !== 0,
     filters.verifiedOnly,
+    filters.interests.length > 0,
   ].filter(Boolean).length;
 
   return (
@@ -222,7 +243,11 @@ const Creators = () => {
             {/* Filters and Content */}
             <div className="grid lg:grid-cols-[300px_1fr] gap-6 max-w-7xl mx-auto">
               {/* Sidebar Filters */}
-              <aside>
+              <aside className="space-y-4">
+                <CreatorSavedPresets
+                  currentFilters={filters}
+                  onLoadPreset={handleLoadPreset}
+                />
                 <CreatorFilters
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
@@ -233,6 +258,9 @@ const Creators = () => {
 
               {/* Main Content */}
               <div className="space-y-4">
+                {/* Quick Filters */}
+                <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
+                
                 {/* Active Filters & Results Count */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">

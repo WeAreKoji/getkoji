@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Users } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { supabase } from "@/integrations/supabase/client";
+import { ChevronDown } from "lucide-react";
 
 export interface CreatorFilterState {
   search: string;
@@ -16,7 +20,9 @@ export interface CreatorFilterState {
   maxAge: number;
   minPrice: number;
   maxPrice: number;
+  minSubscribers: number;
   verifiedOnly: boolean;
+  interests: string[];
   sortBy: "created_at" | "subscriber_count" | "subscription_price";
   sortDirection: "asc" | "desc";
 }
@@ -35,6 +41,22 @@ export const CreatorFilters = ({
   activeFilterCount,
 }: CreatorFiltersProps) => {
   const [open, setOpen] = useState(false);
+  const [interests, setInterests] = useState<{ id: string; name: string; category: string }[]>([]);
+  const [interestsOpen, setInterestsOpen] = useState(false);
+
+  useEffect(() => {
+    loadInterests();
+  }, []);
+
+  const loadInterests = async () => {
+    const { data } = await supabase
+      .from("interests")
+      .select("*")
+      .order("category")
+      .order("name");
+    
+    if (data) setInterests(data);
+  };
 
   const updateFilter = <K extends keyof CreatorFilterState>(
     key: K,
@@ -42,6 +64,20 @@ export const CreatorFilters = ({
   ) => {
     onFiltersChange({ ...filters, [key]: value });
   };
+
+  const toggleInterest = (interestId: string) => {
+    const newInterests = filters.interests.includes(interestId)
+      ? filters.interests.filter(id => id !== interestId)
+      : [...filters.interests, interestId];
+    updateFilter("interests", newInterests);
+  };
+
+  // Group interests by category
+  const groupedInterests = interests.reduce((acc, interest) => {
+    if (!acc[interest.category]) acc[interest.category] = [];
+    acc[interest.category].push(interest);
+    return acc;
+  }, {} as Record<string, typeof interests>);
 
   const FilterContent = () => (
     <div className="space-y-6">
@@ -120,6 +156,53 @@ export const CreatorFilters = ({
           className="w-full"
         />
       </div>
+
+      {/* Minimum Subscribers */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          Min. Subscribers: {filters.minSubscribers}
+        </Label>
+        <Slider
+          min={0}
+          max={1000}
+          step={50}
+          value={[filters.minSubscribers]}
+          onValueChange={([value]) => updateFilter("minSubscribers", value)}
+          className="w-full"
+        />
+      </div>
+
+      {/* Interests Filter */}
+      <Collapsible open={interestsOpen} onOpenChange={setInterestsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full justify-between">
+            <span>
+              Interests {filters.interests.length > 0 && `(${filters.interests.length})`}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${interestsOpen ? "rotate-180" : ""}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2 space-y-3">
+          {Object.entries(groupedInterests).map(([category, categoryInterests]) => (
+            <div key={category} className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase">{category}</p>
+              <div className="flex flex-wrap gap-2">
+                {categoryInterests.map((interest) => (
+                  <Badge
+                    key={interest.id}
+                    variant={filters.interests.includes(interest.id) ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary/80"
+                    onClick={() => toggleInterest(interest.id)}
+                  >
+                    {interest.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          ))}
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Verified Only */}
       <div className="flex items-center justify-between">
