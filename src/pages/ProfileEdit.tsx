@@ -45,6 +45,7 @@ const ProfileEdit = () => {
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [originalPhotoIds, setOriginalPhotoIds] = useState<string[]>([]);
   const [interestedInGender, setInterestedInGender] = useState<string[]>(['male']);
   
   const [allInterests, setAllInterests] = useState<Interest[]>([]);
@@ -121,6 +122,7 @@ const ProfileEdit = () => {
         .order("order_index", { ascending: true });
 
       setPhotos(photosData || []);
+      setOriginalPhotoIds(photosData?.map(p => p.id).filter(Boolean) || []);
 
       const { data: userInterests } = await supabase
         .from("user_interests")
@@ -190,21 +192,21 @@ const ProfileEdit = () => {
 
       if (profileError) throw profileError;
 
-      // Handle photo updates with storage cleanup
-      const oldPhotos = photos.filter((p) => p.id && !p.isNew);
-      const oldPhotoIds = oldPhotos.map((p) => p.id!);
+      // Handle photo updates with proper tracking
+      const currentPhotoIds = photos.filter(p => p.id && !p.isNew).map(p => p.id!);
+      const deletedPhotoIds = originalPhotoIds.filter(id => !currentPhotoIds.includes(id));
       
-      // Delete old photos from storage and database
-      if (oldPhotoIds.length > 0) {
-        // Get old photo URLs to delete from storage
-        const { data: oldPhotoData } = await supabase
+      // Delete removed photos from storage and database
+      if (deletedPhotoIds.length > 0) {
+        // Get deleted photo URLs to delete from storage
+        const { data: deletedPhotoData } = await supabase
           .from("profile_photos")
           .select("photo_url")
-          .in("id", oldPhotoIds);
+          .in("id", deletedPhotoIds);
 
-        if (oldPhotoData) {
+        if (deletedPhotoData) {
           // Extract paths from URLs and delete from storage
-          const filePaths = oldPhotoData
+          const filePaths = deletedPhotoData
             .map((p) => {
               const url = new URL(p.photo_url);
               return url.pathname.split('/profile-photos/')[1];
@@ -217,11 +219,11 @@ const ProfileEdit = () => {
         }
 
         // Delete from database
-        await supabase.from("profile_photos").delete().in("id", oldPhotoIds);
+        await supabase.from("profile_photos").delete().in("id", deletedPhotoIds);
       }
 
       // Insert new photos
-      const newPhotos = photos.filter((p) => p.isNew || !p.id);
+      const newPhotos = photos.filter((p) => p.isNew);
       if (newPhotos.length > 0) {
         const { error: photosError } = await supabase
           .from("profile_photos")
@@ -234,6 +236,17 @@ const ProfileEdit = () => {
           );
 
         if (photosError) throw photosError;
+      }
+
+      // Update order_index for existing photos that may have been reordered
+      const existingPhotos = photos.filter((p) => p.id && !p.isNew);
+      for (const photo of existingPhotos) {
+        if (photo.id) {
+          await supabase
+            .from("profile_photos")
+            .update({ order_index: photo.order_index })
+            .eq("id", photo.id);
+        }
       }
 
       // Update interests
