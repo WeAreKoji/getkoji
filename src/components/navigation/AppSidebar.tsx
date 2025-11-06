@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
-import logo from "@/assets/logo.webp";
 
 import {
   Sidebar,
@@ -97,7 +96,7 @@ export function AppSidebar() {
           <SidebarGroup>
             <div className={open ? "px-4 pb-4 flex items-center justify-start" : "px-4 pb-4 flex items-center justify-center"}>
               <img 
-                src={logo} 
+                src="/logo.webp" 
                 alt="Koji" 
                 className={open ? "h-10 w-auto" : "h-8 w-8"}
               />

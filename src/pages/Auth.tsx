@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
-import logo from "@/assets/logo.webp";
 import { validateAuthSignup, validateAuthLogin } from "@/lib/auth-validation";
 import { logError, getUserFriendlyError } from "@/lib/error-logger";
 import HCaptcha from '@hcaptcha/react-hcaptcha';
@@ -178,7 +177,7 @@ const Auth = () => {
         <Card className="p-8 shadow-xl">
           <div className="text-center mb-8">
             <img 
-              src={logo} 
+              src="/logo.webp" 
               alt="Koji" 
               className="h-16 w-auto mx-auto mb-4"
             />

@@ -16,7 +16,6 @@ import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import { ActiveFilters } from "@/components/discover/ActiveFilters";
 import { InviteEarnModal } from "@/components/referrals/InviteEarnModal";
 import { useOnboardingModal } from "@/hooks/useOnboardingModal";
-import logo from "@/assets/logo.webp";
 
 interface Profile {
   id: string;
@@ -287,7 +286,7 @@ const Discover = () => {
         <div className="container mx-auto max-w-md pt-8">
           <div className="flex justify-between items-center mb-6">
             <img 
-              src={logo} 
+              src="/logo.webp" 
               alt="Koji" 
               className="h-10 w-auto"
             />
@@ -332,7 +331,7 @@ const Discover = () => {
         <div className="container mx-auto max-w-md">
           <div className="flex justify-between items-center mb-6">
             <img 
-              src={logo} 
+              src="/logo.webp" 
               alt="Koji" 
               className="h-10 w-auto"
             />
