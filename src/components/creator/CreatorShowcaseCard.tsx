@@ -77,7 +77,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
 
   return (
     <Card
-      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border bg-card"
+      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:md:-translate-y-1 border-border bg-card active:scale-[0.98] md:active:scale-100"
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -146,11 +146,11 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         </div>
       </div>
 
-      <CardContent className="pt-16 sm:pt-20 pb-6 px-4 sm:px-6 space-y-3 sm:space-y-4">
+      <CardContent className="pt-14 sm:pt-16 md:pt-20 pb-4 sm:pb-6 px-3 sm:px-4 md:px-6 space-y-2.5 sm:space-y-3 md:space-y-4">
         {/* Name and Verification */}
         <div className="sm:ml-28">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-xl font-bold text-foreground">{creator.display_name}</h3>
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground truncate">{creator.display_name}</h3>
             <VerificationBadges 
               userId={creator.user_id} 
               isCreator={true}
@@ -159,20 +159,20 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
             />
           </div>
           {creator.username && (
-            <p className="text-sm text-muted-foreground">@{creator.username}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">@{creator.username}</p>
           )}
         </div>
 
         {/* Tagline */}
         {creator.tagline && (
-          <p className="text-base font-semibold text-primary line-clamp-2">
+          <p className="text-sm sm:text-base font-semibold text-primary line-clamp-2">
             {creator.tagline}
           </p>
         )}
 
         {/* Bio */}
         {displayBio && (
-          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed">
             {displayBio}
           </p>
         )}
@@ -212,11 +212,11 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         </div>
 
         {/* Price and CTA */}
-        <div className="pt-4 border-t border-border flex items-center justify-between">
+        <div className="pt-3 sm:pt-4 border-t border-border flex items-center justify-between gap-3">
           <div>
-            <p className="text-2xl font-bold text-foreground">
+            <p className="text-xl sm:text-2xl font-bold text-foreground">
               ${creator.subscription_price}
-              <span className="text-sm font-normal text-muted-foreground">/mo</span>
+              <span className="text-xs sm:text-sm font-normal text-muted-foreground">/mo</span>
             </p>
           </div>
           <Button
@@ -225,8 +225,8 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
               const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
               navigate(path);
             }}
-            size="lg"
-            className="font-semibold"
+            size="default"
+            className="font-semibold min-w-[100px] sm:min-w-[120px] h-9 sm:h-10"
           >
             Subscribe
           </Button>

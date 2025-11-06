@@ -222,28 +222,41 @@ const Creators = () => {
         </div>
       ) : (
         <div className="min-h-screen bg-background pb-20 md:pb-8">
-          <div className="container mx-auto px-4 py-8">
+          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6 max-w-7xl mx-auto">
-              <div>
-                <h1 className="text-4xl font-bold text-foreground mb-2">Discover Creators</h1>
-                <p className="text-muted-foreground">
-                  Support amazing creators and get exclusive content
-                </p>
+            <div className="mb-4 sm:mb-6 max-w-7xl mx-auto">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1.5 sm:mb-2">
+                    Discover Creators
+                  </h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Support amazing creators and get exclusive content
+                  </p>
+                </div>
+                <Button
+                  onClick={() => navigate('/creator/apply')}
+                  size="sm"
+                  className="hidden md:flex md:size-default"
+                >
+                  Become a Creator
+                </Button>
               </div>
+              
+              {/* Mobile CTA */}
               <Button
                 onClick={() => navigate('/creator/apply')}
-                size="lg"
-                className="hidden md:flex"
+                size="sm"
+                className="w-full md:hidden"
               >
                 Become a Creator
               </Button>
             </div>
 
             {/* Filters and Content */}
-            <div className="grid lg:grid-cols-[300px_1fr] gap-6 max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-4 sm:gap-6 max-w-7xl mx-auto">
               {/* Sidebar Filters */}
-              <aside className="space-y-4">
+              <aside className="space-y-3 sm:space-y-4">
                 <CreatorSavedPresets
                   currentFilters={filters}
                   onLoadPreset={handleLoadPreset}
@@ -257,14 +270,14 @@ const Creators = () => {
               </aside>
 
               {/* Main Content */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Quick Filters */}
                 <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
                 
                 {/* Active Filters & Results Count */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground font-medium">
                       {totalCount} {totalCount === 1 ? "creator" : "creators"} found
                     </p>
                   </div>
@@ -293,7 +306,7 @@ const Creators = () => {
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                       {creators.map((creator) => (
                         <CreatorShowcaseCard key={creator.id} creator={creator} />
                       ))}
@@ -301,20 +314,28 @@ const Creators = () => {
                     
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
-                      <div className="flex items-center justify-center gap-2 mt-8">
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-6 sm:mt-8">
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => setCurrentPage(p => p - 1)}
                           disabled={!canGoPrevious}
+                          className="h-9 w-9 sm:h-10 sm:w-10"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2">
                           {Array.from({ length: totalPages }, (_, i) => i + 1)
                             .filter(page => {
-                              // Show first page, last page, current page, and pages around current
+                              // On mobile, show fewer pages
+                              const isMobile = window.innerWidth < 640;
+                              if (isMobile) {
+                                return page === 1 || 
+                                       page === totalPages || 
+                                       page === currentPage;
+                              }
+                              // Desktop: Show first page, last page, current page, and pages around current
                               return page === 1 || 
                                      page === totalPages || 
                                      Math.abs(page - currentPage) <= 1;
@@ -325,7 +346,7 @@ const Creators = () => {
                               return (
                                 <>
                                   {showEllipsis && (
-                                    <span key={`ellipsis-${page}`} className="text-muted-foreground px-2">
+                                    <span key={`ellipsis-${page}`} className="text-muted-foreground px-1 sm:px-2 text-sm">
                                       ...
                                     </span>
                                   )}
@@ -334,6 +355,7 @@ const Creators = () => {
                                     variant={currentPage === page ? "default" : "outline"}
                                     size="icon"
                                     onClick={() => setCurrentPage(page)}
+                                    className="h-9 w-9 sm:h-10 sm:w-10 text-sm"
                                   >
                                     {page}
                                   </Button>
@@ -347,6 +369,7 @@ const Creators = () => {
                           size="icon"
                           onClick={() => setCurrentPage(p => p + 1)}
                           disabled={!canGoNext}
+                          className="h-9 w-9 sm:h-10 sm:w-10"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </Button>
