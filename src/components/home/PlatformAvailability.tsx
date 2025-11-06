@@ -82,7 +82,7 @@ export const PlatformAvailability = () => {
             <div className="flex justify-center mt-6 md:mt-0">
               <div className="relative">
                 <img 
-                  src="/logo.webp" 
+                  src="/logo.png" 
                   alt="Download Koji social discovery platform on App Store and Google Play" 
                   className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 object-contain"
                   width="256"

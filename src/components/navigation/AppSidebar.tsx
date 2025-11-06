@@ -96,7 +96,7 @@ export function AppSidebar() {
           <SidebarGroup>
             <div className={open ? "px-4 pb-4 flex items-center justify-start" : "px-4 pb-4 flex items-center justify-center"}>
               <img 
-                src="/logo.webp" 
+                src="/logo.png" 
                 alt="Koji" 
                 className={open ? "h-10 w-auto" : "h-8 w-8"}
               />

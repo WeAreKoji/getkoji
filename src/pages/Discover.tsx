@@ -286,7 +286,7 @@ const Discover = () => {
         <div className="container mx-auto max-w-md pt-8">
           <div className="flex justify-between items-center mb-6">
             <img 
-              src="/logo.webp" 
+              src="/logo.png" 
               alt="Koji" 
               className="h-10 w-auto"
             />
@@ -331,7 +331,7 @@ const Discover = () => {
         <div className="container mx-auto max-w-md">
           <div className="flex justify-between items-center mb-6">
             <img 
-              src="/logo.webp" 
+              src="/logo.png" 
               alt="Koji" 
               className="h-10 w-auto"
             />

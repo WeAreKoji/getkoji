@@ -177,7 +177,7 @@ const Auth = () => {
         <Card className="p-8 shadow-xl">
           <div className="text-center mb-8">
             <img 
-              src="/logo.webp" 
+              src="/logo.png" 
               alt="Koji" 
               className="h-16 w-auto mx-auto mb-4"
             />

@@ -29,7 +29,7 @@ const Home = () => {
         <div className="relative z-10 max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 md:space-y-8">
           <div className="flex justify-center mb-4 sm:mb-6">
             <img 
-              src="/logo.webp" 
+              src="/logo.png" 
               alt="Koji app logo - Social discovery and creator monetization platform" 
               className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 animate-in fade-in zoom-in duration-700"
               width="128"
@@ -277,7 +277,7 @@ const Home = () => {
             <div className="sm:col-span-2 lg:col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 <img 
-                  src="/logo.webp"
+                  src="/logo.png"
                   alt="Koji - Social discovery and creator monetization" 
                   className="w-8 h-8 sm:w-10 sm:h-10"
                 />
