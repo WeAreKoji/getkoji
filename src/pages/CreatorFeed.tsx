@@ -347,16 +347,16 @@ const CreatorFeed = () => {
         </div>
 
         {/* Creator Info */}
-        <Card className="m-4 overflow-hidden">
+        <Card className="m-3 sm:m-4 overflow-hidden">
           {/* Cover gradient */}
-          <div className="h-40 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
+          <div className="h-28 sm:h-40 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
           
-          <div className="px-6 pb-6">
+          <div className="px-4 sm:px-6 pb-4 sm:pb-6">
             {/* Avatar positioned over cover */}
-            <div className="flex items-end justify-between -mt-20 mb-4">
-              <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
+            <div className="flex items-end justify-between -mt-14 sm:-mt-20 mb-3 sm:mb-4">
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-background shadow-lg">
                 <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="text-2xl">
+                <AvatarFallback className="text-xl sm:text-2xl">
                   {profile.display_name?.charAt(0) || 'C'}
                 </AvatarFallback>
               </Avatar>
@@ -365,13 +365,14 @@ const CreatorFeed = () => {
                 <Button
                   onClick={handleSubscribe}
                   disabled={subscribing || isSubscribed}
-                  size="lg"
-                  className="shadow-lg"
+                  size="default"
+                  className="shadow-lg text-sm sm:text-base h-9 sm:h-10"
                 >
                   {subscribing ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
+                      <Loader2 className="w-4 h-4 mr-1.5 sm:mr-2 animate-spin" />
+                      <span className="hidden xs:inline">Processing...</span>
+                      <span className="xs:hidden">...</span>
                     </>
                   ) : isSubscribed ? (
                     "Subscribed ✓"
@@ -383,9 +384,9 @@ const CreatorFeed = () => {
             </div>
 
             {/* Creator details */}
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">{profile.display_name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold truncate">{profile.display_name}</h1>
                 <VerificationBadges 
                   userId={resolvedCreatorId || creatorId}
                   isCreator={true}
@@ -395,43 +396,43 @@ const CreatorFeed = () => {
               </div>
 
               {profile.bio && (
-                <p className="text-muted-foreground">{profile.bio}</p>
+                <p className="text-sm sm:text-base text-muted-foreground line-clamp-3">{profile.bio}</p>
               )}
 
               {/* Stats row */}
-              <div className="flex items-center gap-6 text-sm">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm">
                 {profile.age && (
-                  <span className="text-muted-foreground">{profile.age} years old</span>
+                  <span className="text-muted-foreground whitespace-nowrap">{profile.age} years old</span>
                 )}
                 {profile.city && (
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    {profile.city}
+                  <span className="flex items-center gap-1 text-muted-foreground whitespace-nowrap">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate max-w-[120px] sm:max-w-none">{profile.city}</span>
                   </span>
                 )}
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
+                <span className="flex items-center gap-1 text-muted-foreground whitespace-nowrap">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                   Joined {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                 </span>
               </div>
 
               {/* Subscription info */}
-              <div className="flex items-center gap-6 pt-2 border-t border-border">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-6 pt-2.5 sm:pt-2 border-t border-border">
                 <div>
-                  <p className="text-2xl font-bold text-primary">
+                  <p className="text-xl sm:text-2xl font-bold text-primary whitespace-nowrap">
                     ${creatorProfile.subscription_price}
-                    <span className="text-sm text-muted-foreground font-normal">/month</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground font-normal">/month</span>
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
                     <span className="font-semibold">{creatorProfile.subscriber_count}</span>
                     <span className="text-muted-foreground"> subscribers</span>
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
                     <span className="font-semibold">{posts.length}</span>
                     <span className="text-muted-foreground"> posts</span>
                   </span>
@@ -441,15 +442,15 @@ const CreatorFeed = () => {
           </div>
 
           {!isSubscribed && !isOwnProfile && (
-            <div className="bg-muted rounded-lg p-4">
-              <p className="text-sm text-muted-foreground">
+            <div className="bg-muted rounded-lg p-3 sm:p-4 mx-4 sm:mx-6 mb-4 sm:mb-6">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">
                 Subscribe to see exclusive content from {profile.display_name}
               </p>
             </div>
           )}
 
           {isSubscribed && !isOwnProfile && (
-            <div className="mt-4 pt-4 border-t border-border">
+            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border px-4 sm:px-6 pb-4 sm:pb-6">
               <Button
                 onClick={handleManageSubscription}
                 disabled={managingPortal}
@@ -459,13 +460,13 @@ const CreatorFeed = () => {
               >
                 {managingPortal ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Opening...
+                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 animate-spin" />
+                    <span className="text-xs sm:text-sm">Opening...</span>
                   </>
                 ) : (
                   <>
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Manage Subscription
+                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                    <span className="text-xs sm:text-sm">Manage Subscription</span>
                   </>
                 )}
               </Button>
@@ -475,39 +476,41 @@ const CreatorFeed = () => {
 
         {/* Create Post Button (Own Profile) */}
         {isOwnProfile && (
-          <div className="px-4 mb-4">
-            <Button onClick={() => setShowPostDialog(true)} className="w-full" size="lg">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Post
+          <div className="px-3 sm:px-4 mb-3 sm:mb-4">
+            <Button onClick={() => setShowPostDialog(true)} className="w-full h-11 sm:h-12" size="lg">
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Create Post</span>
             </Button>
           </div>
         )}
 
         {/* Posts */}
-        <div className="px-4 space-y-4">
+        <div className="px-3 sm:px-4 space-y-3 sm:space-y-4 pb-4">
           {posts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No posts yet</p>
+            <div className="text-center py-8 sm:py-12">
+              <p className="text-sm sm:text-base text-muted-foreground">No posts yet</p>
             </div>
           ) : (
             posts.map((post) => (
-              <Card key={post.id} className="p-4">
+              <Card key={post.id} className="p-3 sm:p-4">
                 {isOwnProfile && (
-                  <div className="flex gap-2 justify-end mb-3">
+                  <div className="flex gap-2 justify-end mb-2 sm:mb-3">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEditPost(post)}
+                      className="h-8 text-xs sm:text-sm"
                     >
-                      <Edit className="w-4 h-4 mr-1" />
+                      <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                       Edit
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDeleteClick(post.id)}
+                      className="h-8 text-xs sm:text-sm"
                     >
-                      <Trash2 className="w-4 h-4 mr-1" />
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                       Delete
                     </Button>
                   </div>
@@ -536,10 +539,10 @@ const CreatorFeed = () => {
                       <p className="text-foreground">{post.content}</p>
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-background/90 rounded-lg p-6 text-center">
-                        <Lock className="w-12 h-12 mx-auto mb-3 text-primary" />
-                        <p className="font-semibold mb-2">Subscribe to view</p>
-                        <Button onClick={handleSubscribe} size="sm">
+                      <div className="bg-background/90 rounded-lg p-4 sm:p-6 text-center mx-4">
+                        <Lock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 text-primary" />
+                        <p className="text-sm sm:text-base font-semibold mb-2">Subscribe to view</p>
+                        <Button onClick={handleSubscribe} size="sm" className="text-xs sm:text-sm">
                           Subscribe for ${creatorProfile.subscription_price}/month
                         </Button>
                       </div>
@@ -553,7 +556,7 @@ const CreatorFeed = () => {
                           <video
                             src={post.media_url}
                             controls
-                            className="w-full aspect-video object-cover rounded-lg mb-3"
+                            className="w-full aspect-video object-cover rounded-lg mb-2 sm:mb-3"
                             playsInline
                             preload="metadata"
                           />
@@ -561,12 +564,12 @@ const CreatorFeed = () => {
                           <img
                             src={post.media_url}
                             alt="Post media"
-                            className="w-full aspect-video object-cover rounded-lg mb-3"
+                            className="w-full aspect-video object-cover rounded-lg mb-2 sm:mb-3"
                           />
                         )}
                       </>
                     )}
-                    <p className="text-foreground mb-2">{post.content}</p>
+                    <p className="text-sm sm:text-base text-foreground mb-2">{post.content}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(post.created_at).toLocaleDateString()}
                     </p>
@@ -579,20 +582,25 @@ const CreatorFeed = () => {
       </div>
 
       {showMobileCTA && (
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 backdrop-blur-sm">
+        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 backdrop-blur-sm shadow-lg">
           <SafeAreaView top={false} bottom={true}>
-            <div className="px-4 py-3 flex items-center gap-3">
-              <div className="flex-1">
-                <p className="text-sm font-medium">Subscribe</p>
-                <p className="text-xs text-muted-foreground">
-                  ${creatorProfile?.subscription_price}/month • {creatorProfile?.subscriber_count} subscribers
+            <div className="px-3 py-2.5 flex items-center gap-2.5">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium truncate">Subscribe to {profile?.display_name}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                  ${creatorProfile?.subscription_price}/mo • {creatorProfile?.subscriber_count} subscribers
                 </p>
               </div>
-              <Button onClick={handleSubscribe} disabled={subscribing} size="lg" className="min-w-[140px]">
+              <Button 
+                onClick={handleSubscribe} 
+                disabled={subscribing} 
+                size="default" 
+                className="min-w-[100px] sm:min-w-[120px] h-10 text-sm whitespace-nowrap"
+              >
                 {subscribing ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                    <span className="hidden xs:inline">Processing...</span>
                   </>
                 ) : (
                   "Subscribe"
