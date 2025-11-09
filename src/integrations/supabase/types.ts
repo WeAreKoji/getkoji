@@ -125,7 +125,7 @@ export type Database = {
           created_at: string | null
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           resource_id: string | null
           resource_type: string
           user_agent: string | null
@@ -136,7 +136,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id?: string | null
           resource_type: string
           user_agent?: string | null
@@ -147,7 +147,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id?: string | null
           resource_type?: string
           user_agent?: string | null
@@ -208,7 +208,7 @@ export type Database = {
           document_type: string
           document_version: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           user_agent: string | null
           user_id: string
@@ -218,7 +218,7 @@ export type Database = {
           document_type: string
           document_version: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           user_agent?: string | null
           user_id: string
@@ -228,7 +228,7 @@ export type Database = {
           document_type?: string
           document_version?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           user_agent?: string | null
           user_id?: string
@@ -288,7 +288,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           priority: string
           report_category: string
@@ -307,7 +307,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           priority?: string
           report_category: string
@@ -326,7 +326,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           priority?: string
           report_category?: string
@@ -351,7 +351,7 @@ export type Database = {
           document_type: string
           full_name: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           issuing_country: string
           last_document_access: string | null
           rejection_reason: string | null
@@ -372,7 +372,7 @@ export type Database = {
           document_type: string
           full_name: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           issuing_country: string
           last_document_access?: string | null
           rejection_reason?: string | null
@@ -393,7 +393,7 @@ export type Database = {
           document_type?: string
           full_name?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           issuing_country?: string
           last_document_access?: string | null
           rejection_reason?: string | null
@@ -828,7 +828,7 @@ export type Database = {
           created_at: string | null
           document_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           verification_id: string
         }
@@ -839,7 +839,7 @@ export type Database = {
           created_at?: string | null
           document_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           verification_id: string
         }
@@ -850,7 +850,7 @@ export type Database = {
           created_at?: string | null
           document_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           verification_id?: string
         }
@@ -904,7 +904,7 @@ export type Database = {
           document_type: string
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           token: string
           used_at: string | null
           user_agent: string | null
@@ -916,7 +916,7 @@ export type Database = {
           document_type: string
           expires_at: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           token: string
           used_at?: string | null
           user_agent?: string | null
@@ -928,7 +928,7 @@ export type Database = {
           document_type?: string
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           token?: string
           used_at?: string | null
           user_agent?: string | null
@@ -1390,7 +1390,7 @@ export type Database = {
           currency: string
           failure_reason: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           status: string
           stripe_charge_id: string | null
@@ -1409,7 +1409,7 @@ export type Database = {
           currency?: string
           failure_reason?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           status: string
           stripe_charge_id?: string | null
@@ -1428,7 +1428,7 @@ export type Database = {
           currency?: string
           failure_reason?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           status?: string
           stripe_charge_id?: string | null
@@ -1500,7 +1500,7 @@ export type Database = {
           accessed_by: string | null
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           profile_id: string
           user_agent: string | null
         }
@@ -1509,7 +1509,7 @@ export type Database = {
           accessed_by?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           profile_id: string
           user_agent?: string | null
         }
@@ -1518,7 +1518,7 @@ export type Database = {
           accessed_by?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           profile_id?: string
           user_agent?: string | null
         }
@@ -1987,7 +1987,7 @@ export type Database = {
           device_info: Json | null
           event_type: Database["public"]["Enums"]["security_event_type"]
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           location_info: Json | null
           metadata: Json | null
           severity: string | null
@@ -2001,7 +2001,7 @@ export type Database = {
           device_info?: Json | null
           event_type: Database["public"]["Enums"]["security_event_type"]
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location_info?: Json | null
           metadata?: Json | null
           severity?: string | null
@@ -2015,7 +2015,7 @@ export type Database = {
           device_info?: Json | null
           event_type?: Database["public"]["Enums"]["security_event_type"]
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location_info?: Json | null
           metadata?: Json | null
           severity?: string | null
@@ -2380,7 +2380,7 @@ export type Database = {
           device_info: Json | null
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           last_active: string | null
           location_info: Json | null
           revoke_reason: string | null
@@ -2395,7 +2395,7 @@ export type Database = {
           device_info?: Json | null
           expires_at: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           last_active?: string | null
           location_info?: Json | null
           revoke_reason?: string | null
@@ -2410,7 +2410,7 @@ export type Database = {
           device_info?: Json | null
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           last_active?: string | null
           location_info?: Json | null
           revoke_reason?: string | null
@@ -2504,14 +2504,8 @@ export type Database = {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
-      can_access_documents: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      can_view_email: {
-        Args: { profile_user_id: string }
-        Returns: boolean
-      }
+      can_access_documents: { Args: { user_id: string }; Returns: boolean }
+      can_view_email: { Args: { profile_user_id: string }; Returns: boolean }
       can_view_profile_field: {
         Args: { field_name: string; profile_user_id: string }
         Returns: boolean
@@ -2520,42 +2514,18 @@ export type Database = {
         Args: { _profile_user_id: string; _viewer_id: string }
         Returns: boolean
       }
-      check_achievements: {
-        Args: { _user_id: string }
-        Returns: undefined
-      }
-      check_expired_referrals: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      check_unlock_accounts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_achievements: { Args: { _user_id: string }; Returns: undefined }
+      check_expired_referrals: { Args: never; Returns: undefined }
+      check_unlock_accounts: { Args: never; Returns: undefined }
       check_username_available: {
         Args: { desired_username: string }
         Returns: boolean
       }
-      cleanup_expired_rate_limits: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_sessions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_rate_limits: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_security_events: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      complete_referral: {
-        Args: { referral_uuid: string }
-        Returns: undefined
-      }
+      cleanup_expired_rate_limits: { Args: never; Returns: undefined }
+      cleanup_expired_sessions: { Args: never; Returns: undefined }
+      cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      cleanup_old_security_events: { Args: never; Returns: undefined }
+      complete_referral: { Args: { referral_uuid: string }; Returns: undefined }
       create_content_flag: {
         Args: {
           _ai_analysis?: Json
@@ -2714,7 +2684,7 @@ export type Database = {
         }[]
       }
       get_moderation_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           approved_posts: number
           pending_flags: number
@@ -2755,10 +2725,7 @@ export type Database = {
         Args: { bucket_name: string; expires_in?: number; file_path: string }
         Returns: string
       }
-      get_user_email: {
-        Args: { _user_id: string }
-        Returns: string
-      }
+      get_user_email: { Args: { _user_id: string }; Returns: string }
       get_user_id_by_username: {
         Args: { p_username: string }
         Returns: {
@@ -2766,7 +2733,7 @@ export type Database = {
         }[]
       }
       get_verification_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           approved_verifications: number
           pending_verifications: number
@@ -2793,18 +2760,12 @@ export type Database = {
         Args: { creator_user_id: string }
         Returns: undefined
       }
-      is_account_locked: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_account_locked: { Args: { _user_id: string }; Returns: boolean }
       is_creator_verified: {
         Args: { creator_user_id: string }
         Returns: boolean
       }
-      is_ip_whitelisted: {
-        Args: { _ip_address: unknown }
-        Returns: boolean
-      }
+      is_ip_whitelisted: { Args: { _ip_address: unknown }; Returns: boolean }
       log_admin_action: {
         Args: {
           _action: string
@@ -2852,9 +2813,9 @@ export type Database = {
         }
         Returns: string
       }
-      log_security_event: {
-        Args:
-          | {
+      log_security_event:
+        | {
+            Args: {
               _event_type: Database["public"]["Enums"]["security_event_type"]
               _ip_address?: unknown
               _location_info?: Json
@@ -2863,7 +2824,10 @@ export type Database = {
               _user_agent?: string
               _user_id: string
             }
-          | {
+            Returns: string
+          }
+        | {
+            Args: {
               _event_type: Database["public"]["Enums"]["security_event_type"]
               _ip_address?: unknown
               _metadata?: Json
@@ -2871,16 +2835,13 @@ export type Database = {
               _user_agent?: string
               _user_id: string
             }
-        Returns: string
-      }
+            Returns: string
+          }
       process_referral_payout: {
         Args: { referrer_user_id: string }
         Returns: string
       }
-      publish_scheduled_posts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      publish_scheduled_posts: { Args: never; Returns: undefined }
       record_failed_login: {
         Args: { _ip_address?: unknown; _user_agent?: string; _user_id: string }
         Returns: undefined
@@ -2889,14 +2850,8 @@ export type Database = {
         Args: { application_text: string }
         Returns: Json
       }
-      revoke_expired_document_permissions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_last_active: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      revoke_expired_document_permissions: { Args: never; Returns: undefined }
+      update_last_active: { Args: never; Returns: undefined }
       update_payment_transaction_status: {
         Args: {
           _failure_reason?: string
@@ -2905,10 +2860,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      update_streak: {
-        Args: { _user_id: string }
-        Returns: undefined
-      }
+      update_streak: { Args: { _user_id: string }; Returns: undefined }
       validate_document_access_request: {
         Args: {
           _access_reason?: string
