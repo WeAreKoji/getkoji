@@ -32,6 +32,7 @@ import { DashboardCharts } from "@/components/creator/dashboard/DashboardCharts"
 import { QuickActionsMenu } from "@/components/creator/QuickActionsMenu";
 import { SubscriberDemographics } from "@/components/creator/analytics/SubscriberDemographics";
 import { EnhancedContentAnalytics } from "@/components/creator/analytics/EnhancedContentAnalytics";
+import { PostAnalyticsDashboard } from "@/components/creator/analytics/PostAnalyticsDashboard";
 import { BulkMessageDialog } from "@/components/creator/BulkMessageDialog";
 
 interface PayoutInfo {
@@ -376,6 +377,11 @@ const CreatorDashboard = () => {
               {/* Subscriber Management */}
               {stats.subscriberCount > 0 && (
                 <SubscriberList creatorId={userId} limit={5} />
+              )}
+
+              {/* Post Analytics Dashboard */}
+              {stats.postCount > 0 && (
+                <PostAnalyticsDashboard creatorId={userId} />
               )}
 
               {/* Enhanced Content Analytics */}

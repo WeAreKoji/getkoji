@@ -1068,6 +1068,9 @@ export type Database = {
           id: string
           is_scanned: boolean | null
           match_id: string
+          media_url: string | null
+          message_type: string | null
+          metadata: Json | null
           read_at: string | null
           sender_id: string
         }
@@ -1077,6 +1080,9 @@ export type Database = {
           id?: string
           is_scanned?: boolean | null
           match_id: string
+          media_url?: string | null
+          message_type?: string | null
+          metadata?: Json | null
           read_at?: string | null
           sender_id: string
         }
@@ -1086,6 +1092,9 @@ export type Database = {
           id?: string
           is_scanned?: boolean | null
           match_id?: string
+          media_url?: string | null
+          message_type?: string | null
+          metadata?: Json | null
           read_at?: string | null
           sender_id?: string
         }
@@ -1494,6 +1503,44 @@ export type Database = {
           },
         ]
       }
+      post_analytics: {
+        Row: {
+          created_at: string | null
+          engagement_count: number | null
+          id: string
+          post_id: string
+          unique_viewers: number | null
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          engagement_count?: number | null
+          id?: string
+          post_id: string
+          unique_viewers?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          engagement_count?: number | null
+          id?: string
+          post_id?: string
+          unique_viewers?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_analytics_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "creator_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_access_logs: {
         Row: {
           access_type: string
@@ -1620,12 +1667,15 @@ export type Database = {
           intent: Database["public"]["Enums"]["user_intent"]
           interested_in_gender: string[] | null
           last_active: string | null
+          last_active_at: string | null
           latitude: number | null
           location_accuracy: string | null
           location_sharing_enabled: boolean | null
           location_updated_at: string | null
           longitude: number | null
           privacy_settings: Json | null
+          profile_quality_score: number | null
+          response_rate: number | null
           updated_at: string | null
           username: string | null
           username_updated_at: string | null
@@ -1643,12 +1693,15 @@ export type Database = {
           intent: Database["public"]["Enums"]["user_intent"]
           interested_in_gender?: string[] | null
           last_active?: string | null
+          last_active_at?: string | null
           latitude?: number | null
           location_accuracy?: string | null
           location_sharing_enabled?: boolean | null
           location_updated_at?: string | null
           longitude?: number | null
           privacy_settings?: Json | null
+          profile_quality_score?: number | null
+          response_rate?: number | null
           updated_at?: string | null
           username?: string | null
           username_updated_at?: string | null
@@ -1666,12 +1719,15 @@ export type Database = {
           intent?: Database["public"]["Enums"]["user_intent"]
           interested_in_gender?: string[] | null
           last_active?: string | null
+          last_active_at?: string | null
           latitude?: number | null
           location_accuracy?: string | null
           location_sharing_enabled?: boolean | null
           location_updated_at?: string | null
           longitude?: number | null
           privacy_settings?: Json | null
+          profile_quality_score?: number | null
+          response_rate?: number | null
           updated_at?: string | null
           username?: string | null
           username_updated_at?: string | null
@@ -2155,6 +2211,41 @@ export type Database = {
           },
         ]
       }
+      typing_indicators: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_typing: boolean | null
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_typing?: boolean | null
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_typing?: boolean | null
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_2fa: {
         Row: {
           backup_codes: string[]
@@ -2504,6 +2595,10 @@ export type Database = {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
+      calculate_profile_quality_score: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       can_access_documents: { Args: { user_id: string }; Returns: boolean }
       can_view_email: { Args: { profile_user_id: string }; Returns: boolean }
       can_view_profile_field: {
@@ -2523,6 +2618,7 @@ export type Database = {
       }
       cleanup_expired_rate_limits: { Args: never; Returns: undefined }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
+      cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
       cleanup_old_security_events: { Args: never; Returns: undefined }
       complete_referral: { Args: { referral_uuid: string }; Returns: undefined }
@@ -2631,6 +2727,37 @@ export type Database = {
           intent: string
           interests: string[]
           is_creator: boolean
+          photo_count: number
+          photos: Json
+          privacy_settings: Json
+          updated_at: string
+          username: string
+        }[]
+      }
+      get_discover_profiles_ranked: {
+        Args: {
+          max_count?: number
+          max_distance_km?: number
+          user_id: string
+          user_lat?: number
+          user_lon?: number
+        }
+        Returns: {
+          age: number
+          avatar_url: string
+          bio: string
+          city: string
+          created_at: string
+          creator_subscription_price: number
+          creator_tagline: string
+          display_name: string
+          distance_km: number
+          id: string
+          id_verified: boolean
+          intent: string
+          interests: string[]
+          is_creator: boolean
+          match_score: number
           photo_count: number
           photos: Json
           privacy_settings: Json
@@ -2755,6 +2882,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_post_view: {
+        Args: { p_post_id: string; p_user_id: string }
+        Returns: undefined
       }
       increment_subscriber_count: {
         Args: { creator_user_id: string }

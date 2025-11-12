@@ -165,8 +165,8 @@ const Discover = () => {
   };
   const loadProfiles = async (userId: string) => {
     try {
-      // Use RPC function for smart filtering (excludes own profile and already swiped)
-      const { data, error } = await supabase.rpc("get_discover_profiles", {
+      // Use smart ranked RPC function
+      const { data, error } = await supabase.rpc("get_discover_profiles_ranked", {
         user_id: userId,
         max_count: 10
       });
@@ -182,6 +182,9 @@ const Discover = () => {
         is_creator: profile.is_creator === true,
         id_verified: profile.id_verified === true,
       }));
+
+      // Update last_active for current user
+      supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", userId).then();
 
       setProfiles(profiles);
     } catch (error: any) {

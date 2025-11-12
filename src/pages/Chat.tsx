@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import MessageBubble from "@/components/chat/MessageBubble";
 import MessageInput from "@/components/chat/MessageInput";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { ArrowLeft, User, Loader2, ArrowDown } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { BackGesture } from "@/components/navigation/BackGesture";
@@ -18,6 +19,8 @@ interface Message {
   content: string;
   sender_id: string;
   created_at: string;
+  message_type?: string;
+  media_url?: string | null;
 }
 
 interface MatchProfile {
@@ -37,6 +40,7 @@ const Chat = () => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -183,6 +187,32 @@ const Chat = () => {
           if (newMessage.sender_id !== currentUserId && currentUserId) {
             setTimeout(() => markMessagesAsRead(currentUserId), 100);
           }
+
+          // Stop typing indicator when message received
+          if (newMessage.sender_id !== currentUserId) {
+            setOtherUserTyping(false);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "typing_indicators",
+          filter: `match_id=eq.${matchId}`,
+        },
+        (payload) => {
+          console.log('⌨️ Typing indicator update:', payload);
+          if (payload.new && 'user_id' in payload.new) {
+            const typingUserId = (payload.new as any).user_id;
+            const isTyping = (payload.new as any).is_typing;
+            if (typingUserId !== currentUserId) {
+              setOtherUserTyping(isTyping);
+            }
+          } else if (payload.eventType === 'DELETE') {
+            setOtherUserTyping(false);
+          }
         }
       )
       .subscribe((status) => {
@@ -193,19 +223,45 @@ const Chat = () => {
     channelRef.current = channel;
   };
 
-  const sendMessage = async (content: string) => {
+  const handleTyping = async (isTyping: boolean) => {
+    if (!currentUserId || !matchId) return;
+
+    try {
+      if (isTyping) {
+        await supabase.from("typing_indicators").upsert({
+          match_id: matchId,
+          user_id: currentUserId,
+          is_typing: true,
+          expires_at: new Date(Date.now() + 5000).toISOString(),
+        });
+      } else {
+        await supabase
+          .from("typing_indicators")
+          .delete()
+          .eq("match_id", matchId)
+          .eq("user_id", currentUserId);
+      }
+    } catch (error) {
+      console.error("Error updating typing indicator:", error);
+    }
+  };
+
+  const sendMessage = async (content: string, mediaUrl?: string) => {
     if (!currentUserId || !matchId || sendingMessage) return;
+    if (!content.trim() && !mediaUrl) return;
 
     setSendingMessage(true);
 
     try {
       haptics.light();
-      console.log('📤 Sending message:', { content, matchId, senderId: currentUserId });
+      console.log('📤 Sending message:', { content, mediaUrl, matchId, senderId: currentUserId });
       
       const { error } = await supabase.from("messages").insert({
         match_id: matchId,
         sender_id: currentUserId,
-        content,
+        content: content || null,
+        message_type: mediaUrl ? "photo" : "text",
+        media_url: mediaUrl || null,
       });
 
       if (error) {
@@ -214,6 +270,9 @@ const Chat = () => {
       }
 
       console.log('✅ Message sent successfully');
+      
+      // Clear typing indicator
+      await handleTyping(false);
       
       // Scroll to bottom after sending
       setTimeout(() => scrollToBottom(false), 100);
@@ -280,8 +339,16 @@ const Chat = () => {
                     content={message.content}
                     isOwnMessage={message.sender_id === currentUserId}
                     timestamp={message.created_at}
+                    messageType={message.message_type}
+                    mediaUrl={message.media_url}
                   />
                 ))}
+                {otherUserTyping && (
+                  <TypingIndicator
+                    otherUserName={otherProfile?.display_name || "User"}
+                    isTyping={otherUserTyping}
+                  />
+                )}
                 <div ref={messagesEndRef} />
               </>
             )}
@@ -303,7 +370,12 @@ const Chat = () => {
 
           {/* Input */}
           <div className="bg-card border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-            <MessageInput onSend={sendMessage} disabled={sendingMessage || !isConnected} matchId={matchId || ''} />
+            <MessageInput 
+              onSend={sendMessage} 
+              onTyping={handleTyping}
+              disabled={sendingMessage || !isConnected} 
+              matchId={matchId || ''} 
+            />
           </div>
         </div>
       </BackGesture>
