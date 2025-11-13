@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/navigation/BottomNav";
@@ -33,6 +34,8 @@ import { QuickActionsMenu } from "@/components/creator/QuickActionsMenu";
 import { SubscriberDemographics } from "@/components/creator/analytics/SubscriberDemographics";
 import { EnhancedContentAnalytics } from "@/components/creator/analytics/EnhancedContentAnalytics";
 import { PostAnalyticsDashboard } from "@/components/creator/analytics/PostAnalyticsDashboard";
+import { SubscriberCohortAnalysis } from "@/components/creator/analytics/SubscriberCohortAnalysis";
+import { RevenueForecast } from "@/components/creator/analytics/RevenueForecast";
 import { BulkMessageDialog } from "@/components/creator/BulkMessageDialog";
 
 interface PayoutInfo {
@@ -369,36 +372,63 @@ const CreatorDashboard = () => {
                 />
               )}
 
-              {/* Subscriber Demographics */}
-              {stats.subscriberCount > 0 && (
-                <SubscriberDemographics creatorId={userId} />
-              )}
+              {/* Advanced Analytics with Tabs */}
+              <Tabs defaultValue="content" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
+                  <TabsTrigger value="cohorts">Cohorts</TabsTrigger>
+                  <TabsTrigger value="forecast">Forecast</TabsTrigger>
+                  <TabsTrigger value="goals">Goals</TabsTrigger>
+                </TabsList>
 
-              {/* Subscriber Management */}
-              {stats.subscriberCount > 0 && (
-                <SubscriberList creatorId={userId} limit={5} />
-              )}
+                <TabsContent value="content" className="space-y-6">
+                  {stats.postCount > 0 && (
+                    <>
+                      <PostAnalyticsDashboard creatorId={userId} />
+                      <EnhancedContentAnalytics creatorId={userId} />
+                      <ContentPerformance creatorId={userId} />
+                    </>
+                  )}
+                  {stats.postCount === 0 && (
+                    <Card>
+                      <CardContent className="py-8 text-center">
+                        <p className="text-muted-foreground">No content analytics available yet. Create your first post to see insights!</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
 
-              {/* Post Analytics Dashboard */}
-              {stats.postCount > 0 && (
-                <PostAnalyticsDashboard creatorId={userId} />
-              )}
+                <TabsContent value="subscribers" className="space-y-6">
+                  {stats.subscriberCount > 0 ? (
+                    <>
+                      <SubscriberDemographics creatorId={userId} />
+                      <SubscriberList creatorId={userId} limit={5} />
+                    </>
+                  ) : (
+                    <Card>
+                      <CardContent className="py-8 text-center">
+                        <p className="text-muted-foreground">No subscribers yet. Start growing your audience!</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
 
-              {/* Enhanced Content Analytics */}
-              {stats.postCount > 0 && (
-                <EnhancedContentAnalytics creatorId={userId} />
-              )}
+                <TabsContent value="cohorts" className="space-y-6">
+                  <SubscriberCohortAnalysis creatorId={userId} />
+                </TabsContent>
 
-              {/* Content Performance */}
-              {stats.postCount > 0 && (
-                <ContentPerformance creatorId={userId} />
-              )}
+                <TabsContent value="forecast" className="space-y-6">
+                  <RevenueForecast creatorId={userId} />
+                </TabsContent>
 
-              {/* Goals & Progress */}
-              <GoalsTracking 
-                currentSubscribers={stats.subscriberCount}
-                currentRevenue={stats.totalEarnings}
-              />
+                <TabsContent value="goals" className="space-y-6">
+                  <GoalsTracking 
+                    currentSubscribers={stats.subscriberCount}
+                    currentRevenue={stats.totalEarnings}
+                  />
+                </TabsContent>
+              </Tabs>
 
               {/* Transaction History */}
               <TransactionHistory />

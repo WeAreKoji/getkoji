@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { MessageReactions } from "./MessageReactions";
+import { MessageStatus } from "./MessageStatus";
 
 interface MessageBubbleProps {
   content: string;
@@ -7,9 +9,21 @@ interface MessageBubbleProps {
   timestamp: string;
   messageType?: string;
   mediaUrl?: string | null;
+  messageId: string;
+  currentUserId: string;
+  deliveryStatus?: string;
 }
 
-const MessageBubble = ({ content, isOwnMessage, timestamp, messageType = "text", mediaUrl }: MessageBubbleProps) => {
+const MessageBubble = ({ 
+  content, 
+  isOwnMessage, 
+  timestamp, 
+  messageType = "text", 
+  mediaUrl,
+  messageId,
+  currentUserId,
+  deliveryStatus = "sent"
+}: MessageBubbleProps) => {
   const [imageOpen, setImageOpen] = useState(false);
   
   const formatTime = (timestamp: string) => {
@@ -49,16 +63,22 @@ const MessageBubble = ({ content, isOwnMessage, timestamp, messageType = "text",
               </p>
             </div>
           ) : (
-            <>
+            <div className="flex flex-col gap-1">
               <p className="text-sm break-words">{content}</p>
-              <p
-                className={`text-xs mt-1 ${
-                  isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
-                }`}
-              >
-                {formatTime(timestamp)}
-              </p>
-            </>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <MessageReactions messageId={messageId} currentUserId={currentUserId} />
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs ${
+                      isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
+                    }`}
+                  >
+                    {formatTime(timestamp)}
+                  </span>
+                  <MessageStatus deliveryStatus={deliveryStatus} isOwnMessage={isOwnMessage} />
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

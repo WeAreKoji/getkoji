@@ -1012,9 +1012,11 @@ export type Database = {
       }
       matches: {
         Row: {
+          activity_score: number | null
           deleted_by_user1: boolean | null
           deleted_by_user2: boolean | null
           id: string
+          last_activity_at: string | null
           last_message_at: string | null
           last_message_content: string | null
           last_message_sender_id: string | null
@@ -1023,9 +1025,11 @@ export type Database = {
           user2_id: string
         }
         Insert: {
+          activity_score?: number | null
           deleted_by_user1?: boolean | null
           deleted_by_user2?: boolean | null
           id?: string
+          last_activity_at?: string | null
           last_message_at?: string | null
           last_message_content?: string | null
           last_message_sender_id?: string | null
@@ -1034,9 +1038,11 @@ export type Database = {
           user2_id: string
         }
         Update: {
+          activity_score?: number | null
           deleted_by_user1?: boolean | null
           deleted_by_user2?: boolean | null
           id?: string
+          last_activity_at?: string | null
           last_message_at?: string | null
           last_message_content?: string | null
           last_message_sender_id?: string | null
@@ -1061,10 +1067,50 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
           created_at: string | null
+          delivery_status: string | null
           id: string
           is_scanned: boolean | null
           match_id: string
@@ -1077,6 +1123,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string | null
+          delivery_status?: string | null
           id?: string
           is_scanned?: boolean | null
           match_id: string
@@ -1089,6 +1136,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string | null
+          delivery_status?: string | null
           id?: string
           is_scanned?: boolean | null
           match_id?: string
@@ -2831,6 +2879,17 @@ export type Database = {
           total_spent: number
         }[]
       }
+      get_revenue_forecast: {
+        Args: { creator_user_id: string; months_ahead?: number }
+        Returns: {
+          confidence_level: string
+          current_mrr: number
+          estimated_churn_rate: number
+          forecast_month: string
+          forecasted_revenue: number
+          projected_subscribers: number
+        }[]
+      }
       get_safe_profile: {
         Args: { profile_id: string }
         Returns: {
@@ -2851,6 +2910,18 @@ export type Database = {
       get_signed_document_url: {
         Args: { bucket_name: string; expires_in?: number; file_path: string }
         Returns: string
+      }
+      get_subscriber_cohorts: {
+        Args: { creator_user_id: string }
+        Returns: {
+          avg_revenue_per_subscriber: number
+          cohort_month: string
+          month_1_retention: number
+          month_2_retention: number
+          month_3_retention: number
+          subscribers_count: number
+          total_revenue: number
+        }[]
       }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       get_user_id_by_username: {

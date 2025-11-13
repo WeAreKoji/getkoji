@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import MessageBubble from "@/components/chat/MessageBubble";
 import MessageInput from "@/components/chat/MessageInput";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, User, Loader2, ArrowDown } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { BackGesture } from "@/components/navigation/BackGesture";
@@ -21,6 +22,7 @@ interface Message {
   created_at: string;
   message_type?: string;
   media_url?: string | null;
+  delivery_status?: string;
 }
 
 interface MatchProfile {
@@ -33,6 +35,7 @@ const Chat = () => {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [otherProfile, setOtherProfile] = useState<MatchProfile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -341,6 +344,9 @@ const Chat = () => {
                     timestamp={message.created_at}
                     messageType={message.message_type}
                     mediaUrl={message.media_url}
+                    messageId={message.id}
+                    currentUserId={currentUserId || ''}
+                    deliveryStatus={message.delivery_status}
                   />
                 ))}
                 {otherUserTyping && (

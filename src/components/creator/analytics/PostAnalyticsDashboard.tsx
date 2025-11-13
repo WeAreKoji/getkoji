@@ -75,11 +75,11 @@ export const PostAnalyticsDashboard = ({ creatorId }: PostAnalyticsDashboardProp
       // Find top performing content type
       const typeStats = postsWithAnalytics.reduce((acc, post) => {
         const type = post.media_type || "text";
-        acc[type] = (acc[type] || 0) + post.engagement_count;
+        acc[type] = (acc[type] || 0) + (post.engagement_count || 0);
         return acc;
       }, {} as Record<string, number>);
 
-      const topType = Object.entries(typeStats).sort(([, a], [, b]) => b - a)[0]?.[0] || "text";
+      const topType = Object.entries(typeStats).sort(([, a], [, b]) => Number(b) - Number(a))[0]?.[0] || "text";
 
       setStats({
         totalViews,

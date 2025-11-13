@@ -112,7 +112,25 @@ const Matches = () => {
 
       if (error) throw error;
 
-      setMatches(data || []);
+      // Sort by activity - matches with recent messages first
+      const sortedMatches = (data || []).sort((a, b) => {
+        // First prioritize matches with messages
+        const aHasMessages = a.last_message_created_at !== null;
+        const bHasMessages = b.last_message_created_at !== null;
+        
+        if (aHasMessages && !bHasMessages) return -1;
+        if (!aHasMessages && bHasMessages) return 1;
+        
+        // Then sort by last message time
+        if (a.last_message_created_at && b.last_message_created_at) {
+          return new Date(b.last_message_created_at).getTime() - new Date(a.last_message_created_at).getTime();
+        }
+        
+        // Finally by match date
+        return new Date(b.matched_at).getTime() - new Date(a.matched_at).getTime();
+      });
+
+      setMatches(sortedMatches);
     } catch (error) {
       logError(error, 'Matches.fetchMatches');
       toast({
