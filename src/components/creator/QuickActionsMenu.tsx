@@ -20,17 +20,21 @@ import {
 
 interface QuickActionsMenuProps {
   onCreatePost: () => void;
+  onSchedulePost: () => void;
   onEditPrice: () => void;
   onExportData: () => void;
   onMessageSubscribers: () => void;
+  onViewSubscribers: () => void;
   onViewSettings: () => void;
 }
 
 export const QuickActionsMenu = ({
   onCreatePost,
+  onSchedulePost,
   onEditPrice,
   onExportData,
   onMessageSubscribers,
+  onViewSubscribers,
   onViewSettings,
 }: QuickActionsMenuProps) => {
   return (
@@ -47,7 +51,7 @@ export const QuickActionsMenu = ({
           <Plus className="w-4 h-4 mr-2" />
           Create New Post
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem onClick={onSchedulePost} className="cursor-pointer">
           <Calendar className="w-4 h-4 mr-2" />
           Schedule Post
         </DropdownMenuItem>
@@ -59,7 +63,7 @@ export const QuickActionsMenu = ({
           <MessageSquare className="w-4 h-4 mr-2" />
           Message All Subscribers
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem onClick={onViewSubscribers} className="cursor-pointer">
           <Users className="w-4 h-4 mr-2" />
           View Subscriber List
         </DropdownMenuItem>
