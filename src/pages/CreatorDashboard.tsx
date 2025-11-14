@@ -36,6 +36,7 @@ import { EnhancedContentAnalytics } from "@/components/creator/analytics/Enhance
 import { PostAnalyticsDashboard } from "@/components/creator/analytics/PostAnalyticsDashboard";
 import { SubscriberCohortAnalysis } from "@/components/creator/analytics/SubscriberCohortAnalysis";
 import { RevenueForecast } from "@/components/creator/analytics/RevenueForecast";
+import { PostSchedulingDialog } from "@/components/creator/PostSchedulingDialog";
 import { BulkMessageDialog } from "@/components/creator/BulkMessageDialog";
 
 interface PayoutInfo {
@@ -66,6 +67,7 @@ const CreatorDashboard = () => {
   const [payoutInfo, setPayoutInfo] = useState<PayoutInfo | null>(null);
   const [showPriceEditor, setShowPriceEditor] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showBulkMessage, setShowBulkMessage] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -293,9 +295,11 @@ const CreatorDashboard = () => {
                 </Button>
                 <QuickActionsMenu
                   onCreatePost={() => setShowPostDialog(true)}
+                  onSchedulePost={() => setShowScheduleDialog(true)}
                   onEditPrice={() => setShowPriceEditor(true)}
                   onExportData={exportToCSV}
                   onMessageSubscribers={() => setShowBulkMessage(true)}
+                  onViewSubscribers={() => navigate('/subscriber-management')}
                   onViewSettings={() => navigate("/creator/setup")}
                 />
               </div>
@@ -498,6 +502,13 @@ const CreatorDashboard = () => {
           open={showPostDialog}
           onOpenChange={setShowPostDialog}
           onPostCreated={handlePostCreated}
+        />
+
+        <PostSchedulingDialog
+          open={showScheduleDialog}
+          onOpenChange={setShowScheduleDialog}
+          creatorId={userId!}
+          onSuccess={handlePostCreated}
         />
 
         <BulkMessageDialog
