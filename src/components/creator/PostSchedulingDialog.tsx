@@ -53,8 +53,8 @@ export const PostSchedulingDialog = ({ open, onOpenChange, creatorId, onSuccess 
       const { error } = await supabase.from('creator_posts').insert({
         creator_id: creatorId,
         content,
-        scheduled_at: scheduledDateTime.toISOString(),
-        is_published: false,
+        scheduled_publish_at: scheduledDateTime.toISOString(),
+        status: 'scheduled',
         media_type: 'text'
       });
 
