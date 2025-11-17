@@ -38,6 +38,8 @@ import { SubscriberCohortAnalysis } from "@/components/creator/analytics/Subscri
 import { RevenueForecast } from "@/components/creator/analytics/RevenueForecast";
 import { PostSchedulingDialog } from "@/components/creator/PostSchedulingDialog";
 import { BulkMessageDialog } from "@/components/creator/BulkMessageDialog";
+import { ScheduledPostsList } from "@/components/creator/ScheduledPostsList";
+import { ContentCalendar } from "@/components/creator/ContentCalendar";
 
 interface PayoutInfo {
   connected: boolean;
@@ -69,6 +71,7 @@ const CreatorDashboard = () => {
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showBulkMessage, setShowBulkMessage] = useState(false);
+  const [editingPost, setEditingPost] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
@@ -295,7 +298,10 @@ const CreatorDashboard = () => {
                 </Button>
                 <QuickActionsMenu
                   onCreatePost={() => setShowPostDialog(true)}
-                  onSchedulePost={() => setShowScheduleDialog(true)}
+                  onSchedulePost={() => {
+                    setEditingPost(null);
+                    setShowScheduleDialog(true);
+                  }}
                   onEditPrice={() => setShowPriceEditor(true)}
                   onExportData={exportToCSV}
                   onMessageSubscribers={() => setShowBulkMessage(true)}
@@ -378,8 +384,9 @@ const CreatorDashboard = () => {
 
               {/* Advanced Analytics with Tabs */}
               <Tabs defaultValue="content" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
                   <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
                   <TabsTrigger value="cohorts">Cohorts</TabsTrigger>
                   <TabsTrigger value="forecast">Forecast</TabsTrigger>
@@ -401,6 +408,46 @@ const CreatorDashboard = () => {
                       </CardContent>
                     </Card>
                   )}
+                </TabsContent>
+
+                <TabsContent value="scheduled" className="space-y-6">
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">Scheduled Posts</h3>
+                        <Button
+                          onClick={() => {
+                            setEditingPost(null);
+                            setShowScheduleDialog(true);
+                          }}
+                          size="sm"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Schedule Post
+                        </Button>
+                      </div>
+                      <ScheduledPostsList
+                        creatorId={userId}
+                        onEdit={(post) => {
+                          setEditingPost(post);
+                          setShowScheduleDialog(true);
+                        }}
+                        onRefresh={refetch}
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Calendar View</h3>
+                      <ContentCalendar
+                        creatorId={userId}
+                        onPostClick={(post) => {
+                          if (post.status === 'scheduled') {
+                            setEditingPost(post);
+                            setShowScheduleDialog(true);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="subscribers" className="space-y-6">
@@ -506,9 +553,13 @@ const CreatorDashboard = () => {
 
         <PostSchedulingDialog
           open={showScheduleDialog}
-          onOpenChange={setShowScheduleDialog}
+          onOpenChange={(open) => {
+            setShowScheduleDialog(open);
+            if (!open) setEditingPost(null);
+          }}
           creatorId={userId!}
           onSuccess={handlePostCreated}
+          editPost={editingPost}
         />
 
         <BulkMessageDialog
