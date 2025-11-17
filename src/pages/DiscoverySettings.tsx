@@ -33,6 +33,7 @@ const DiscoverySettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [interests, setInterests] = useState<{ id: string; name: string }[]>([]);
   const [preferences, setPreferences] = useState<DiscoveryPreferences>({
     min_age: 18,
@@ -74,6 +75,7 @@ const DiscoverySettings = () => {
       console.error('Error loading preferences:', error);
     } else if (data) {
       console.log('Loaded preferences:', data);
+      setPreferenceId(data.id);
       setPreferences({
         min_age: data.min_age,
         max_age: data.max_age,
@@ -107,11 +109,14 @@ const DiscoverySettings = () => {
     setSaving(true);
     console.log('Saving preferences:', preferences);
 
+    const dataToSave = preferenceId 
+      ? { id: preferenceId, user_id: userId, ...preferences }
+      : { user_id: userId, ...preferences };
+
     const { error } = await supabase
       .from('discovery_preferences')
-      .upsert({
-        user_id: userId,
-        ...preferences,
+      .upsert(dataToSave, {
+        onConflict: 'user_id'
       });
 
     if (error) {
