@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,18 +12,41 @@ import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
+interface ScheduledPost {
+  id: string;
+  content: string | null;
+  scheduled_publish_at: string;
+  media_type: string | null;
+  media_url: string | null;
+}
+
 interface PostSchedulingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   creatorId: string;
   onSuccess?: () => void;
+  editPost?: ScheduledPost | null;
 }
 
-export const PostSchedulingDialog = ({ open, onOpenChange, creatorId, onSuccess }: PostSchedulingDialogProps) => {
+export const PostSchedulingDialog = ({ open, onOpenChange, creatorId, onSuccess, editPost }: PostSchedulingDialogProps) => {
   const [content, setContent] = useState("");
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("12:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editPost) {
+      setContent(editPost.content || "");
+      const scheduledDate = new Date(editPost.scheduled_publish_at);
+      setDate(scheduledDate);
+      setTime(format(scheduledDate, "HH:mm"));
+    } else {
+      setContent("");
+      setDate(undefined);
+      setTime("12:00");
+    }
+  }, [editPost, open]);
 
   const handleSchedule = async () => {
     if (!content.trim()) {
@@ -50,17 +73,32 @@ export const PostSchedulingDialog = ({ open, onOpenChange, creatorId, onSuccess 
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from('creator_posts').insert({
-        creator_id: creatorId,
-        content,
-        scheduled_publish_at: scheduledDateTime.toISOString(),
-        status: 'scheduled',
-        media_type: 'text'
-      });
+      if (editPost) {
+        // Update existing post
+        const { error } = await supabase
+          .from('creator_posts')
+          .update({
+            content,
+            scheduled_publish_at: scheduledDateTime.toISOString(),
+          })
+          .eq('id', editPost.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Scheduled post updated successfully!");
+      } else {
+        // Create new post
+        const { error } = await supabase.from('creator_posts').insert({
+          creator_id: creatorId,
+          content,
+          scheduled_publish_at: scheduledDateTime.toISOString(),
+          status: 'scheduled',
+          media_type: 'text'
+        });
 
-      toast.success("Post scheduled successfully!");
+        if (error) throw error;
+        toast.success("Post scheduled successfully!");
+      }
+
       setContent("");
       setDate(undefined);
       setTime("12:00");
@@ -68,7 +106,7 @@ export const PostSchedulingDialog = ({ open, onOpenChange, creatorId, onSuccess 
       onSuccess?.();
     } catch (error) {
       console.error("Error scheduling post:", error);
-      toast.error("Failed to schedule post");
+      toast.error(editPost ? "Failed to update post" : "Failed to schedule post");
     } finally {
       setIsSubmitting(false);
     }
@@ -78,9 +116,12 @@ export const PostSchedulingDialog = ({ open, onOpenChange, creatorId, onSuccess 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Schedule Post</DialogTitle>
+          <DialogTitle>{editPost ? "Edit Scheduled Post" : "Schedule Post"}</DialogTitle>
           <DialogDescription>
-            Create a post to be published automatically at a future date and time
+            {editPost 
+              ? "Update the post content and schedule time" 
+              : "Create a post to be published automatically at a future date and time"
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -171,7 +212,10 @@ export const PostSchedulingDialog = ({ open, onOpenChange, creatorId, onSuccess 
               onClick={handleSchedule}
               disabled={isSubmitting || !content.trim() || !date}
             >
-              {isSubmitting ? "Scheduling..." : "Schedule Post"}
+              {isSubmitting 
+                ? (editPost ? "Updating..." : "Scheduling...") 
+                : (editPost ? "Update Post" : "Schedule Post")
+              }
             </Button>
           </div>
         </div>
