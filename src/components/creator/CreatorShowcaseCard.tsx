@@ -83,7 +83,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
     return (
       <Card
         className={cn(
-          "cursor-pointer overflow-hidden border-border bg-card",
+          "cursor-pointer overflow-hidden border-border bg-card w-full max-w-full",
           "transition-transform duration-150 active:scale-[0.98]",
           isPressed && "scale-[0.98]"
         )}

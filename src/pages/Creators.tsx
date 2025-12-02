@@ -342,7 +342,7 @@ const Creators = () => {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-6 w-full overflow-hidden">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <CreatorCardSkeleton key={i} />
                 ))}
@@ -365,7 +365,7 @@ const Creators = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-6 w-full overflow-hidden">
                   {creators.map((creator) => (
                     <CreatorShowcaseCard key={creator.id} creator={creator} />
                   ))}
