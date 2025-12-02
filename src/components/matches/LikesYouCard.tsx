@@ -6,6 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, X, Sparkles, CheckCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
+interface Photo {
+  id: string;
+  photo_url: string;
+  order_index: number;
+}
+
 interface LikesYouCardProps {
   profile: {
     id: string;
@@ -17,30 +23,44 @@ interface LikesYouCardProps {
     avatar_url: string | null;
     is_creator: boolean;
     id_verified: boolean;
+    photos?: Photo[];
+    interests?: string[];
   };
   likedAt: string;
   onLikeBack: () => void;
   onPass: () => void;
+  onViewProfile?: () => void;
   loading?: boolean;
 }
 
-const LikesYouCard = ({ profile, likedAt, onLikeBack, onPass, loading }: LikesYouCardProps) => {
+const LikesYouCard = ({ profile, likedAt, onLikeBack, onPass, onViewProfile, loading }: LikesYouCardProps) => {
   const [actionLoading, setActionLoading] = useState<'like' | 'pass' | null>(null);
 
-  const handleLikeBack = async () => {
+  const handleLikeBack = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setActionLoading('like');
     await onLikeBack();
     setActionLoading(null);
   };
 
-  const handlePass = async () => {
+  const handlePass = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setActionLoading('pass');
     await onPass();
     setActionLoading(null);
   };
 
+  const handleCardClick = () => {
+    if (onViewProfile) {
+      onViewProfile();
+    }
+  };
+
   return (
-    <Card className="p-3 flex items-center gap-3 transition-all hover:shadow-md">
+    <Card 
+      className="p-3 flex items-center gap-3 transition-all hover:shadow-md cursor-pointer"
+      onClick={handleCardClick}
+    >
       <Avatar className="w-14 h-14 border-2 border-primary/20">
         <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name} />
         <AvatarFallback className="bg-primary/10 text-primary font-semibold">

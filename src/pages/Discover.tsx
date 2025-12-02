@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import SwipeableCard from "@/components/discover/SwipeableCard";
 import { DiscoverProfileModal } from "@/components/discover/DiscoverProfileModal";
 import { MatchCelebrationModal } from "@/components/discover/MatchCelebrationModal";
+import { UndoButton } from "@/components/discover/UndoButton";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { ProfileCardSkeleton } from "@/components/shared/SkeletonLoader";
 import { haptics } from "@/lib/native";
@@ -34,6 +35,9 @@ interface Profile {
   creator_tagline: string | null;
   id_verified: boolean;
 }
+
+const UNDO_TIMEOUT = 5000; // 5 seconds
+
 const Discover = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,6 +48,14 @@ const Discover = () => {
   const [matchedProfile, setMatchedProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [newMatchId, setNewMatchId] = useState<string | undefined>(undefined);
+  
+  // Undo feature state
+  const [lastPassedProfile, setLastPassedProfile] = useState<Profile | null>(null);
+  const [lastSwipeId, setLastSwipeId] = useState<string | null>(null);
+  const [canUndo, setCanUndo] = useState(false);
+  const [undoLoading, setUndoLoading] = useState(false);
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   const [filters, setFilters] = useState({
     ageRange: [18, 99] as [number, number],
     distance: 50,
@@ -58,6 +70,15 @@ const Discover = () => {
   
   // Onboarding modal for referrals
   const { shouldShow: shouldShowInviteModal, markAsShown: markInviteModalShown, referralLink } = useOnboardingModal(user?.id || null);
+  
+  // Clear undo timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
+      }
+    };
+  }, []);
   
   useEffect(() => {
     checkUser();
@@ -165,6 +186,7 @@ const Discover = () => {
       console.error('Error loading preferences:', error);
     }
   };
+
   const loadProfiles = async (userId: string) => {
     try {
       // Use smart ranked RPC function
@@ -199,12 +221,66 @@ const Discover = () => {
       setLoading(false);
     }
   };
+
+  const clearUndoState = () => {
+    setCanUndo(false);
+    setLastPassedProfile(null);
+    setLastSwipeId(null);
+    if (undoTimeoutRef.current) {
+      clearTimeout(undoTimeoutRef.current);
+      undoTimeoutRef.current = null;
+    }
+  };
+
+  const handleUndo = async () => {
+    if (!lastPassedProfile || !lastSwipeId || !user) return;
+    
+    setUndoLoading(true);
+    try {
+      // Delete the swipe record
+      const { error } = await supabase
+        .from('swipes')
+        .delete()
+        .eq('id', lastSwipeId);
+      
+      if (error) throw error;
+      
+      // Re-insert the profile at current position
+      setProfiles(prev => {
+        const newProfiles = [...prev];
+        newProfiles.splice(currentIndex, 0, lastPassedProfile);
+        return newProfiles;
+      });
+      
+      haptics.success();
+      toast({
+        title: "Undone! 🔄",
+        description: `${lastPassedProfile.display_name} is back!`,
+        duration: 2000,
+      });
+      
+      clearUndoState();
+    } catch (error: any) {
+      console.error('Undo error:', error);
+      toast({
+        title: "Couldn't undo",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUndoLoading(false);
+    }
+  };
+
   const handleSwipe = async (isLike: boolean) => {
     const currentProfile = profiles[currentIndex];
     if (!currentProfile || !user) {
       console.log('⚠️ handleSwipe called without profile or user');
       return;
     }
+
+    // Clear any existing undo state when making a new swipe
+    clearUndoState();
 
     console.log('🎯 handleSwipe called:', {
       isLike,
@@ -235,13 +311,15 @@ const Discover = () => {
 
     try {
       console.log('📤 Inserting swipe to database...');
-      const {
-        error
-      } = await supabase.from("swipes").insert({
-        swiper_id: user.id,
-        swiped_id: currentProfile.id,
-        is_like: isLike
-      });
+      const { data, error } = await supabase
+        .from("swipes")
+        .insert({
+          swiper_id: user.id,
+          swiped_id: currentProfile.id,
+          is_like: isLike
+        })
+        .select('id')
+        .single();
       
       if (error) {
         console.error('❌ Database error:', error);
@@ -257,6 +335,16 @@ const Discover = () => {
           description: "You'll be notified if it's a match!"
         });
       } else {
+        // Enable undo for pass actions
+        setLastPassedProfile(currentProfile);
+        setLastSwipeId(data.id);
+        setCanUndo(true);
+        
+        // Auto-clear undo after timeout
+        undoTimeoutRef.current = setTimeout(() => {
+          clearUndoState();
+        }, UNDO_TIMEOUT);
+        
         toast({
           title: "Passed 👋",
           description: "Keep swiping to find your match!",
@@ -275,10 +363,12 @@ const Discover = () => {
       });
     }
   };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
+
   const currentProfile = profiles[currentIndex];
   if (loading) {
     return <div className={isMobile ? "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 pb-24" : "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5"}>
@@ -368,6 +458,13 @@ const Discover = () => {
             {profiles.length - currentIndex - 1} profiles remaining
           </p>
         </div>
+
+        {/* Undo Button */}
+        <UndoButton 
+          visible={canUndo} 
+          onClick={handleUndo} 
+          loading={undoLoading} 
+        />
         
         {/* Full Profile Modal */}
         <DiscoverProfileModal
