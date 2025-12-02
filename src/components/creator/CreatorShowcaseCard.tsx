@@ -92,13 +92,13 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         onTouchEnd={() => setIsPressed(false)}
         onTouchCancel={() => setIsPressed(false)}
       >
-        <div className="flex p-3 gap-3">
-          {/* Left: Cover/Avatar Image */}
+        <div className="flex p-2.5 gap-2.5">
+          {/* Left: Compact Avatar */}
           <div className="relative flex-shrink-0">
             <img
-              src={creator.cover_image_url || creator.avatar_url || "/placeholder.svg"}
+              src={creator.avatar_url || creator.cover_image_url || "/placeholder.svg"}
               alt={creator.display_name}
-              className="w-24 h-24 rounded-xl object-cover"
+              className="w-14 h-14 rounded-lg object-cover"
               loading="lazy"
             />
             {creator.id_verified && (
@@ -114,40 +114,28 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
           </div>
 
           {/* Right: Content */}
-          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-            {/* Top section */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-foreground truncate text-sm">
-                  {creator.display_name}
-                </h3>
-              </div>
-              {creator.username && (
-                <p className="text-[11px] text-muted-foreground truncate">@{creator.username}</p>
-              )}
-              {(creator.tagline || displayBio) && (
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                  {creator.tagline || displayBio}
-                </p>
-              )}
-            </div>
-
-            {/* Bottom section: Stats + Price */}
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                {creator.city && (
-                  <span className="flex items-center gap-0.5">
-                    <MapPin className="w-2.5 h-2.5" />
-                    {creator.city}
-                  </span>
-                )}
-                <span className="flex items-center gap-0.5">
-                  <Users className="w-2.5 h-2.5" />
-                  {creator.subscriber_count || 0}
-                </span>
-              </div>
-              <span className="text-sm font-bold text-primary">
+          <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="font-semibold text-foreground truncate text-sm">
+                {creator.display_name}
+              </h3>
+              <span className="text-xs font-bold text-primary flex-shrink-0">
                 ${creator.subscription_price}/mo
+              </span>
+            </div>
+            {creator.username && (
+              <p className="text-[11px] text-muted-foreground truncate">@{creator.username}</p>
+            )}
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              {creator.city && (
+                <span className="flex items-center gap-0.5">
+                  <MapPin className="w-2.5 h-2.5" />
+                  {creator.city}
+                </span>
+              )}
+              <span className="flex items-center gap-0.5">
+                <Users className="w-2.5 h-2.5" />
+                {creator.subscriber_count || 0}
               </span>
             </div>
           </div>
