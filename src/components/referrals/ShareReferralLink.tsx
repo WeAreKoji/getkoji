@@ -43,16 +43,16 @@ export const ShareReferralLink = ({ url, title, text }: ShareReferralLinkProps) 
   return (
     <div className="flex gap-2 flex-wrap">
       {showNativeShare && (
-        <Button onClick={handleShare} variant="outline" size="sm" className="gap-2">
+        <Button onClick={handleShare} variant="outline" className="gap-2 h-10 px-4">
           <Share2 className="w-4 h-4" />
           Share
         </Button>
       )}
-      <Button onClick={handleEmailShare} variant="outline" size="sm" className="gap-2">
+      <Button onClick={handleEmailShare} variant="outline" className="gap-2 h-10 px-4">
         <Mail className="w-4 h-4" />
         Email
       </Button>
-      <Button onClick={handleSMSShare} variant="outline" size="sm" className="gap-2">
+      <Button onClick={handleSMSShare} variant="outline" className="gap-2 h-10 px-4">
         <MessageCircle className="w-4 h-4" />
         SMS
       </Button>
