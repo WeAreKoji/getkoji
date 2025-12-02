@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import MatchCard from "@/components/matches/MatchCard";
 import BottomNav from "@/components/navigation/BottomNav";
+import LikesYouSection from "@/components/matches/LikesYouSection";
 import { RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SafeAreaView } from "@/components/layout/SafeAreaView";
@@ -221,6 +222,14 @@ const Matches = () => {
               <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
+
+          {/* Likes You Section */}
+          {currentUserId && (
+            <LikesYouSection
+              currentUserId={currentUserId}
+              onMatch={() => fetchMatches(currentUserId, false)}
+            />
+          )}
 
           {matches.length === 0 ? (
             <div className={isMobile ? "text-center py-8" : "text-center py-12"}>
