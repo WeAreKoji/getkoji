@@ -269,10 +269,10 @@ const Profile = () => {
           />
 
           {/* Content */}
-          <div className={isMobile ? "px-4 py-4 space-y-4" : "container max-w-4xl mx-auto px-6 py-6"}>
+          <div className={isMobile ? "px-4 py-3 space-y-3" : "container max-w-4xl mx-auto px-6 py-6"}>
             {isMobile ? (
               // Mobile: Single column layout with accordion
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Profile Completeness for own profile */}
                 {isOwnProfile && (
                   <ProfileCompleteness
@@ -301,18 +301,18 @@ const Profile = () => {
                     )}
                   </>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
                       size="default"
                       onClick={() => setShowPreview(true)}
-                      className="h-11"
+                      className="h-10"
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       Preview
                     </Button>
                     <Link to="/profile/edit" className="block">
-                      <Button size="default" className="w-full h-11">
+                      <Button size="default" className="w-full h-10">
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Profile
                       </Button>
@@ -320,20 +320,12 @@ const Profile = () => {
                   </div>
                 )}
 
-                {/* Referral & Analytics for own profile */}
+                {/* Referral Card - compact for mobile */}
                 {isOwnProfile && (
-                  <>
-                    <ReferralDashboardCard userId={profile.id} compact={true} />
-                    <EnhancedAnalyticsCharts userId={profile.id} />
-                    <EnhancedPhotoManagement 
-                      photos={photos} 
-                      userId={profile.id}
-                      onPhotosUpdated={() => fetchProfile(profile.id)}
-                    />
-                  </>
+                  <ReferralDashboardCard userId={profile.id} compact={true} />
                 )}
 
-                {/* Mobile Accordion */}
+                {/* Mobile Accordion - About section first */}
                 <ProfileAccordion
                   bio={profile.bio}
                   intent={profile.intent}
@@ -346,6 +338,18 @@ const Profile = () => {
                   isOwnProfile={isOwnProfile}
                   showcaseBio={creatorProfile.showcaseBio}
                 />
+
+                {/* Analytics & Photo Management - moved below accordion for own profile */}
+                {isOwnProfile && (
+                  <>
+                    <EnhancedAnalyticsCharts userId={profile.id} />
+                    <EnhancedPhotoManagement 
+                      photos={photos} 
+                      userId={profile.id}
+                      onPhotosUpdated={() => fetchProfile(profile.id)}
+                    />
+                  </>
+                )}
               </div>
             ) : (
               // Desktop: Modern layout with tabs

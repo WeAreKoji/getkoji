@@ -245,9 +245,9 @@ export const EnhancedPhotoManagement = ({
 
   return (
     <>
-      <Card className="p-6">
-        <h3 className="font-semibold mb-4">Manage Photos</h3>
-        <p className="text-sm text-muted-foreground mb-4">
+      <Card className="p-4 md:p-6">
+        <h3 className="font-semibold text-base mb-2">Manage Photos</h3>
+        <p className="text-xs text-muted-foreground mb-3">
           Drag to reorder • First photo appears on your profile
         </p>
 
@@ -257,7 +257,7 @@ export const EnhancedPhotoManagement = ({
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
               {photos.map((photo, index) => (
                 <SortablePhoto
                   key={photo.id}

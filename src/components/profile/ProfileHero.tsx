@@ -50,7 +50,7 @@ export const ProfileHero = ({
     <>
       <div className={cn(
         "relative w-full bg-gradient-to-br from-primary/20 to-secondary/20",
-        isMobile ? "aspect-[3/4]" : "aspect-[16/7] max-h-[150px]"
+        isMobile ? "aspect-[4/5] max-h-[60vh]" : "aspect-[16/7] max-h-[150px]"
       )}>
         {/* Cover Image or Main Photo */}
         {displayCoverImage ? (
