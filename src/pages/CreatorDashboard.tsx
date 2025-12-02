@@ -325,15 +325,15 @@ const CreatorDashboard = () => {
 
               {/* Advanced Analytics */}
               {analytics && !analyticsLoading && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Card>
-                    <CardHeader className="pb-1 md:pb-2 p-3 md:p-6">
-                      <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
                         Avg Subscription Duration
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-                      <div className="text-xl md:text-2xl font-bold">
+                    <CardContent>
+                      <div className="text-2xl font-bold">
                         {analytics.avgSubscriptionDuration !== null 
                           ? analytics.avgSubscriptionDuration.toFixed(0) 
                           : 'N/A'} days
@@ -342,13 +342,13 @@ const CreatorDashboard = () => {
                   </Card>
 
                   <Card>
-                    <CardHeader className="pb-1 md:pb-2 p-3 md:p-6">
-                      <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
                         Churn Rate
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-                      <div className="text-xl md:text-2xl font-bold">
+                    <CardContent>
+                      <div className="text-2xl font-bold">
                         {analytics.churnRate !== null 
                           ? analytics.churnRate.toFixed(1) 
                           : 'N/A'}%
@@ -357,13 +357,13 @@ const CreatorDashboard = () => {
                   </Card>
 
                   <Card>
-                    <CardHeader className="pb-1 md:pb-2 p-3 md:p-6">
-                      <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
                         Engagement Rate
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-                      <div className="text-xl md:text-2xl font-bold">
+                    <CardContent>
+                      <div className="text-2xl font-bold">
                         {analytics.engagementRate !== null 
                           ? analytics.engagementRate.toFixed(1) 
                           : 'N/A'}%
@@ -384,18 +384,16 @@ const CreatorDashboard = () => {
 
               {/* Advanced Analytics with Tabs */}
               <Tabs defaultValue="content" className="w-full">
-                <div className="relative -mx-3 px-3 overflow-x-auto no-scrollbar">
-                  <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-6 md:w-full gap-1">
-                    <TabsTrigger value="content" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">Content</TabsTrigger>
-                    <TabsTrigger value="scheduled" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">Schedule</TabsTrigger>
-                    <TabsTrigger value="subscribers" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">Subs</TabsTrigger>
-                    <TabsTrigger value="cohorts" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">Cohorts</TabsTrigger>
-                    <TabsTrigger value="forecast" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">Forecast</TabsTrigger>
-                    <TabsTrigger value="goals" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">Goals</TabsTrigger>
-                  </TabsList>
-                </div>
+                <TabsList className="grid w-full grid-cols-6">
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+                  <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
+                  <TabsTrigger value="cohorts">Cohorts</TabsTrigger>
+                  <TabsTrigger value="forecast">Forecast</TabsTrigger>
+                  <TabsTrigger value="goals">Goals</TabsTrigger>
+                </TabsList>
 
-                <TabsContent value="content" className="space-y-4 md:space-y-6 mt-4">
+                <TabsContent value="content" className="space-y-6">
                   {stats.postCount > 0 && (
                     <>
                       <PostAnalyticsDashboard creatorId={userId} />
