@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, TrendingUp, BadgeCheck, DollarSign } from "lucide-react";
 import { CreatorFilterState } from "./CreatorFilters";
+import { cn } from "@/lib/utils";
 
 interface CreatorQuickFiltersProps {
   onApplyPreset: (preset: Partial<CreatorFilterState>) => void;
@@ -49,7 +50,18 @@ export const CreatorQuickFilters = ({ onApplyPreset }: CreatorQuickFiltersProps)
   ];
 
   return (
-    <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div 
+      className={cn(
+        "flex gap-2 overflow-x-auto pb-1 scrollbar-hide",
+        "snap-x snap-mandatory",
+        "-mx-1 px-1" // Allow buttons to breathe at edges
+      )}
+      style={{ 
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none'
+      }}
+    >
       {presets.map((preset) => {
         const Icon = preset.icon;
         
@@ -59,9 +71,14 @@ export const CreatorQuickFilters = ({ onApplyPreset }: CreatorQuickFiltersProps)
             variant="outline"
             size="sm"
             onClick={() => onApplyPreset(preset.filters)}
-            className="whitespace-nowrap flex-shrink-0 h-7 sm:h-9 text-[10px] sm:text-sm px-2 sm:px-3"
+            className={cn(
+              "whitespace-nowrap flex-shrink-0 snap-start",
+              "h-9 md:h-10 text-xs md:text-sm px-3 md:px-4",
+              "rounded-full border-border",
+              "active:scale-95 transition-transform"
+            )}
           >
-            <Icon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <Icon className="mr-1.5 h-3.5 w-3.5 md:h-4 md:w-4" />
             {preset.name}
           </Button>
         );

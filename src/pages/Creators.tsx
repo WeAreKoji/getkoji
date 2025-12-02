@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,10 @@ import { CreatorFilters, CreatorFilterState } from "@/components/creator/Creator
 import { CreatorActiveFilters } from "@/components/creator/CreatorActiveFilters";
 import { CreatorQuickFilters } from "@/components/creator/CreatorQuickFilters";
 import { CreatorSavedPresets } from "@/components/creator/CreatorSavedPresets";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { PullToRefresh } from "@/components/mobile/PullToRefresh";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Creator {
   id: string;
@@ -31,14 +34,55 @@ interface Creator {
   showcase_bio?: string;
 }
 
+const CreatorCardSkeleton = () => {
+  const isMobile = useIsMobile();
+  
+  if (isMobile) {
+    return (
+      <div className="rounded-lg border bg-card overflow-hidden">
+        <Skeleton className="aspect-[4/3] w-full" />
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-12 h-12 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </div>
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-11 w-full" />
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="rounded-lg border bg-card overflow-hidden">
+      <Skeleton className="aspect-video w-full" />
+      <div className="pt-16 pb-6 px-6 space-y-4">
+        <Skeleton className="h-6 w-32 ml-28" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <div className="pt-4 border-t flex items-center justify-between">
+          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-10 w-28" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Creators = () => {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isMobile = useIsMobile();
   
   const ITEMS_PER_PAGE = 12;
 
@@ -85,9 +129,9 @@ const Creators = () => {
     loadCreators(currentPage);
   }, [currentPage, filters]);
 
-  const loadCreators = async (page: number) => {
+  const loadCreators = useCallback(async (page: number, isRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       const offset = (page - 1) * ITEMS_PER_PAGE;
       
       const { data, error } = await supabase.rpc('get_creators_with_profiles', {
@@ -133,6 +177,8 @@ const Creators = () => {
       // Get total count from first row
       if (data && data.length > 0) {
         setTotalCount(data[0].total_count);
+      } else {
+        setTotalCount(0);
       }
     } catch (error: any) {
       toast({
@@ -143,6 +189,12 @@ const Creators = () => {
     } finally {
       setLoading(false);
     }
+  }, [filters, toast]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadCreators(currentPage, true);
+    setRefreshing(false);
   };
   
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
@@ -214,198 +266,215 @@ const Creators = () => {
     filters.interests.length > 0,
   ].filter(Boolean).length;
 
-  return (
-    <>
-      {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <div className="min-h-screen bg-background pb-20 md:pb-8">
-          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-            {/* Header */}
-            <div className="mb-4 sm:mb-6 max-w-7xl mx-auto">
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1.5 sm:mb-2">
-                    Discover Creators
-                  </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    Support amazing creators and get exclusive content
-                  </p>
-                </div>
-                <Button
-                  onClick={() => navigate('/creator/apply')}
-                  size="sm"
-                  className="hidden md:flex md:size-default"
-                >
-                  Become a Creator
-                </Button>
-              </div>
-              
-              {/* Mobile CTA */}
-              <Button
-                onClick={() => navigate('/creator/apply')}
-                size="sm"
-                className="w-full md:hidden"
-              >
-                Become a Creator
-              </Button>
+  const renderContent = () => (
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-4 md:mb-6">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1 md:mb-2">
+                Discover Creators
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground">
+                Support amazing creators and get exclusive content
+              </p>
             </div>
+            <Button
+              onClick={() => navigate('/creator/apply')}
+              size="sm"
+              className="hidden md:flex"
+            >
+              Become a Creator
+            </Button>
+          </div>
+          
+          {/* Mobile CTA */}
+          <Button
+            onClick={() => navigate('/creator/apply')}
+            size="sm"
+            className="w-full md:hidden h-10"
+          >
+            Become a Creator
+          </Button>
+        </div>
 
-            {/* Filters and Content */}
-            <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-3 sm:gap-6 max-w-7xl mx-auto">
-              {/* Sidebar Filters - hidden on mobile, shown as sheet via CreatorFilters */}
-              <aside className="hidden lg:block space-y-3">
-                <CreatorSavedPresets
-                  currentFilters={filters}
-                  onLoadPreset={handleLoadPreset}
-                />
+        {/* Filters and Content */}
+        <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-4 md:gap-6">
+          {/* Sidebar Filters - hidden on mobile, shown as sheet via CreatorFilters */}
+          <aside className="hidden lg:block space-y-3">
+            <CreatorSavedPresets
+              currentFilters={filters}
+              onLoadPreset={handleLoadPreset}
+            />
+            <CreatorFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearFilters={handleClearFilters}
+              activeFilterCount={activeFilterCount}
+            />
+          </aside>
+
+          {/* Main Content */}
+          <div className="space-y-3 md:space-y-4">
+            {/* Mobile: Saved Presets + Filter button row */}
+            <div className="lg:hidden space-y-3">
+              <CreatorSavedPresets
+                currentFilters={filters}
+                onLoadPreset={handleLoadPreset}
+              />
+              <div className="flex items-center gap-2">
+                <div className="flex-1 overflow-hidden">
+                  <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
+                </div>
                 <CreatorFilters
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
                   onClearFilters={handleClearFilters}
                   activeFilterCount={activeFilterCount}
                 />
-              </aside>
-
-              {/* Main Content */}
-              <div className="space-y-2 sm:space-y-4">
-                {/* Mobile: Saved Presets + Filter button row */}
-                <div className="lg:hidden space-y-2">
-                  <CreatorSavedPresets
-                    currentFilters={filters}
-                    onLoadPreset={handleLoadPreset}
-                  />
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 overflow-hidden">
-                      <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
-                    </div>
-                    <CreatorFilters
-                      filters={filters}
-                      onFiltersChange={handleFiltersChange}
-                      onClearFilters={handleClearFilters}
-                      activeFilterCount={activeFilterCount}
-                    />
-                  </div>
-                </div>
-                
-                {/* Desktop: Quick Filters */}
-                <div className="hidden lg:block">
-                  <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
-                </div>
-                
-                {/* Active Filters & Results Count */}
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center justify-between px-1">
-                    <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-                      {totalCount} {totalCount === 1 ? "creator" : "creators"} found
-                    </p>
-                  </div>
-                  
-                  <CreatorActiveFilters
-                    filters={filters}
-                    onRemoveFilter={handleRemoveFilter}
-                    onClearAll={handleClearFilters}
-                  />
-                </div>
-
-                {creators.length === 0 ? (
-                  <div className="text-center py-12 border rounded-lg bg-card">
-                    <p className="text-lg text-muted-foreground mb-2">No creators found</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Try adjusting your filters or search terms
-                    </p>
-                    {activeFilterCount > 0 && (
-                      <Button
-                        onClick={handleClearFilters}
-                        variant="outline"
-                      >
-                        Clear All Filters
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                      {creators.map((creator) => (
-                        <CreatorShowcaseCard key={creator.id} creator={creator} />
-                      ))}
-                    </div>
-                    
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-6 sm:mt-8">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setCurrentPage(p => p - 1)}
-                          disabled={!canGoPrevious}
-                          className="h-9 w-9 sm:h-10 sm:w-10"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          {Array.from({ length: totalPages }, (_, i) => i + 1)
-                            .filter(page => {
-                              // On mobile, show fewer pages
-                              const isMobile = window.innerWidth < 640;
-                              if (isMobile) {
-                                return page === 1 || 
-                                       page === totalPages || 
-                                       page === currentPage;
-                              }
-                              // Desktop: Show first page, last page, current page, and pages around current
-                              return page === 1 || 
-                                     page === totalPages || 
-                                     Math.abs(page - currentPage) <= 1;
-                            })
-                            .map((page, idx, arr) => {
-                              // Add ellipsis between non-consecutive pages
-                              const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
-                              return (
-                                <>
-                                  {showEllipsis && (
-                                    <span key={`ellipsis-${page}`} className="text-muted-foreground px-1 sm:px-2 text-sm">
-                                      ...
-                                    </span>
-                                  )}
-                                  <Button
-                                    key={page}
-                                    variant={currentPage === page ? "default" : "outline"}
-                                    size="icon"
-                                    onClick={() => setCurrentPage(page)}
-                                    className="h-9 w-9 sm:h-10 sm:w-10 text-sm"
-                                  >
-                                    {page}
-                                  </Button>
-                                </>
-                              );
-                            })}
-                        </div>
-                        
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setCurrentPage(p => p + 1)}
-                          disabled={!canGoNext}
-                          className="h-9 w-9 sm:h-10 sm:w-10"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
             </div>
+            
+            {/* Desktop: Quick Filters */}
+            <div className="hidden lg:block">
+              <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
+            </div>
+            
+            {/* Active Filters & Results Count */}
+            <div className="space-y-2 md:space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs md:text-sm text-muted-foreground font-medium">
+                  {totalCount} {totalCount === 1 ? "creator" : "creators"} found
+                </p>
+                {/* Desktop refresh button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="hidden md:flex h-8 px-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+              
+              <CreatorActiveFilters
+                filters={filters}
+                onRemoveFilter={handleRemoveFilter}
+                onClearAll={handleClearFilters}
+              />
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <CreatorCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : creators.length === 0 ? (
+              <div className="text-center py-12 border rounded-lg bg-card">
+                <p className="text-lg text-muted-foreground mb-2">No creators found</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Try adjusting your filters or search terms
+                </p>
+                {activeFilterCount > 0 && (
+                  <Button
+                    onClick={handleClearFilters}
+                    variant="outline"
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                  {creators.map((creator) => (
+                    <CreatorShowcaseCard key={creator.id} creator={creator} />
+                  ))}
+                </div>
+                
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-6 md:mt-8">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(p => p - 1)}
+                      disabled={!canGoPrevious}
+                      className="h-10 w-10"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1 md:gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          // On mobile, show fewer pages
+                          if (isMobile) {
+                            return page === 1 || 
+                                   page === totalPages || 
+                                   page === currentPage;
+                          }
+                          // Desktop: Show first page, last page, current page, and pages around current
+                          return page === 1 || 
+                                 page === totalPages || 
+                                 Math.abs(page - currentPage) <= 1;
+                        })
+                        .map((page, idx, arr) => {
+                          // Add ellipsis between non-consecutive pages
+                          const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+                          return (
+                            <div key={page} className="flex items-center gap-1 md:gap-2">
+                              {showEllipsis && (
+                                <span className="text-muted-foreground px-2 text-sm">
+                                  ...
+                                </span>
+                              )}
+                              <Button
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => setCurrentPage(page)}
+                                className="h-10 w-10 text-sm"
+                              >
+                                {page}
+                              </Button>
+                            </div>
+                          );
+                        })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(p => p + 1)}
+                      disabled={!canGoNext}
+                      className="h-10 w-10"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          <BottomNav />
         </div>
-      )}
-    </>
+      </div>
+      <BottomNav />
+    </div>
   );
+
+  // Wrap with PullToRefresh on mobile
+  if (isMobile) {
+    return (
+      <PullToRefresh onRefresh={handleRefresh}>
+        {renderContent()}
+      </PullToRefresh>
+    );
+  }
+
+  return renderContent();
 };
 
 export default Creators;

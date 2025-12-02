@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface CreatorFilterState {
   search: string;
@@ -43,6 +44,7 @@ export const CreatorFilters = ({
   const [open, setOpen] = useState(false);
   const [interests, setInterests] = useState<{ id: string; name: string; category: string }[]>([]);
   const [interestsOpen, setInterestsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadInterests();
@@ -79,7 +81,11 @@ export const CreatorFilters = ({
     return acc;
   }, {} as Record<string, typeof interests>);
 
-  const FilterContent = () => (
+  const handleApplyFilters = () => {
+    setOpen(false);
+  };
+
+  const FilterContent = ({ showApplyButton = false }: { showApplyButton?: boolean }) => (
     <div className="space-y-6">
       {/* Search */}
       <div className="space-y-2">
@@ -110,7 +116,7 @@ export const CreatorFilters = ({
           value={filters.gender || "all"}
           onValueChange={(value) => updateFilter("gender", value === "all" ? null : value)}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-12">
             <SelectValue placeholder="All genders" />
           </SelectTrigger>
           <SelectContent>
@@ -124,7 +130,7 @@ export const CreatorFilters = ({
       </div>
 
       {/* Age Range */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label>Age Range: {filters.minAge} - {filters.maxAge}</Label>
         <Slider
           min={18}
@@ -140,7 +146,7 @@ export const CreatorFilters = ({
       </div>
 
       {/* Price Range */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label>
           Subscription Price: ${filters.minPrice} - ${filters.maxPrice}
         </Label>
@@ -158,7 +164,7 @@ export const CreatorFilters = ({
       </div>
 
       {/* Minimum Subscribers */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="flex items-center gap-2">
           <Users className="h-4 w-4" />
           Min. Subscribers: {filters.minSubscribers}
@@ -176,14 +182,14 @@ export const CreatorFilters = ({
       {/* Interests Filter */}
       <Collapsible open={interestsOpen} onOpenChange={setInterestsOpen}>
         <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
+          <Button variant="outline" className="w-full justify-between h-12">
             <span>
               Interests {filters.interests.length > 0 && `(${filters.interests.length})`}
             </span>
             <ChevronDown className={`h-4 w-4 transition-transform ${interestsOpen ? "rotate-180" : ""}`} />
           </Button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2 space-y-3">
+        <CollapsibleContent className="mt-3 space-y-4">
           {Object.entries(groupedInterests).map(([category, categoryInterests]) => (
             <div key={category} className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase">{category}</p>
@@ -192,7 +198,7 @@ export const CreatorFilters = ({
                   <Badge
                     key={interest.id}
                     variant={filters.interests.includes(interest.id) ? "default" : "outline"}
-                    className="cursor-pointer hover:bg-primary/80"
+                    className="cursor-pointer hover:bg-primary/80 py-1.5 px-3"
                     onClick={() => toggleInterest(interest.id)}
                   >
                     {interest.name}
@@ -205,8 +211,8 @@ export const CreatorFilters = ({
       </Collapsible>
 
       {/* Verified Only */}
-      <div className="flex items-center justify-between">
-        <Label htmlFor="verified-only">Verified Creators Only</Label>
+      <div className="flex items-center justify-between py-2">
+        <Label htmlFor="verified-only" className="text-base">Verified Creators Only</Label>
         <Switch
           id="verified-only"
           checked={filters.verifiedOnly}
@@ -228,7 +234,7 @@ export const CreatorFilters = ({
             updateFilter("sortDirection", sortDirection);
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-12">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -247,10 +253,21 @@ export const CreatorFilters = ({
         <Button
           variant="outline"
           onClick={onClearFilters}
-          className="w-full"
+          className="w-full h-12"
         >
           <X className="mr-2 h-4 w-4" />
           Clear All Filters
+        </Button>
+      )}
+
+      {/* Apply Button for mobile bottom sheet */}
+      {showApplyButton && (
+        <Button
+          onClick={handleApplyFilters}
+          className="w-full h-12 font-semibold"
+        >
+          Apply Filters
+          {activeFilterCount > 0 && ` (${activeFilterCount})`}
         </Button>
       )}
     </div>
@@ -276,25 +293,34 @@ export const CreatorFilters = ({
         </div>
       </div>
 
-      {/* Mobile Filters */}
+      {/* Mobile Filters - Bottom Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild className="lg:hidden">
-          <Button variant="outline" className="w-full">
-            <Filter className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" className="h-9 px-3 flex-shrink-0">
+            <Filter className="mr-1.5 h-4 w-4" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-primary text-primary-foreground">
+              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-primary text-primary-foreground">
                 {activeFilterCount}
               </span>
             )}
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Filter Creators</SheetTitle>
+        <SheetContent 
+          side="bottom" 
+          className="h-[85vh] rounded-t-[20px] px-0"
+        >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-2 pb-4">
+            <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
+          </div>
+          
+          <SheetHeader className="px-6 pb-4 border-b">
+            <SheetTitle className="text-xl">Filter Creators</SheetTitle>
           </SheetHeader>
-          <div className="mt-6">
-            <FilterContent />
+          
+          <div className="overflow-y-auto flex-1 px-6 py-6" style={{ maxHeight: 'calc(85vh - 140px)' }}>
+            <FilterContent showApplyButton />
           </div>
         </SheetContent>
       </Sheet>
