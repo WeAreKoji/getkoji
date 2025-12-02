@@ -1,0 +1,81 @@
+-- Create function to get users who liked the current user but haven't been swiped on yet
+CREATE OR REPLACE FUNCTION public.get_likes_received(p_user_id uuid)
+RETURNS TABLE(
+  id uuid,
+  display_name text,
+  username text,
+  age integer,
+  city text,
+  bio text,
+  avatar_url text,
+  liked_at timestamp with time zone,
+  is_creator boolean,
+  id_verified boolean
+)
+LANGUAGE plpgsql
+STABLE SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id,
+    p.display_name,
+    p.username,
+    p.age,
+    p.city,
+    p.bio,
+    p.avatar_url,
+    s.created_at as liked_at,
+    (cp.id IS NOT NULL) as is_creator,
+    COALESCE(cp.id_verified, false) as id_verified
+  FROM swipes s
+  INNER JOIN profiles p ON p.id = s.swiper_id
+  LEFT JOIN creator_profiles cp ON cp.user_id = p.id
+  WHERE s.swiped_id = p_user_id
+    AND s.is_like = true
+    -- Exclude users the current user has already swiped on
+    AND s.swiper_id NOT IN (
+      SELECT swiped_id FROM swipes WHERE swiper_id = p_user_id
+    )
+    -- Exclude blocked users
+    AND s.swiper_id NOT IN (
+      SELECT blocked_id FROM blocked_users WHERE blocker_id = p_user_id
+      UNION
+      SELECT blocker_id FROM blocked_users WHERE blocked_id = p_user_id
+    )
+    -- Exclude already matched users
+    AND NOT EXISTS (
+      SELECT 1 FROM matches m 
+      WHERE (m.user1_id = p_user_id AND m.user2_id = s.swiper_id)
+         OR (m.user2_id = p_user_id AND m.user1_id = s.swiper_id)
+    )
+  ORDER BY s.created_at DESC;
+END;
+$$;
+
+-- Create function to get count of pending likes
+CREATE OR REPLACE FUNCTION public.get_likes_received_count(p_user_id uuid)
+RETURNS integer
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT COUNT(*)::integer
+  FROM swipes s
+  WHERE s.swiped_id = p_user_id
+    AND s.is_like = true
+    AND s.swiper_id NOT IN (
+      SELECT swiped_id FROM swipes WHERE swiper_id = p_user_id
+    )
+    AND s.swiper_id NOT IN (
+      SELECT blocked_id FROM blocked_users WHERE blocker_id = p_user_id
+      UNION
+      SELECT blocker_id FROM blocked_users WHERE blocked_id = p_user_id
+    )
+    AND NOT EXISTS (
+      SELECT 1 FROM matches m 
+      WHERE (m.user1_id = p_user_id AND m.user2_id = s.swiper_id)
+         OR (m.user2_id = p_user_id AND m.user1_id = s.swiper_id)
+    );
+$$;

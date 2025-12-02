@@ -2843,6 +2843,22 @@ export type Database = {
           username: string
         }[]
       }
+      get_likes_received: {
+        Args: { p_user_id: string }
+        Returns: {
+          age: number
+          avatar_url: string
+          bio: string
+          city: string
+          display_name: string
+          id: string
+          id_verified: boolean
+          is_creator: boolean
+          liked_at: string
+          username: string
+        }[]
+      }
+      get_likes_received_count: { Args: { p_user_id: string }; Returns: number }
       get_matches_with_details: {
         Args: { p_user_id: string }
         Returns: {
