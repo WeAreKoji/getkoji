@@ -83,7 +83,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
       onMouseLeave={handleMouseLeave}
     >
       {/* Video/Cover Section - more compact on mobile */}
-      <div className="relative aspect-[4/3] sm:aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background rounded-t-lg">
+      <div className="relative aspect-[3/2] sm:aspect-video max-h-[160px] sm:max-h-none bg-gradient-to-br from-primary/20 via-primary/10 to-background rounded-t-lg overflow-hidden">
         {creator.welcome_video_url ? (
           <>
             <video
@@ -137,20 +137,20 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         )}
 
         {/* Profile Image Overlay - smaller on mobile */}
-        <div className="absolute left-3 sm:left-6 -bottom-8 sm:-bottom-12 z-10">
+        <div className="absolute left-3 sm:left-6 -bottom-6 sm:-bottom-12 z-10">
           <img
             src={creator.avatar_url || "/placeholder.svg"}
             alt={creator.display_name}
-            className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg border-2 sm:border-4 border-background object-cover shadow-xl"
+            className="w-12 h-12 sm:w-24 sm:h-24 rounded-lg border-2 sm:border-4 border-background object-cover shadow-xl"
           />
         </div>
       </div>
 
-      <CardContent className="pt-10 sm:pt-16 pb-3 sm:pb-6 px-3 sm:px-4 md:px-6 space-y-2 sm:space-y-3 md:space-y-4">
+      <CardContent className="pt-8 sm:pt-16 pb-2 sm:pb-6 px-2.5 sm:px-4 md:px-6 space-y-1.5 sm:space-y-3 md:space-y-4">
         {/* Name and Verification */}
-        <div className="sm:ml-28">
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5">
-            <h3 className="text-base sm:text-xl font-bold text-foreground truncate">{creator.display_name}</h3>
+        <div className="ml-14 sm:ml-28">
+          <div className="flex items-center gap-1 sm:gap-2 mb-0.5">
+            <h3 className="text-sm sm:text-xl font-bold text-foreground truncate">{creator.display_name}</h3>
             <VerificationBadges 
               userId={creator.user_id} 
               isCreator={true}
@@ -159,26 +159,26 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
             />
           </div>
           {creator.username && (
-            <p className="text-xs text-muted-foreground truncate">@{creator.username}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">@{creator.username}</p>
           )}
         </div>
 
-        {/* Tagline */}
+        {/* Tagline - hidden on mobile to save space */}
         {creator.tagline && (
-          <p className="text-xs sm:text-base font-semibold text-primary line-clamp-1 sm:line-clamp-2">
+          <p className="hidden sm:block text-base font-semibold text-primary line-clamp-2">
             {creator.tagline}
           </p>
         )}
 
         {/* Bio */}
         {displayBio && (
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+          <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1 sm:line-clamp-2 leading-relaxed">
             {displayBio}
           </p>
         )}
 
-        {/* Stats */}
-        <div className="flex flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
+        {/* Stats - horizontal scroll on mobile */}
+        <div className="flex gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground overflow-x-auto scrollbar-hide whitespace-nowrap pb-0.5">
           {creator.city && (
             <div className="flex items-center gap-1">
               <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
@@ -211,9 +211,9 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         </div>
 
         {/* Price and CTA */}
-        <div className="pt-2 sm:pt-4 border-t border-border flex items-center justify-between gap-2 sm:gap-3">
+        <div className="pt-1.5 sm:pt-4 border-t border-border flex items-center justify-between gap-2">
           <div>
-            <p className="text-lg sm:text-2xl font-bold text-foreground">
+            <p className="text-base sm:text-2xl font-bold text-foreground">
               ${creator.subscription_price}
               <span className="text-[10px] sm:text-sm font-normal text-muted-foreground">/mo</span>
             </p>
@@ -224,8 +224,8 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
               const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
               navigate(path);
             }}
-            size="default"
-            className="font-semibold min-w-[80px] sm:min-w-[120px] h-8 sm:h-10 text-xs sm:text-sm"
+            size="sm"
+            className="font-semibold min-w-[70px] sm:min-w-[120px] h-7 sm:h-10 text-[10px] sm:text-sm"
           >
             Subscribe
           </Button>
