@@ -82,8 +82,8 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Video/Cover Section */}
-      <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background rounded-t-lg">
+      {/* Video/Cover Section - more compact on mobile */}
+      <div className="relative aspect-[4/3] sm:aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background rounded-t-lg">
         {creator.welcome_video_url ? (
           <>
             <video
@@ -101,20 +101,20 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
               onClick={handleVideoClick}
               className="absolute inset-0 flex items-center justify-center group/play"
             >
-              <div className="w-16 h-16 rounded-full bg-background/90 flex items-center justify-center opacity-0 group-hover/play:opacity-100 transition-opacity">
-                <Play className="w-8 h-8 text-primary" fill="currentColor" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-background/90 flex items-center justify-center opacity-0 group-hover/play:opacity-100 transition-opacity">
+                <Play className="w-6 h-6 sm:w-8 sm:h-8 text-primary" fill="currentColor" />
               </div>
             </button>
 
             {/* Mute Toggle */}
             <button
               onClick={toggleMute}
-              className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors"
+              className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors"
             >
               {isMuted ? (
-                <VolumeX className="w-5 h-5 text-foreground" />
+                <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
               ) : (
-                <Volume2 className="w-5 h-5 text-primary" />
+                <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               )}
             </button>
           </>
@@ -130,27 +130,27 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center text-muted-foreground">
-              <Users className="w-16 h-16 mx-auto mb-2 opacity-20" />
-              <p className="text-sm">No preview available</p>
+              <Users className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-1 sm:mb-2 opacity-20" />
+              <p className="text-xs sm:text-sm">No preview</p>
             </div>
           </div>
         )}
 
-        {/* Profile Image Overlay */}
-        <div className="absolute left-4 sm:left-6 -bottom-10 sm:-bottom-12 z-10">
+        {/* Profile Image Overlay - smaller on mobile */}
+        <div className="absolute left-3 sm:left-6 -bottom-8 sm:-bottom-12 z-10">
           <img
             src={creator.avatar_url || "/placeholder.svg"}
             alt={creator.display_name}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg border-4 border-background object-cover shadow-xl"
+            className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg border-2 sm:border-4 border-background object-cover shadow-xl"
           />
         </div>
       </div>
 
-      <CardContent className="pt-14 sm:pt-16 md:pt-20 pb-4 sm:pb-6 px-3 sm:px-4 md:px-6 space-y-2.5 sm:space-y-3 md:space-y-4">
+      <CardContent className="pt-10 sm:pt-16 pb-3 sm:pb-6 px-3 sm:px-4 md:px-6 space-y-2 sm:space-y-3 md:space-y-4">
         {/* Name and Verification */}
         <div className="sm:ml-28">
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-            <h3 className="text-lg sm:text-xl font-bold text-foreground truncate">{creator.display_name}</h3>
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5">
+            <h3 className="text-base sm:text-xl font-bold text-foreground truncate">{creator.display_name}</h3>
             <VerificationBadges 
               userId={creator.user_id} 
               isCreator={true}
@@ -159,38 +159,37 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
             />
           </div>
           {creator.username && (
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">@{creator.username}</p>
+            <p className="text-xs text-muted-foreground truncate">@{creator.username}</p>
           )}
         </div>
 
         {/* Tagline */}
         {creator.tagline && (
-          <p className="text-sm sm:text-base font-semibold text-primary line-clamp-2">
+          <p className="text-xs sm:text-base font-semibold text-primary line-clamp-1 sm:line-clamp-2">
             {creator.tagline}
           </p>
         )}
 
         {/* Bio */}
         {displayBio && (
-          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed">
+          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
             {displayBio}
           </p>
         )}
 
         {/* Stats */}
-        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
           {creator.city && (
             <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
+              <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               <span>{creator.city}</span>
               {creator.age && <span>• {creator.age}</span>}
             </div>
           )}
           {creator.created_at && (
             <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
+              <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               <span>
-                Joined{" "}
                 {(() => {
                   try {
                     const date = new Date(creator.created_at);
@@ -206,17 +205,17 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
             </div>
           )}
           <div className="flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            <span>{creator.subscriber_count || 0} subscribers</span>
+            <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            <span>{creator.subscriber_count || 0} subs</span>
           </div>
         </div>
 
         {/* Price and CTA */}
-        <div className="pt-3 sm:pt-4 border-t border-border flex items-center justify-between gap-3">
+        <div className="pt-2 sm:pt-4 border-t border-border flex items-center justify-between gap-2 sm:gap-3">
           <div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">
+            <p className="text-lg sm:text-2xl font-bold text-foreground">
               ${creator.subscription_price}
-              <span className="text-xs sm:text-sm font-normal text-muted-foreground">/mo</span>
+              <span className="text-[10px] sm:text-sm font-normal text-muted-foreground">/mo</span>
             </p>
           </div>
           <Button
@@ -226,7 +225,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
               navigate(path);
             }}
             size="default"
-            className="font-semibold min-w-[100px] sm:min-w-[120px] h-9 sm:h-10"
+            className="font-semibold min-w-[80px] sm:min-w-[120px] h-8 sm:h-10 text-xs sm:text-sm"
           >
             Subscribe
           </Button>
