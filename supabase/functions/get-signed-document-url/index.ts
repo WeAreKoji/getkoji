@@ -220,18 +220,6 @@ serve(async (req) => {
       );
     }
 
-    // Validate the one-time token before generating signed URL
-    const { data: tokenValidation, error: tokenValidationError } = await supabaseClient
-      .rpc('validate_document_token', { _token: token });
-
-    if (tokenValidationError || !tokenValidation?.is_valid) {
-      console.error('Token validation failed:', tokenValidationError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired access token' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Generate signed URL with reduced expiration (5 minutes) and enhanced headers
     const { data: signedUrlData, error: signedUrlError } = await supabaseClient.storage
       .from('id-documents')
