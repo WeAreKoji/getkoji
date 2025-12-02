@@ -276,39 +276,39 @@ const Referrals = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-              <Card className="p-5 md:p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="w-5 h-5 md:w-4 md:h-4 text-green-500" />
-                  <span className="text-sm md:text-xs text-muted-foreground">Active</span>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-8">
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <span className="text-xs text-muted-foreground">Active</span>
                 </div>
-                <p className="text-3xl md:text-2xl font-bold">{stats.activeReferrals}</p>
+                <p className="text-xl md:text-2xl font-bold">{stats.activeReferrals}</p>
               </Card>
 
-              <Card className="p-5 md:p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <DollarSign className="w-5 h-5 md:w-4 md:h-4 text-primary" />
-                  <span className="text-sm md:text-xs text-muted-foreground">Earned</span>
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <DollarSign className="w-4 h-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">Earned</span>
                 </div>
-                <p className="text-3xl md:text-2xl font-bold">${stats.totalCommission.toFixed(2)}</p>
+                <p className="text-xl md:text-2xl font-bold">${stats.totalCommission.toFixed(2)}</p>
               </Card>
 
-              <Card className="p-5 md:p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Calendar className="w-5 h-5 md:w-4 md:h-4 text-orange-500" />
-                  <span className="text-sm md:text-xs text-muted-foreground">Pending</span>
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Calendar className="w-4 h-4 text-orange-500" />
+                  <span className="text-xs text-muted-foreground">Pending</span>
                 </div>
-                <p className="text-3xl md:text-2xl font-bold">${stats.pendingCommission.toFixed(2)}</p>
+                <p className="text-xl md:text-2xl font-bold">${stats.pendingCommission.toFixed(2)}</p>
               </Card>
 
-              <Card className="p-5 md:p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Gift className="w-5 h-5 md:w-4 md:h-4 text-purple-500" />
-                  <span className="text-sm md:text-xs text-muted-foreground">Next Payout</span>
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Gift className="w-4 h-4 text-purple-500" />
+                  <span className="text-xs text-muted-foreground">Next Payout</span>
                 </div>
-                <p className="text-2xl md:text-lg font-bold">${stats.nextPayoutAmount.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stats.pendingCommission < 25 ? `$${(25 - stats.pendingCommission).toFixed(2)} to minimum` : stats.nextPayoutDate}
+                <p className="text-lg md:text-xl font-bold">${stats.nextPayoutAmount.toFixed(2)}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">
+                  {stats.pendingCommission < 25 ? `$${(25 - stats.pendingCommission).toFixed(2)} to min` : stats.nextPayoutDate}
                 </p>
               </Card>
             </div>
@@ -352,16 +352,16 @@ const Referrals = () => {
               </div>
 
               {/* Overview Tab */}
-              <TabsContent value="overview" className="mt-6 space-y-6">
-                <Card className="p-5 md:p-6">
-                  <h2 className="text-lg md:text-xl font-semibold mb-4">Your Creator Referral Link</h2>
-                  <div className="flex flex-col sm:flex-row gap-2 mb-4">
+              <TabsContent value="overview" className="mt-4 md:mt-6 space-y-4 md:space-y-6">
+                <Card className="p-4 md:p-6">
+                  <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4">Your Creator Referral Link</h2>
+                  <div className="flex flex-col sm:flex-row gap-2 mb-3">
                     <Input
                       value={getCreatorReferralLink()}
                       readOnly
-                      className="font-mono text-xs md:text-sm"
+                      className="font-mono text-xs"
                     />
-                    <Button onClick={handleCopy} className="shrink-0 h-11 md:h-10 w-full sm:w-auto">
+                    <Button onClick={handleCopy} className="shrink-0 h-10 w-full sm:w-auto">
                       {copied ? (
                         <>
                           <Check className="w-4 h-4 mr-2" />
@@ -380,29 +380,29 @@ const Referrals = () => {
                     title="Become a Creator on Koji!" 
                     text="Join Koji and start earning from your content. Use my referral link to get started!"
                   />
-                  <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
+                  <p className="text-xs md:text-sm text-muted-foreground mt-3 leading-relaxed">
                     Share this link with creators. When they complete verification and publish their first exclusive post, you'll earn 7.5% of their earnings for 9 months!
                   </p>
                 </Card>
 
-                <Card className="p-5 md:p-6">
-                  <h2 className="text-lg md:text-xl font-semibold mb-4">Quick Summary</h2>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
-                      <span className="text-sm md:text-sm">Active Referrals:</span>
-                      <span className="text-lg md:text-base font-bold">{stats.activeReferrals}</span>
+                <Card className="p-4 md:p-6">
+                  <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4">Quick Summary</h2>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-2.5 md:p-3 bg-muted rounded-lg">
+                      <span className="text-xs md:text-sm">Active Referrals:</span>
+                      <span className="text-sm md:text-base font-bold">{stats.activeReferrals}</span>
                     </div>
-                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
-                      <span className="text-sm md:text-sm">Lifetime Earnings:</span>
-                      <span className="text-lg md:text-base font-bold text-green-600">${stats.totalCommission.toFixed(2)}</span>
+                    <div className="flex items-center justify-between p-2.5 md:p-3 bg-muted rounded-lg">
+                      <span className="text-xs md:text-sm">Lifetime Earnings:</span>
+                      <span className="text-sm md:text-base font-bold text-green-600">${stats.totalCommission.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
-                      <span className="text-sm md:text-sm">Pending Payout:</span>
-                      <span className="text-lg md:text-base font-bold text-orange-600">${stats.pendingCommission.toFixed(2)}</span>
+                    <div className="flex items-center justify-between p-2.5 md:p-3 bg-muted rounded-lg">
+                      <span className="text-xs md:text-sm">Pending Payout:</span>
+                      <span className="text-sm md:text-base font-bold text-orange-600">${stats.pendingCommission.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between p-4 md:p-3 bg-muted rounded-lg">
-                      <span className="text-sm md:text-sm">Next Payout Date:</span>
-                      <span className="text-lg md:text-base font-bold">{stats.nextPayoutDate}</span>
+                    <div className="flex items-center justify-between p-2.5 md:p-3 bg-muted rounded-lg">
+                      <span className="text-xs md:text-sm">Next Payout Date:</span>
+                      <span className="text-sm md:text-base font-bold">{stats.nextPayoutDate}</span>
                     </div>
                   </div>
                 </Card>
