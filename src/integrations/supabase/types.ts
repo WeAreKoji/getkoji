@@ -2853,8 +2853,10 @@ export type Database = {
           display_name: string
           id: string
           id_verified: boolean
+          interests: string[]
           is_creator: boolean
           liked_at: string
+          photos: Json
           username: string
         }[]
       }

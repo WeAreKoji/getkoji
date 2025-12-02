@@ -6,7 +6,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { logError } from "@/lib/error-logger";
 import LikesYouCard from "./LikesYouCard";
+import { LikesYouProfileModal } from "./LikesYouProfileModal";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
+interface Photo {
+  id: string;
+  photo_url: string;
+  order_index: number;
+}
 
 interface LikeProfile {
   id: string;
@@ -19,6 +26,8 @@ interface LikeProfile {
   liked_at: string;
   is_creator: boolean;
   id_verified: boolean;
+  photos: Photo[];
+  interests: string[];
 }
 
 interface LikesYouSectionProps {
@@ -31,6 +40,8 @@ const LikesYouSection = ({ currentUserId, onMatch, onCountChange }: LikesYouSect
   const [likes, setLikes] = useState<LikeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(true);
+  const [selectedProfile, setSelectedProfile] = useState<LikeProfile | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     fetchLikes();
@@ -70,7 +81,15 @@ const LikesYouSection = ({ currentUserId, onMatch, onCountChange }: LikesYouSect
       });
 
       if (error) throw error;
-      setLikes(data || []);
+      
+      // Transform data to ensure photos and interests are arrays
+      const transformedData = (data || []).map((like: any) => ({
+        ...like,
+        photos: Array.isArray(like.photos) ? like.photos : [],
+        interests: Array.isArray(like.interests) ? like.interests : [],
+      }));
+      
+      setLikes(transformedData);
     } catch (error) {
       logError(error, 'LikesYouSection.fetchLikes');
     } finally {
@@ -79,6 +98,7 @@ const LikesYouSection = ({ currentUserId, onMatch, onCountChange }: LikesYouSect
   };
 
   const handleLikeBack = async (likerId: string) => {
+    setModalLoading(true);
     try {
       // Create a swipe (like) for this user - this will trigger the match
       const { error } = await supabase
@@ -107,10 +127,13 @@ const LikesYouSection = ({ currentUserId, onMatch, onCountChange }: LikesYouSect
         description: "Could not complete the action. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const handlePass = async (likerId: string) => {
+    setModalLoading(true);
     try {
       // Create a pass swipe
       const { error } = await supabase
@@ -137,6 +160,8 @@ const LikesYouSection = ({ currentUserId, onMatch, onCountChange }: LikesYouSect
         description: "Could not complete the action. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -171,42 +196,55 @@ const LikesYouSection = ({ currentUserId, onMatch, onCountChange }: LikesYouSect
   }
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
-      <CollapsibleTrigger asChild>
-        <Button
-          variant="ghost"
-          className="w-full flex items-center justify-between p-3 h-auto bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20"
-        >
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Heart className="w-5 h-5 text-primary" fill="currentColor" />
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {likes.length}
+    <>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="ghost"
+            className="w-full flex items-center justify-between p-3 h-auto bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20"
+          >
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Heart className="w-5 h-5 text-primary" fill="currentColor" />
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {likes.length}
+                </span>
+              </div>
+              <span className="font-semibold text-foreground">
+                {likes.length} {likes.length === 1 ? 'person likes' : 'people like'} you
               </span>
             </div>
-            <span className="font-semibold text-foreground">
-              {likes.length} {likes.length === 1 ? 'person likes' : 'people like'} you
-            </span>
-          </div>
-          {isOpen ? (
-            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          )}
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="mt-2 space-y-2">
-        {likes.map((like) => (
-          <LikesYouCard
-            key={like.id}
-            profile={like}
-            likedAt={like.liked_at}
-            onLikeBack={() => handleLikeBack(like.id)}
-            onPass={() => handlePass(like.id)}
-          />
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
+            {isOpen ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2 space-y-2">
+          {likes.map((like) => (
+            <LikesYouCard
+              key={like.id}
+              profile={like}
+              likedAt={like.liked_at}
+              onLikeBack={() => handleLikeBack(like.id)}
+              onPass={() => handlePass(like.id)}
+              onViewProfile={() => setSelectedProfile(like)}
+            />
+          ))}
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Profile Preview Modal */}
+      <LikesYouProfileModal
+        profile={selectedProfile}
+        open={!!selectedProfile}
+        onOpenChange={(open) => !open && setSelectedProfile(null)}
+        onLikeBack={() => selectedProfile && handleLikeBack(selectedProfile.id)}
+        onPass={() => selectedProfile && handlePass(selectedProfile.id)}
+        loading={modalLoading}
+      />
+    </>
   );
 };
 
