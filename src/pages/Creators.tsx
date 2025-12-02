@@ -254,9 +254,9 @@ const Creators = () => {
             </div>
 
             {/* Filters and Content */}
-            <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-4 sm:gap-6 max-w-7xl mx-auto">
-              {/* Sidebar Filters */}
-              <aside className="space-y-3 sm:space-y-4">
+            <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-3 sm:gap-6 max-w-7xl mx-auto">
+              {/* Sidebar Filters - hidden on mobile, shown as sheet via CreatorFilters */}
+              <aside className="hidden lg:block space-y-3">
                 <CreatorSavedPresets
                   currentFilters={filters}
                   onLoadPreset={handleLoadPreset}
@@ -270,9 +270,30 @@ const Creators = () => {
               </aside>
 
               {/* Main Content */}
-              <div className="space-y-3 sm:space-y-4">
-                {/* Quick Filters */}
-                <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
+              <div className="space-y-2 sm:space-y-4">
+                {/* Mobile: Saved Presets + Filter button row */}
+                <div className="lg:hidden space-y-2">
+                  <CreatorSavedPresets
+                    currentFilters={filters}
+                    onLoadPreset={handleLoadPreset}
+                  />
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 overflow-hidden">
+                      <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
+                    </div>
+                    <CreatorFilters
+                      filters={filters}
+                      onFiltersChange={handleFiltersChange}
+                      onClearFilters={handleClearFilters}
+                      activeFilterCount={activeFilterCount}
+                    />
+                  </div>
+                </div>
+                
+                {/* Desktop: Quick Filters */}
+                <div className="hidden lg:block">
+                  <CreatorQuickFilters onApplyPreset={handleApplyPreset} />
+                </div>
                 
                 {/* Active Filters & Results Count */}
                 <div className="space-y-2 sm:space-y-3">

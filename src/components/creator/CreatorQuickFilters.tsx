@@ -49,7 +49,7 @@ export const CreatorQuickFilters = ({ onApplyPreset }: CreatorQuickFiltersProps)
   ];
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+    <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-hide">
       {presets.map((preset) => {
         const Icon = preset.icon;
         
@@ -59,9 +59,9 @@ export const CreatorQuickFilters = ({ onApplyPreset }: CreatorQuickFiltersProps)
             variant="outline"
             size="sm"
             onClick={() => onApplyPreset(preset.filters)}
-            className="whitespace-nowrap flex-shrink-0 h-8 sm:h-9 text-xs sm:text-sm"
+            className="whitespace-nowrap flex-shrink-0 h-7 sm:h-9 text-[10px] sm:text-sm px-2 sm:px-3"
           >
-            <Icon className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <Icon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
             {preset.name}
           </Button>
         );
