@@ -40,17 +40,56 @@ export async function checkRateLimit(
   const typedExisting = existing as RateLimitRecord | null;
 
   if (!typedExisting) {
-    // Create new rate limit entry
-    const { error: insertError } = await supabase
+    // Create new rate limit entry using upsert to handle race conditions
+    const { data: upsertedData, error: upsertError } = await supabase
       .from("rate_limits")
-      .insert({
-        identifier: config.identifier,
-        attempts: 1,
-        window_start: windowStart.toISOString(),
-      });
+      .upsert(
+        {
+          identifier: config.identifier,
+          attempts: 1,
+          window_start: windowStart.toISOString(),
+        },
+        { 
+          onConflict: 'identifier,window_start',
+          ignoreDuplicates: false 
+        }
+      )
+      .select()
+      .single();
 
-    if (insertError) {
-      console.error("Rate limit insert error:", insertError);
+    if (upsertError) {
+      // If upsert fails, try to fetch existing record (another request may have created it)
+      const { data: retryData } = await supabase
+        .from("rate_limits")
+        .select("*")
+        .eq("identifier", config.identifier)
+        .gte("window_start", windowStart.toISOString())
+        .maybeSingle();
+      
+      if (retryData) {
+        // Record exists, check and increment
+        if (retryData.attempts >= config.maxAttempts) {
+          return {
+            allowed: false,
+            remaining: 0,
+            resetAt: new Date(new Date(retryData.window_start).getTime() + config.windowMinutes * 60 * 1000),
+          };
+        }
+        
+        await supabase
+          .from("rate_limits")
+          .update({ attempts: retryData.attempts + 1 })
+          .eq("id", retryData.id);
+        
+        return {
+          allowed: true,
+          remaining: config.maxAttempts - (retryData.attempts + 1),
+          resetAt: new Date(new Date(retryData.window_start).getTime() + config.windowMinutes * 60 * 1000),
+        };
+      }
+      
+      // Fail open if we can't determine rate limit status
+      console.error("Rate limit upsert error:", upsertError);
       return {
         allowed: true,
         remaining: config.maxAttempts - 1,
