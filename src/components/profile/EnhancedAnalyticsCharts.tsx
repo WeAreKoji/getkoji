@@ -21,6 +21,7 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { TrendingUp, Eye, Heart, Users } from "lucide-react";
 import { format, subDays, startOfDay } from "date-fns";
 import { logError } from "@/lib/error-logger";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface EnhancedAnalyticsChartsProps {
   userId: string;
@@ -41,6 +42,7 @@ export const EnhancedAnalyticsCharts = ({ userId }: EnhancedAnalyticsChartsProps
   const [loading, setLoading] = useState(true);
   const [viewsData, setViewsData] = useState<ViewsData[]>([]);
   const [engagementData, setEngagementData] = useState<EngagementData[]>([]);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -118,50 +120,55 @@ export const EnhancedAnalyticsCharts = ({ userId }: EnhancedAnalyticsChartsProps
 
   if (loading) {
     return (
-      <Card className="p-6">
+      <Card className="p-4 md:p-6">
         <LoadingSpinner />
       </Card>
     );
   }
 
+  const chartHeight = isMobile ? 200 : 320;
+
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-2 mb-6">
+    <Card className="p-4 md:p-6">
+      <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold text-lg">Analytics Dashboard</h3>
+        <h3 className="font-semibold text-base md:text-lg">Analytics Dashboard</h3>
       </div>
 
       <Tabs defaultValue="views" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="views">
-            <Eye className="w-4 h-4 mr-2" />
+        <TabsList className="grid w-full grid-cols-2 h-9">
+          <TabsTrigger value="views" className="text-xs md:text-sm">
+            <Eye className="w-3.5 h-3.5 mr-1.5" />
             Profile Views
           </TabsTrigger>
-          <TabsTrigger value="engagement">
-            <Heart className="w-4 h-4 mr-2" />
+          <TabsTrigger value="engagement" className="text-xs md:text-sm">
+            <Heart className="w-3.5 h-3.5 mr-1.5" />
             Engagement
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="views" className="space-y-4">
-          <div className="h-80 mt-4">
+        <TabsContent value="views" className="space-y-3">
+          <div style={{ height: chartHeight }} className="mt-3">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={viewsData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
                   dataKey="date"
                   className="text-xs"
-                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: isMobile ? 10 : 12 }}
+                  interval={isMobile ? 5 : 2}
                 />
                 <YAxis
                   className="text-xs"
-                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: isMobile ? 10 : 12 }}
+                  width={isMobile ? 25 : 40}
                 />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--popover))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "var(--radius)",
+                    fontSize: isMobile ? 12 : 14,
                   }}
                 />
                 <Line
@@ -169,20 +176,20 @@ export const EnhancedAnalyticsCharts = ({ userId }: EnhancedAnalyticsChartsProps
                   dataKey="views"
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
-                  dot={{ fill: "hsl(var(--primary))" }}
-                  activeDot={{ r: 6 }}
+                  dot={{ fill: "hsl(var(--primary))", r: isMobile ? 2 : 4 }}
+                  activeDot={{ r: isMobile ? 4 : 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground text-center">
             Profile views over the last 30 days
           </p>
         </TabsContent>
 
-        <TabsContent value="engagement" className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-6 mt-4">
-            <div className="h-80">
+        <TabsContent value="engagement" className="space-y-3">
+          <div className={isMobile ? "space-y-4" : "grid md:grid-cols-2 gap-6"} style={{ marginTop: 12 }}>
+            <div style={{ height: chartHeight }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -190,8 +197,8 @@ export const EnhancedAnalyticsCharts = ({ userId }: EnhancedAnalyticsChartsProps
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
-                    outerRadius={80}
+                    label={isMobile ? undefined : ({ name, value }) => `${name}: ${value}`}
+                    outerRadius={isMobile ? 60 : 80}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -200,35 +207,38 @@ export const EnhancedAnalyticsCharts = ({ userId }: EnhancedAnalyticsChartsProps
                     ))}
                   </Pie>
                   <Tooltip />
+                  {isMobile && <Legend />}
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={engagementData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="name"
-                    className="text-xs"
-                    tick={{ fill: "hsl(var(--muted-foreground))" }}
-                  />
-                  <YAxis
-                    className="text-xs"
-                    tick={{ fill: "hsl(var(--muted-foreground))" }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--popover))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "var(--radius)",
-                    }}
-                  />
-                  <Bar dataKey="value" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {!isMobile && (
+              <div style={{ height: chartHeight }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={engagementData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="name"
+                      className="text-xs"
+                      tick={{ fill: "hsl(var(--muted-foreground))" }}
+                    />
+                    <YAxis
+                      className="text-xs"
+                      tick={{ fill: "hsl(var(--muted-foreground))" }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "var(--radius)",
+                      }}
+                    />
+                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground text-center">
             Your engagement metrics
           </p>
         </TabsContent>
