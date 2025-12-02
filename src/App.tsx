@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-route
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OfflineIndicator } from "@/components/offline/OfflineIndicator";
+import { UpdateNotification } from "@/components/pwa/UpdateNotification";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -179,6 +180,7 @@ const App = () => {
           <AuthProvider>
             <TooltipProvider>
               <OfflineIndicator />
+              <UpdateNotification />
               <Toaster />
               <Sonner />
               <AppContent />
