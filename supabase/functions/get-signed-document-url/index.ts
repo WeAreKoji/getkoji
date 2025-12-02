@@ -87,9 +87,14 @@ serve(async (req) => {
     console.log(`Document access requested by ${user.id} for verification ${verificationId}, document: ${documentType}`);
 
     // Get client IP for validation and logging
-    const clientIp = req.headers.get('x-forwarded-for') || 
-                     req.headers.get('x-real-ip') || 
-                     'unknown';
+    // Extract first IP from X-Forwarded-For (handles multiple proxies with comma-separated IPs)
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const rawClientIp = forwardedFor 
+      ? forwardedFor.split(',')[0].trim()
+      : req.headers.get('x-real-ip') || null;
+    
+    // Use null for database if IP is not available (inet type doesn't accept 'unknown')
+    const clientIp = rawClientIp || null;
 
     // Enhanced validation using the new security function
     const { data: validationResult, error: validationError } = await supabaseClient
