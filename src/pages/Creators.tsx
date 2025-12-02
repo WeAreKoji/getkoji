@@ -39,12 +39,11 @@ const CreatorCardSkeleton = () => {
   
   if (isMobile) {
     return (
-      <div className="rounded-lg border bg-card p-3 flex gap-3">
-        <Skeleton className="w-24 h-24 rounded-xl flex-shrink-0" />
-        <div className="flex-1 space-y-2 py-0.5">
-          <Skeleton className="h-4 w-24" />
+      <div className="rounded-lg border bg-card p-2.5 flex gap-2.5">
+        <Skeleton className="w-14 h-14 rounded-lg flex-shrink-0" />
+        <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+          <Skeleton className="h-4 w-28" />
           <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-3 w-full" />
           <Skeleton className="h-3 w-20" />
         </div>
       </div>
@@ -262,7 +261,7 @@ const Creators = () => {
 
   const renderContent = () => (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
-      <div className="container mx-auto px-3 md:px-4 py-3 md:py-8 max-w-7xl">
+      <div className="w-full px-3 md:container md:mx-auto md:px-4 py-3 md:py-8 md:max-w-7xl">
         {/* Header */}
         <div className="mb-3 md:mb-6">
           <div className="flex items-center justify-between gap-3">
