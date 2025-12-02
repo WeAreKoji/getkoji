@@ -260,8 +260,8 @@ const Creators = () => {
   ].filter(Boolean).length;
 
   const renderContent = () => (
-    <div className="min-h-screen bg-background pb-20 md:pb-8">
-      <div className="w-full px-3 md:container md:mx-auto md:px-4 py-3 md:py-8 md:max-w-7xl">
+    <div className="min-h-screen bg-background pb-20 md:pb-8 w-full max-w-full overflow-x-hidden">
+      <div className="w-full max-w-full px-3 py-3 md:px-4 md:py-8 lg:max-w-7xl lg:mx-auto">
         {/* Header */}
         <div className="mb-3 md:mb-6">
           <div className="flex items-center justify-between gap-3">
@@ -279,7 +279,7 @@ const Creators = () => {
         </div>
 
         {/* Filters and Content */}
-        <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-3 md:gap-6">
+        <div className="w-full max-w-full grid grid-cols-1 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-3 md:gap-6">
           {/* Sidebar Filters - hidden on mobile, shown as sheet via CreatorFilters */}
           <aside className="hidden lg:block space-y-3">
             <CreatorSavedPresets
@@ -295,7 +295,7 @@ const Creators = () => {
           </aside>
 
           {/* Main Content */}
-          <div className="space-y-2 md:space-y-4">
+          <div className="w-full max-w-full min-w-0 space-y-2 md:space-y-4">
             {/* Mobile: Quick Filters + Filter button row */}
             <div className="lg:hidden">
               <div className="flex items-center gap-2">
@@ -342,7 +342,7 @@ const Creators = () => {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-6 w-full overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 w-full max-w-full">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <CreatorCardSkeleton key={i} />
                 ))}
@@ -365,7 +365,7 @@ const Creators = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-6 w-full overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 w-full max-w-full">
                   {creators.map((creator) => (
                     <CreatorShowcaseCard key={creator.id} creator={creator} />
                   ))}
