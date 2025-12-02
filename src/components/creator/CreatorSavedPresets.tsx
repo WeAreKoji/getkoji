@@ -89,13 +89,13 @@ export const CreatorSavedPresets = ({
   };
 
   return (
-    <Card className="p-4 space-y-3">
+    <Card className="p-3 md:p-4 space-y-2 md:space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Saved Searches</h3>
+        <h3 className="font-semibold text-xs md:text-sm">Saved Searches</h3>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <Bookmark className="mr-2 h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-8 text-xs">
+              <Bookmark className="mr-1.5 h-3.5 w-3.5" />
               Save
             </Button>
           </DialogTrigger>
@@ -127,29 +127,29 @@ export const CreatorSavedPresets = ({
       </div>
 
       {presets.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-4">
+        <p className="text-xs text-muted-foreground text-center py-2 md:py-4">
           No saved searches yet. Save your current filters to quickly apply them later.
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5 md:space-y-2">
           {presets.map((preset) => (
             <div
               key={preset.id}
-              className="flex items-center justify-between p-2 rounded-lg border hover:bg-accent/50 transition-colors"
+              className="flex items-center justify-between p-1.5 md:p-2 rounded-lg border hover:bg-accent/50 transition-colors"
             >
               <button
                 onClick={() => onLoadPreset(preset.filters)}
-                className="flex-1 text-left text-sm font-medium hover:text-primary transition-colors"
+                className="flex-1 text-left text-xs md:text-sm font-medium hover:text-primary transition-colors"
               >
                 {preset.name}
               </button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-7 w-7 md:h-8 md:w-8"
                 onClick={() => deletePreset(preset.id)}
               >
-                <Trash2 className="h-4 w-4 text-destructive" />
+                <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-destructive" />
               </Button>
             </div>
           ))}
