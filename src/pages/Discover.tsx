@@ -43,6 +43,7 @@ const Discover = () => {
   const [modalProfile, setModalProfile] = useState<Profile | null>(null);
   const [matchedProfile, setMatchedProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
+  const [newMatchId, setNewMatchId] = useState<string | undefined>(undefined);
   const [filters, setFilters] = useState({
     ageRange: [18, 99] as [number, number],
     distance: 50,
@@ -92,6 +93,7 @@ const Discover = () => {
 
           if (profile) {
             setMatchedProfile(profile);
+            setNewMatchId(payload.new.id);
             setShowMatchCelebration(true);
           }
         }
@@ -389,9 +391,13 @@ const Discover = () => {
         {/* Match Celebration Modal */}
         <MatchCelebrationModal
           open={showMatchCelebration}
-          onOpenChange={setShowMatchCelebration}
+          onOpenChange={(open) => {
+            setShowMatchCelebration(open);
+            if (!open) setNewMatchId(undefined);
+          }}
           matchedProfile={matchedProfile}
           currentUserAvatar={currentUserProfile?.avatar_url || null}
+          matchId={newMatchId}
         />
 
         {/* Invite & Earn Modal - Post Onboarding */}
