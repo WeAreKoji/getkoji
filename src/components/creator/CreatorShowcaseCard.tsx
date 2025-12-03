@@ -2,9 +2,9 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Users, Play, Volume2, VolumeX } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Users, Play, Pause, Volume2, VolumeX, Star } from "lucide-react";
 import { VerificationBadges } from "@/components/profile/VerificationBadges";
-import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -26,15 +26,20 @@ interface CreatorShowcaseCardProps {
     tagline?: string;
     showcase_bio?: string;
   };
+  isFeatured?: boolean;
 }
 
-export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
+export const CreatorShowcaseCard = ({ creator, isFeatured }: CreatorShowcaseCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isPressed, setIsPressed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Auto-featured based on subscriber count (100+ subscribers)
+  const isTopCreator = isFeatured || (creator.subscriber_count && creator.subscriber_count >= 100);
 
   const handleCardClick = () => {
     const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
@@ -62,14 +67,18 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
   };
 
   const handleMouseEnter = () => {
-    if (creator.welcome_video_url && videoRef.current && !isVideoPlaying) {
-      videoRef.current.play();
+    setIsHovered(true);
+    if (creator.welcome_video_url && videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Autoplay failed, user interaction required
+      });
       setIsVideoPlaying(true);
     }
   };
 
   const handleMouseLeave = () => {
-    if (creator.welcome_video_url && videoRef.current && isVideoPlaying) {
+    setIsHovered(false);
+    if (creator.welcome_video_url && videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
       setIsVideoPlaying(false);
@@ -147,7 +156,10 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
   // Desktop: Modern vertical card layout
   return (
     <Card
-      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border/50 bg-card overflow-hidden"
+      className={cn(
+        "group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-border/50 bg-card overflow-hidden",
+        isTopCreator && "ring-2 ring-primary/50 hover:ring-primary"
+      )}
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -159,24 +171,38 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
             <video
               ref={videoRef}
               src={creator.welcome_video_url}
-              className="w-full h-full object-cover"
+              className={cn(
+                "w-full h-full object-cover transition-transform duration-500",
+                isHovered && "scale-105"
+              )}
               loop
               muted={isMuted}
               playsInline
+              poster={creator.cover_image_url || creator.avatar_url}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            <div className={cn(
+              "absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent transition-opacity duration-300",
+              isHovered ? "opacity-30" : "opacity-100"
+            )} />
             
             {/* Video Controls - visible on hover */}
-            <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className={cn(
+              "absolute bottom-3 right-3 flex gap-2 transition-all duration-300",
+              isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+            )}>
               <button
                 onClick={handleVideoClick}
-                className="w-8 h-8 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors shadow-md"
+                className="w-9 h-9 rounded-full bg-background/95 flex items-center justify-center hover:bg-background hover:scale-110 transition-all shadow-lg"
               >
-                <Play className="w-4 h-4 text-primary" fill="currentColor" />
+                {isVideoPlaying ? (
+                  <Pause className="w-4 h-4 text-primary" />
+                ) : (
+                  <Play className="w-4 h-4 text-primary ml-0.5" fill="currentColor" />
+                )}
               </button>
               <button
                 onClick={toggleMute}
-                className="w-8 h-8 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors shadow-md"
+                className="w-9 h-9 rounded-full bg-background/95 flex items-center justify-center hover:bg-background hover:scale-110 transition-all shadow-lg"
               >
                 {isMuted ? (
                   <VolumeX className="w-4 h-4 text-muted-foreground" />
@@ -185,16 +211,27 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
                 )}
               </button>
             </div>
+
+            {/* Playing indicator */}
+            {isVideoPlaying && (
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-background/90 rounded-full px-2.5 py-1 animate-pulse">
+                <span className="w-2 h-2 bg-red-500 rounded-full" />
+                <span className="text-xs font-medium text-foreground">Live Preview</span>
+              </div>
+            )}
           </>
         ) : creator.cover_image_url || creator.avatar_url ? (
           <>
             <img
               src={creator.cover_image_url || creator.avatar_url || "/placeholder.svg"}
               alt={creator.display_name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className={cn(
+                "w-full h-full object-cover transition-transform duration-500",
+                isHovered && "scale-110"
+              )}
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -202,8 +239,19 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
           </div>
         )}
 
+        {/* Featured Badge */}
+        {isTopCreator && (
+          <Badge className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg gap-1">
+            <Star className="w-3 h-3" fill="currentColor" />
+            Featured
+          </Badge>
+        )}
+
         {/* Price badge on cover */}
-        <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full px-3 py-1 shadow-md">
+        <div className={cn(
+          "absolute top-3 right-3 bg-primary text-primary-foreground rounded-full px-3 py-1.5 shadow-lg transition-transform duration-300",
+          isHovered && "scale-105"
+        )}>
           <span className="text-sm font-bold">
             ${creator.subscription_price}
             <span className="text-xs font-normal opacity-80">/mo</span>
@@ -215,14 +263,27 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
       <CardContent className="p-4 space-y-3">
         {/* Avatar + Name Row */}
         <div className="flex items-center gap-3">
-          <img
-            src={creator.avatar_url || "/placeholder.svg"}
-            alt={creator.display_name}
-            className="w-14 h-14 rounded-full border-2 border-border object-cover flex-shrink-0"
-          />
+          <div className="relative">
+            <img
+              src={creator.avatar_url || "/placeholder.svg"}
+              alt={creator.display_name}
+              className={cn(
+                "w-14 h-14 rounded-full border-2 border-border object-cover flex-shrink-0 transition-all duration-300",
+                isHovered && "border-primary scale-105 shadow-md"
+              )}
+            />
+            {isTopCreator && (
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
+                <Star className="w-3 h-3 text-white" fill="currentColor" />
+              </div>
+            )}
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <h3 className="font-bold text-foreground truncate">{creator.display_name}</h3>
+              <h3 className={cn(
+                "font-bold text-foreground truncate transition-colors duration-300",
+                isHovered && "text-primary"
+              )}>{creator.display_name}</h3>
               <VerificationBadges 
                 userId={creator.user_id} 
                 isCreator={true}
@@ -264,8 +325,8 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
             const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
             navigate(path);
           }}
-          variant="secondary"
-          className="w-full font-semibold"
+          variant={isHovered ? "default" : "secondary"}
+          className="w-full font-semibold transition-all duration-300"
         >
           View Profile
         </Button>
