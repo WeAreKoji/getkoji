@@ -144,7 +144,7 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
     );
   }
 
-  // Desktop: Modern horizontal card layout
+  // Desktop: Modern vertical card layout
   return (
     <Card
       className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/50 bg-card overflow-hidden"
@@ -152,145 +152,142 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex h-[200px]">
-        {/* Left: Image/Video Section */}
-        <div className="relative w-[180px] flex-shrink-0 bg-gradient-to-br from-primary/20 via-primary/10 to-background overflow-hidden">
-          {creator.welcome_video_url ? (
-            <>
-              <video
-                ref={videoRef}
-                src={creator.welcome_video_url}
-                className="w-full h-full object-cover"
-                loop
-                muted={isMuted}
-                playsInline
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/30" />
-              
-              {/* Play Button Overlay */}
-              <button
-                onClick={handleVideoClick}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <div className="w-12 h-12 rounded-full bg-background/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                  <Play className="w-6 h-6 text-primary" fill="currentColor" />
-                </div>
-              </button>
+      {/* Cover Image/Video Section */}
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/20 via-primary/10 to-background overflow-hidden">
+        {creator.welcome_video_url ? (
+          <>
+            <video
+              ref={videoRef}
+              src={creator.welcome_video_url}
+              className="w-full h-full object-cover"
+              loop
+              muted={isMuted}
+              playsInline
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            
+            {/* Play Button Overlay */}
+            <button
+              onClick={handleVideoClick}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <div className="w-14 h-14 rounded-full bg-background/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                <Play className="w-7 h-7 text-primary" fill="currentColor" />
+              </div>
+            </button>
 
-              {/* Mute Toggle */}
-              <button
-                onClick={toggleMute}
-                className="absolute bottom-3 left-3 w-8 h-8 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors opacity-0 group-hover:opacity-100"
-              >
-                {isMuted ? (
-                  <VolumeX className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-primary" />
-                )}
-              </button>
-            </>
-          ) : creator.cover_image_url || creator.avatar_url ? (
-            <>
-              <img
-                src={creator.cover_image_url || creator.avatar_url || "/placeholder.svg"}
-                alt={creator.display_name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Users className="w-12 h-12 text-muted-foreground/30" />
-            </div>
+            {/* Mute Toggle */}
+            <button
+              onClick={toggleMute}
+              className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors opacity-0 group-hover:opacity-100"
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-primary" />
+              )}
+            </button>
+          </>
+        ) : creator.cover_image_url || creator.avatar_url ? (
+          <>
+            <img
+              src={creator.cover_image_url || creator.avatar_url || "/placeholder.svg"}
+              alt={creator.display_name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Users className="w-16 h-16 text-muted-foreground/30" />
+          </div>
+        )}
+
+        {/* Avatar positioned at bottom of cover */}
+        <div className="absolute -bottom-10 left-4">
+          <img
+            src={creator.avatar_url || "/placeholder.svg"}
+            alt={creator.display_name}
+            className="w-20 h-20 rounded-xl border-4 border-card object-cover shadow-lg"
+          />
+        </div>
+
+        {/* Price badge */}
+        <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-md">
+          <span className="text-sm font-bold text-foreground">
+            ${creator.subscription_price}
+            <span className="text-xs font-normal text-muted-foreground">/mo</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Content Section */}
+      <div className="pt-12 pb-5 px-4 space-y-3">
+        {/* Name and Verification */}
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-foreground truncate">{creator.display_name}</h3>
+            <VerificationBadges 
+              userId={creator.user_id} 
+              isCreator={true}
+              idVerified={creator.id_verified}
+              size="sm"
+            />
+          </div>
+          {creator.username && (
+            <p className="text-sm text-muted-foreground">@{creator.username}</p>
           )}
         </div>
 
-        {/* Right: Content Section */}
-        <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
-          {/* Top: Avatar, Name, Username */}
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <img
-                src={creator.avatar_url || "/placeholder.svg"}
-                alt={creator.display_name}
-                className="w-14 h-14 rounded-xl border-2 border-border object-cover shadow-md flex-shrink-0"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-foreground truncate">{creator.display_name}</h3>
-                  <VerificationBadges 
-                    userId={creator.user_id} 
-                    isCreator={true}
-                    idVerified={creator.id_verified}
-                    size="sm"
-                  />
-                </div>
-                {creator.username && (
-                  <p className="text-sm text-muted-foreground">@{creator.username}</p>
-                )}
-              </div>
-            </div>
+        {/* Tagline or Bio */}
+        {(creator.tagline || displayBio) && (
+          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            {creator.tagline || displayBio}
+          </p>
+        )}
 
-            {/* Tagline or Bio */}
-            {(creator.tagline || displayBio) && (
-              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                {creator.tagline || displayBio}
-              </p>
-            )}
-          </div>
-
-          {/* Bottom: Stats and CTA */}
-          <div className="flex items-end justify-between gap-4 pt-3 border-t border-border/50">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              {creator.city && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {creator.city}
-                  {creator.age && <span className="ml-1">• {creator.age}</span>}
-                </span>
-              )}
-              {creator.created_at && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {(() => {
-                    try {
-                      const date = new Date(creator.created_at);
-                      if (!isNaN(date.getTime())) {
-                        return format(date, "MMM yyyy");
-                      }
-                      return "Recently";
-                    } catch {
-                      return "Recently";
-                    }
-                  })()}
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Users className="w-3.5 h-3.5" />
-                {creator.subscriber_count || 0} subs
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <p className="text-xl font-bold text-foreground">
-                ${creator.subscription_price}
-                <span className="text-xs font-normal text-muted-foreground">/mo</span>
-              </p>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
-                  navigate(path);
-                }}
-                size="sm"
-                className="font-semibold h-9 px-5"
-              >
-                Subscribe
-              </Button>
-            </div>
-          </div>
+        {/* Stats Row */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          {creator.city && (
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              {creator.city}
+            </span>
+          )}
+          {creator.created_at && (
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              {(() => {
+                try {
+                  const date = new Date(creator.created_at);
+                  if (!isNaN(date.getTime())) {
+                    return format(date, "MMM yyyy");
+                  }
+                  return "Recently";
+                } catch {
+                  return "Recently";
+                }
+              })()}
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <Users className="w-3.5 h-3.5" />
+            {creator.subscriber_count || 0}
+          </span>
         </div>
+
+        {/* Subscribe Button */}
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
+            navigate(path);
+          }}
+          className="w-full font-semibold h-10"
+        >
+          Subscribe
+        </Button>
       </div>
     </Card>
   );
