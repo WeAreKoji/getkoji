@@ -147,13 +147,13 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
   // Desktop: Modern vertical card layout
   return (
     <Card
-      className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/50 bg-card overflow-hidden"
+      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border/50 bg-card overflow-hidden"
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Cover Image/Video Section */}
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/20 via-primary/10 to-background overflow-hidden">
+      <div className="relative aspect-video bg-gradient-to-br from-primary/20 via-primary/10 to-background overflow-hidden">
         {creator.welcome_video_url ? (
           <>
             <video
@@ -164,29 +164,27 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
               muted={isMuted}
               playsInline
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             
-            {/* Play Button Overlay */}
-            <button
-              onClick={handleVideoClick}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <div className="w-14 h-14 rounded-full bg-background/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                <Play className="w-7 h-7 text-primary" fill="currentColor" />
-              </div>
-            </button>
-
-            {/* Mute Toggle */}
-            <button
-              onClick={toggleMute}
-              className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors opacity-0 group-hover:opacity-100"
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-primary" />
-              )}
-            </button>
+            {/* Video Controls - visible on hover */}
+            <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={handleVideoClick}
+                className="w-8 h-8 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors shadow-md"
+              >
+                <Play className="w-4 h-4 text-primary" fill="currentColor" />
+              </button>
+              <button
+                onClick={toggleMute}
+                className="w-8 h-8 rounded-full bg-background/90 flex items-center justify-center hover:bg-background transition-colors shadow-md"
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-primary" />
+                )}
+              </button>
+            </div>
           </>
         ) : creator.cover_image_url || creator.avatar_url ? (
           <>
@@ -196,99 +194,82 @@ export const CreatorShowcaseCard = ({ creator }: CreatorShowcaseCardProps) => {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Users className="w-16 h-16 text-muted-foreground/30" />
+            <Users className="w-12 h-12 text-muted-foreground/30" />
           </div>
         )}
 
-        {/* Avatar positioned at bottom of cover */}
-        <div className="absolute -bottom-10 left-4">
-          <img
-            src={creator.avatar_url || "/placeholder.svg"}
-            alt={creator.display_name}
-            className="w-20 h-20 rounded-xl border-4 border-card object-cover shadow-lg"
-          />
-        </div>
-
-        {/* Price badge */}
-        <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-md">
-          <span className="text-sm font-bold text-foreground">
+        {/* Price badge on cover */}
+        <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full px-3 py-1 shadow-md">
+          <span className="text-sm font-bold">
             ${creator.subscription_price}
-            <span className="text-xs font-normal text-muted-foreground">/mo</span>
+            <span className="text-xs font-normal opacity-80">/mo</span>
           </span>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="pt-12 pb-5 px-4 space-y-3">
-        {/* Name and Verification */}
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-foreground truncate">{creator.display_name}</h3>
-            <VerificationBadges 
-              userId={creator.user_id} 
-              isCreator={true}
-              idVerified={creator.id_verified}
-              size="sm"
-            />
+      <CardContent className="p-4 space-y-3">
+        {/* Avatar + Name Row */}
+        <div className="flex items-center gap-3">
+          <img
+            src={creator.avatar_url || "/placeholder.svg"}
+            alt={creator.display_name}
+            className="w-14 h-14 rounded-full border-2 border-border object-cover flex-shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-bold text-foreground truncate">{creator.display_name}</h3>
+              <VerificationBadges 
+                userId={creator.user_id} 
+                isCreator={true}
+                idVerified={creator.id_verified}
+                size="sm"
+              />
+            </div>
+            {creator.username && (
+              <p className="text-sm text-muted-foreground truncate">@{creator.username}</p>
+            )}
           </div>
-          {creator.username && (
-            <p className="text-sm text-muted-foreground">@{creator.username}</p>
-          )}
         </div>
 
-        {/* Tagline or Bio */}
+        {/* Bio/Tagline */}
         {(creator.tagline || displayBio) && (
-          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+          <p className="text-sm text-muted-foreground line-clamp-2">
             {creator.tagline || displayBio}
           </p>
         )}
 
         {/* Stats Row */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {creator.city && (
             <span className="flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
               {creator.city}
             </span>
           )}
-          {creator.created_at && (
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              {(() => {
-                try {
-                  const date = new Date(creator.created_at);
-                  if (!isNaN(date.getTime())) {
-                    return format(date, "MMM yyyy");
-                  }
-                  return "Recently";
-                } catch {
-                  return "Recently";
-                }
-              })()}
-            </span>
-          )}
           <span className="flex items-center gap-1">
             <Users className="w-3.5 h-3.5" />
-            {creator.subscriber_count || 0}
+            {creator.subscriber_count || 0} subscribers
           </span>
         </div>
 
-        {/* Subscribe Button */}
+        {/* View Profile Button */}
         <Button
           onClick={(e) => {
             e.stopPropagation();
             const path = creator.username ? `/creators/${creator.username}` : `/creator/${creator.user_id}`;
             navigate(path);
           }}
-          className="w-full font-semibold h-10"
+          variant="secondary"
+          className="w-full font-semibold"
         >
-          Subscribe
+          View Profile
         </Button>
-      </div>
+      </CardContent>
     </Card>
   );
 };
