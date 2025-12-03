@@ -3,12 +3,26 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-moderation-secret",
 };
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[MODERATE-CONTENT] ${step}${detailsStr}`);
+};
+
+// Validate the moderation secret for internal/cron calls
+const validateModerationSecret = (req: Request): boolean => {
+  const secret = req.headers.get("x-moderation-secret");
+  const expectedSecret = Deno.env.get("MODERATION_SECRET");
+  
+  // If no secret is configured, reject all requests (fail secure)
+  if (!expectedSecret) {
+    logStep("WARNING: MODERATION_SECRET not configured - rejecting request");
+    return false;
+  }
+  
+  return secret === expectedSecret;
 };
 
 serve(async (req) => {
@@ -18,6 +32,15 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Validate the request has the correct secret
+    if (!validateModerationSecret(req)) {
+      logStep("Unauthorized request - invalid or missing moderation secret");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -29,6 +52,29 @@ serve(async (req) => {
     );
 
     const { content, contentType, contentId } = await req.json();
+    
+    // Basic input validation
+    if (!content || typeof content !== 'string' || content.length > 50000) {
+      return new Response(JSON.stringify({ error: "Invalid content" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+    
+    if (!contentType || !['post', 'message', 'profile', 'comment'].includes(contentType)) {
+      return new Response(JSON.stringify({ error: "Invalid content type" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+    
+    if (!contentId || typeof contentId !== 'string') {
+      return new Response(JSON.stringify({ error: "Invalid content ID" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+    
     logStep("Analyzing content", { contentType, contentId });
 
     // AI moderation prompt
