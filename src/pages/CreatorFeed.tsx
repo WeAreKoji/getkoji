@@ -80,7 +80,7 @@ const CreatorFeed = () => {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'true') {
+    if (urlParams.get('success') === 'true' && (resolvedCreatorId || creatorId)) {
       toast({
         title: "Welcome!",
         description: "Your subscription is now active. Enjoy exclusive content!",
@@ -88,7 +88,7 @@ const CreatorFeed = () => {
       checkSubscription();
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, []);
+  }, [resolvedCreatorId, creatorId]);
 
   const fetchCreatorData = async () => {
     try {
@@ -204,12 +204,16 @@ const CreatorFeed = () => {
   const checkSubscription = async () => {
     try {
       const actualId = resolvedCreatorId || creatorId;
+      if (!actualId) {
+        console.warn('checkSubscription called without a valid creator ID');
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("check-subscription", {
         body: { creatorId: actualId },
       });
 
       if (error) throw error;
-      setIsSubscribed(data.subscribed);
+      setIsSubscribed(data?.subscribed ?? false);
     } catch (error) {
       logError(error, 'CreatorFeed.checkSubscription');
     }
