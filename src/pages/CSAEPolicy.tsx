@@ -1,8 +1,82 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ShieldAlert, AlertTriangle, Phone, Flag } from "lucide-react";
+import { ArrowLeft, ShieldAlert, AlertTriangle, Phone, Flag, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const CSAEPolicy = () => {
+  const { toast } = useToast();
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportType, setReportType] = useState("");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmitReport = async () => {
+    if (!reportType || !description.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please select a report type and provide details.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase.from("content_reports").insert({
+        reporter_id: user?.id || "00000000-0000-0000-0000-000000000000",
+        content_type: "child_safety",
+        content_id: "00000000-0000-0000-0000-000000000000",
+        report_category: reportType,
+        description: description.trim(),
+        priority: "critical",
+        metadata: {
+          report_source: "csae_policy_page",
+          anonymous: !user,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Report submitted",
+        description: "Thank you for reporting. Our safety team will review this immediately.",
+      });
+      setReportOpen(false);
+      setReportType("");
+      setDescription("");
+    } catch (error: any) {
+      toast({
+        title: "Error submitting report",
+        description: "Please try again or contact safety@getkoji.com directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-2xl mx-auto">
@@ -107,17 +181,105 @@ const CSAEPolicy = () => {
             </CardContent>
           </Card>
 
+          {/* Report Now Section */}
+          <Card className="bg-destructive/10 border-destructive/30">
+            <CardContent className="p-6">
+              <div className="text-center space-y-4">
+                <ShieldAlert className="w-12 h-12 text-destructive mx-auto" />
+                <h3 className="text-lg font-bold">Report Child Safety Concern</h3>
+                <p className="text-sm text-muted-foreground">
+                  If you have witnessed or suspect any form of child exploitation on our platform, 
+                  please report it immediately. All reports are treated with the highest priority.
+                </p>
+                <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" variant="destructive" className="w-full sm:w-auto">
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report Now
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <ShieldAlert className="w-5 h-5 text-destructive" />
+                        Report Child Safety Concern
+                      </DialogTitle>
+                      <DialogDescription>
+                        Your report will be reviewed immediately by our safety team. 
+                        You may report anonymously.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="report-type">Type of Concern *</Label>
+                        <Select value={reportType} onValueChange={setReportType}>
+                          <SelectTrigger id="report-type">
+                            <SelectValue placeholder="Select type of concern" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="csam_content">CSAM / Illegal Content</SelectItem>
+                            <SelectItem value="grooming">Grooming Behavior</SelectItem>
+                            <SelectItem value="solicitation">Solicitation of Minor</SelectItem>
+                            <SelectItem value="age_misrepresentation">User Misrepresenting Age</SelectItem>
+                            <SelectItem value="suspicious_activity">Suspicious Activity</SelectItem>
+                            <SelectItem value="other_child_safety">Other Child Safety Concern</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Details *</Label>
+                        <Textarea
+                          id="description"
+                          placeholder="Please provide as much detail as possible including usernames, timestamps, and description of the concern..."
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          rows={5}
+                          maxLength={2000}
+                        />
+                        <p className="text-xs text-muted-foreground text-right">
+                          {description.length}/2000
+                        </p>
+                      </div>
+                      <div className="bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
+                        <p className="font-medium mb-1">What happens next:</p>
+                        <ul className="space-y-1 list-disc list-inside">
+                          <li>Report reviewed within 24 hours (critical reports faster)</li>
+                          <li>Evidence preserved for law enforcement if needed</li>
+                          <li>Reported to NCMEC if CSAM is confirmed</li>
+                        </ul>
+                      </div>
+                      <Button 
+                        onClick={handleSubmitReport} 
+                        disabled={submitting || !reportType || !description.trim()}
+                        className="w-full"
+                      >
+                        {submitting ? (
+                          "Submitting..."
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Submit Report
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* How to Report */}
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Flag className="w-5 h-5 text-primary" />
-                How to Report
+                Other Ways to Report
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground text-sm">
-                If you encounter any content or behavior that violates this policy, please report it immediately:
+                You can also report child safety concerns through these channels:
               </p>
               <div className="space-y-3">
                 <div className="p-3 bg-background rounded-lg border">
@@ -135,7 +297,7 @@ const CSAEPolicy = () => {
                 <div className="p-3 bg-background rounded-lg border">
                   <p className="font-medium text-sm">24/7 Safety Team</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Reports are reviewed within 24 hours
+                    Critical reports are reviewed immediately
                   </p>
                 </div>
               </div>
