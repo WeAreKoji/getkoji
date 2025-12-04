@@ -62,6 +62,7 @@ const AdminReports = lazy(() => import("./pages/AdminReports"));
 const TransactionDetails = lazy(() => import("./pages/TransactionDetails"));
 const Achievements = lazy(() => import("./pages/Achievements"));
 const SavedProfiles = lazy(() => import("./pages/SavedProfiles"));
+const CSAEPolicy = lazy(() => import("./pages/CSAEPolicy"));
 
 const queryClient = new QueryClient();
 
@@ -163,6 +164,7 @@ const AppContent = () => {
               <Route path="/terms" element={<Terms />} errorElement={<RouteErrorBoundary />} />
               <Route path="/community" element={<Community />} errorElement={<RouteErrorBoundary />} />
               <Route path="/support" element={<Support />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/csae-policy" element={<CSAEPolicy />} errorElement={<RouteErrorBoundary />} />
               <Route path="*" element={<NotFound />} errorElement={<RouteErrorBoundary />} />
             </Routes>
           </Suspense>

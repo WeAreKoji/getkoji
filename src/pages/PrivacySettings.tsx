@@ -366,6 +366,21 @@ const PrivacySettings = () => {
             </div>
           </Card>
 
+          {/* Child Safety Policy Link */}
+          <Card className="p-4 border-destructive/20 bg-destructive/5">
+            <Link to="/csae-policy" className="flex items-center justify-between group">
+              <div className="space-y-1">
+                <h3 className="font-semibold group-hover:text-primary transition-colors flex items-center gap-2">
+                  Child Safety Policy
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Our standards against child sexual abuse and exploitation (CSAE)
+                </p>
+              </div>
+              <ArrowLeft className="w-5 h-5 rotate-180 text-muted-foreground group-hover:text-primary transition-colors" />
+            </Link>
+          </Card>
+
           {/* Info Box */}
           <Card className="p-4 bg-primary/5 border-primary/20">
             <div className="flex gap-3">
