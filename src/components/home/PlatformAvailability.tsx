@@ -46,35 +46,30 @@ export const PlatformAvailability = () => {
               </ul>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
-                  variant="default" 
-                  size="lg" 
-                  className="flex items-center gap-2"
-                  asChild
-                >
-                  <a 
-                    href="https://apps.apple.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    aria-label="Download Koji on the App Store"
-                  >
-                    <Apple className="w-5 h-5" />
-                    App Store
-                  </a>
-                </Button>
-                <Button 
                   variant="secondary" 
                   size="lg" 
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 opacity-70"
+                  disabled
+                >
+                  <Apple className="w-5 h-5" />
+                  App Store
+                  <span className="text-xs">(Coming Soon)</span>
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="lg" 
+                  className="flex items-center gap-2 relative"
                   asChild
                 >
                   <a 
-                    href="https://play.google.com" 
+                    href="https://play.google.com/store/apps/details?id=co.median.android.abbmnxz&pcampaignid=web_share" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     aria-label="Download Koji on Google Play"
                   >
                     <Smartphone className="w-5 h-5" />
                     Google Play
+                    <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full font-medium">NEW</span>
                   </a>
                 </Button>
               </div>

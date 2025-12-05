@@ -61,7 +61,7 @@ export const AppScreenshots = () => {
 
         <div className="mt-8 text-center">
           <p className="text-muted-foreground text-sm">
-            Web app active now · Mobile apps coming soon
+            Web app active · <a href="https://play.google.com/store/apps/details?id=co.median.android.abbmnxz&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Now on Google Play!</a> · iOS coming soon
           </p>
         </div>
       </div>
