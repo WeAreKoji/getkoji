@@ -69,7 +69,7 @@ const Home = () => {
 
           <div className="mt-4 animate-in fade-in duration-700 delay-400">
             <p className="text-xs sm:text-sm text-muted-foreground/80">
-              📱 Mobile apps coming soon · Web app active now
+              📱 Now on Google Play · iOS coming soon · Web app active
             </p>
           </div>
 
@@ -265,7 +265,7 @@ const Home = () => {
             </Button>
           </div>
           <p className="mt-4 text-xs sm:text-sm text-muted-foreground/70">
-            Mobile apps coming soon to iOS & Android
+            📱 Download now on <a href="https://play.google.com/store/apps/details?id=co.median.android.abbmnxz&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Play</a> · iOS coming soon
           </p>
         </div>
       </section>
@@ -321,7 +321,7 @@ const Home = () => {
           
           <div className="border-t border-border pt-6 sm:pt-8 text-center text-xs sm:text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} Koji - Connect, Create & Support. All rights reserved.</p>
-            <p className="mt-2">Social discovery web platform · Creator monetization · Mobile apps coming soon</p>
+            <p className="mt-2">Social discovery platform · Creator monetization · Now on <a href="https://play.google.com/store/apps/details?id=co.median.android.abbmnxz&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Play</a></p>
           </div>
         </div>
       </footer>
