@@ -88,16 +88,16 @@ const AppContent = () => {
               <Route path="/" element={<Home />} errorElement={<RouteErrorBoundary />} />
               <Route path="/auth" element={<Auth />} errorElement={<RouteErrorBoundary />} />
               <Route path="/reset-password" element={<ResetPassword />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/onboarding" element={<Onboarding />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/discover" element={<Discover />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
+              <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
               <Route path="/creators" element={<Creators />} errorElement={<RouteErrorBoundary />} />
               <Route path="/creator-recruitment" element={<CreatorRecruitment />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/matches" element={<Matches />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/chat/:matchId" element={<Chat />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/profile" element={<Profile />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/matches" element={<ProtectedRoute><Matches /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
+              <Route path="/chat/:matchId" element={<ProtectedRoute><Chat /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
               <Route path="/profile/:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
               <Route path="/@:userId" element={<Profile />} errorElement={<RouteErrorBoundary />} />
-              <Route path="/profile/edit" element={<ProfileEdit />} errorElement={<RouteErrorBoundary />} />
+              <Route path="/profile/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} errorElement={<RouteErrorBoundary />} />
               <Route path="/creator/apply" element={<CreatorApplication />} errorElement={<RouteErrorBoundary />} />
               <Route path="/creator/verify-identity" element={<CreatorVerifyIdentity />} errorElement={<RouteErrorBoundary />} />
             <Route path="/creator/setup" element={<CreatorSetup />} errorElement={<RouteErrorBoundary />} />

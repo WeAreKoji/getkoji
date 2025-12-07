@@ -49,7 +49,11 @@ const Chat = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
-    checkAuth();
+    if (user) {
+      setCurrentUserId(user.id);
+      fetchMatchData(user.id);
+      setupRealtimeSubscription();
+    }
 
     // Keyboard listeners
     keyboard.addListener((info) => {
@@ -65,7 +69,7 @@ const Chat = () => {
       }
       keyboard.removeAllListeners();
     };
-  }, [matchId]);
+  }, [matchId, user]);
 
   useEffect(() => {
     scrollToBottom();
@@ -90,16 +94,6 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
   };
 
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    setCurrentUserId(user.id);
-    await fetchMatchData(user.id);
-    setupRealtimeSubscription();
-  };
 
   const fetchMatchData = async (userId: string) => {
     try {

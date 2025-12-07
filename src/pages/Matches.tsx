@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import MatchCard from "@/components/matches/MatchCard";
 import BottomNav from "@/components/navigation/BottomNav";
 import LikesYouSection from "@/components/matches/LikesYouSection";
@@ -11,6 +10,7 @@ import { logError } from "@/lib/error-logger";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MatchData {
   match_id: string;
@@ -26,19 +26,21 @@ interface MatchData {
 }
 
 const Matches = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [matches, setMatches] = useState<MatchData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Initialize when user is available
+  useEffect(() => {
+    if (user) {
+      fetchMatches(user.id);
+    }
+  }, [user]);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  useEffect(() => {
-    if (!currentUserId) return;
+    if (!user) return;
 
     // Subscribe to matches changes
     const matchesChannel = supabase
@@ -49,10 +51,10 @@ const Matches = () => {
           event: '*',
           schema: 'public',
           table: 'matches',
-          filter: `user1_id=eq.${currentUserId},user2_id=eq.${currentUserId}`,
+          filter: `user1_id=eq.${user.id},user2_id=eq.${user.id}`,
         },
         () => {
-          fetchMatches(currentUserId, false);
+          fetchMatches(user.id, false);
         }
       )
       .subscribe();
@@ -68,7 +70,7 @@ const Matches = () => {
           table: 'messages',
         },
         () => {
-          fetchMatches(currentUserId, false);
+          fetchMatches(user.id, false);
         }
       )
       .on(
@@ -81,7 +83,7 @@ const Matches = () => {
         (payload) => {
           // Update unread count when messages are marked as read
           if (payload.new.read_at) {
-            fetchMatches(currentUserId, false);
+            fetchMatches(user.id, false);
           }
         }
       )
@@ -91,17 +93,7 @@ const Matches = () => {
       supabase.removeChannel(matchesChannel);
       supabase.removeChannel(messagesChannel);
     };
-  }, [currentUserId]);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    setCurrentUserId(user.id);
-    fetchMatches(user.id);
-  };
+  }, [user]);
 
   const fetchMatches = async (userId: string, isRefresh = false) => {
     try {
@@ -146,14 +138,14 @@ const Matches = () => {
   };
 
   const handleUnmatch = async (matchId: string, otherUserId: string) => {
-    if (!currentUserId) return;
+    if (!user) return;
 
     try {
       const { error } = await supabase
         .from('matches')
         .update({
-          deleted_by_user1: currentUserId < otherUserId ? true : undefined,
-          deleted_by_user2: currentUserId > otherUserId ? true : undefined,
+          deleted_by_user1: user.id < otherUserId ? true : undefined,
+          deleted_by_user2: user.id > otherUserId ? true : undefined,
         })
         .eq('id', matchId);
 
@@ -177,8 +169,8 @@ const Matches = () => {
   };
 
   const handleRefresh = () => {
-    if (currentUserId && !refreshing) {
-      fetchMatches(currentUserId, true);
+    if (user && !refreshing) {
+      fetchMatches(user.id, true);
     }
   };
 
@@ -224,10 +216,10 @@ const Matches = () => {
           </div>
 
           {/* Likes You Section */}
-          {currentUserId && (
+          {user && (
             <LikesYouSection
-              currentUserId={currentUserId}
-              onMatch={() => fetchMatches(currentUserId, false)}
+              currentUserId={user.id}
+              onMatch={() => fetchMatches(user.id, false)}
             />
           )}
 
@@ -256,7 +248,7 @@ const Matches = () => {
                     sender_id: match.last_message_sender_id!,
                   } : undefined}
                   unreadCount={match.unread_count}
-                  currentUserId={currentUserId!}
+                  currentUserId={user?.id || ''}
                   onUnmatch={() => handleUnmatch(match.match_id, match.other_user_id)}
                 />
               ))}
