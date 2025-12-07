@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, LogOut, SlidersHorizontal } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import SwipeableCard from "@/components/discover/SwipeableCard";
@@ -39,10 +40,10 @@ interface Profile {
 const UNDO_TIMEOUT = 5000; // 5 seconds
 
 const Discover = () => {
+  const { user } = useAuth();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [modalProfile, setModalProfile] = useState<Profile | null>(null);
   const [matchedProfile, setMatchedProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
@@ -80,9 +81,12 @@ const Discover = () => {
     };
   }, []);
   
+  // Initialize user data when authenticated
   useEffect(() => {
-    checkUser();
-  }, []);
+    if (user) {
+      initializeUserData();
+    }
+  }, [user]);
 
   // Real-time match detection
   useEffect(() => {
@@ -126,29 +130,24 @@ const Discover = () => {
     };
   }, [user]);
 
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-    } else {
-      setUser(user);
-      
-      // Load current user's profile for match celebration
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('avatar_url')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile) {
-        setCurrentUserProfile(profile);
-      }
-
-      // Load user's discovery preferences
-      await loadUserPreferences(user.id);
-      // Load profiles after user is set
-      await loadProfiles(user.id);
+  const initializeUserData = async () => {
+    if (!user) return;
+    
+    // Load current user's profile for match celebration
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single();
+    
+    if (profile) {
+      setCurrentUserProfile(profile);
     }
+
+    // Load user's discovery preferences
+    await loadUserPreferences(user.id);
+    // Load profiles after user is set
+    await loadProfiles(user.id);
   };
 
   const loadUserPreferences = async (userId: string) => {
