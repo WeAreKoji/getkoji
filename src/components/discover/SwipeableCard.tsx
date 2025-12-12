@@ -146,18 +146,6 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     }
   };
 
-  const handleImageClick = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const width = rect.width;
-
-    if (clickX < width * 0.3 && currentPhotoIndex > 0) {
-      previousPhoto();
-    } else if (clickX > width * 0.7 && currentPhotoIndex < allPhotos.length - 1) {
-      nextPhoto();
-    }
-  };
-
   const getIntentColor = (intent: string) => {
     switch (intent) {
       case 'open_to_dating':
@@ -217,20 +205,31 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     });
   }, [isProcessing, api, onSwipe]);
 
+  const handleButtonClick = useCallback((e: React.MouseEvent | React.TouchEvent, action: 'like' | 'reject') => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(`🔘 Button ${action} clicked`);
+    if (action === 'like') {
+      handleLike();
+    } else {
+      handleReject();
+    }
+  }, [handleLike, handleReject]);
+
   return (
-    <div className="relative w-full max-w-sm mx-auto">
+    <div className="relative w-full max-w-sm mx-auto flex flex-col">
+      {/* Draggable card area */}
       <animated.div
         {...bind()}
         style={{ x, y, rotate, opacity, touchAction: "none" }}
-        className={`rounded-2xl overflow-hidden shadow-2xl bg-card ${
+        className={`rounded-2xl overflow-hidden shadow-2xl bg-card select-none ${
           isProcessing ? 'pointer-events-none' : 'cursor-grab active:cursor-grabbing'
         }`}
       >
-        {/* Full-height image container */}
+        {/* Image container - pointer-events-none for drag passthrough */}
         <div 
-          className="relative w-full"
+          className="relative w-full pointer-events-none"
           style={{ aspectRatio: '3/4', minHeight: '400px' }}
-          onClick={handleImageClick}
         >
           {/* Profile Image */}
           {currentPhotoUrl && !imageError ? (
@@ -260,6 +259,23 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
               <User className="w-24 h-24 text-muted-foreground/50" />
             </div>
           )}
+
+          {/* Photo navigation zones - re-enable pointer events */}
+          {allPhotos.length > 1 && (
+            <div className="absolute inset-0 flex pointer-events-auto">
+              <div 
+                className="w-1/3 h-full cursor-pointer" 
+                onClick={previousPhoto}
+                onTouchEnd={(e) => { e.preventDefault(); previousPhoto(); }}
+              />
+              <div className="w-1/3 h-full" />
+              <div 
+                className="w-1/3 h-full cursor-pointer" 
+                onClick={nextPhoto}
+                onTouchEnd={(e) => { e.preventDefault(); nextPhoto(); }}
+              />
+            </div>
+          )}
           
           {/* Photo indicators */}
           {allPhotos.length > 1 && (
@@ -282,7 +298,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
               {currentPhotoIndex > 0 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); previousPhoto(); }}
-                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10"
+                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10 pointer-events-auto"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -290,7 +306,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
               {currentPhotoIndex < allPhotos.length - 1 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); nextPhoto(); }}
-                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10"
+                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10 pointer-events-auto"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -330,7 +346,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
             <X className="w-8 h-8 text-white" />
           </animated.div>
 
-          {/* Profile info overlay at bottom */}
+          {/* Profile info overlay at bottom - re-enable pointer events for button */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 text-white z-10">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-2xl font-bold truncate flex-1">
@@ -340,7 +356,8 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
               {onProfileOpen && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onProfileOpen(); }}
-                  className="ml-2 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                  onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); onProfileOpen(); }}
+                  className="ml-2 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors pointer-events-auto"
                   aria-label="View full profile"
                 >
                   <ChevronUp className="w-5 h-5" />
@@ -389,13 +406,14 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         </div>
       </animated.div>
 
-      {/* Action buttons - completely separate from drag area */}
-      <div className="p-6 flex justify-center gap-8 relative z-50 pointer-events-auto">
+      {/* Action buttons - completely outside animated div, isolated stacking context */}
+      <div className="p-6 flex justify-center gap-8 isolate">
         <button
           type="button"
           className="w-16 h-16 rounded-full border-2 border-destructive/30 hover:border-destructive hover:bg-destructive/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-destructive/50"
           disabled={isProcessing}
-          onClick={handleReject}
+          onClick={(e) => handleButtonClick(e, 'reject')}
+          onTouchEnd={(e) => handleButtonClick(e, 'reject')}
           aria-label="Pass on this profile"
         >
           <X className="w-8 h-8 text-destructive" />
@@ -404,7 +422,8 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           type="button"
           className="w-16 h-16 rounded-full border-2 border-primary/30 hover:border-primary hover:bg-primary/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-primary/50"
           disabled={isProcessing}
-          onClick={handleLike}
+          onClick={(e) => handleButtonClick(e, 'like')}
+          onTouchEnd={(e) => handleButtonClick(e, 'like')}
           aria-label="Like this profile"
         >
           <Heart className="w-8 h-8 text-primary" />
