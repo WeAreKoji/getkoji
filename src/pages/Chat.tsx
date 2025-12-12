@@ -425,19 +425,29 @@ const Chat = () => {
               </div>
             ) : (
               <>
-                {messages.map((message) => (
-                  <MessageBubble
-                    key={message.id}
-                    content={message.content}
-                    isOwnMessage={message.sender_id === currentUserId}
-                    timestamp={message.created_at}
-                    messageType={message.message_type}
-                    mediaUrl={message.media_url}
-                    messageId={message.id}
-                    currentUserId={currentUserId || ''}
-                    deliveryStatus={message.delivery_status}
-                  />
-                ))}
+                {messages.map((message, index) => {
+                  const isOwnMessage = message.sender_id === currentUserId;
+                  // Show avatar only for first message in a group from same sender
+                  const prevMessage = messages[index - 1];
+                  const showAvatar = !prevMessage || prevMessage.sender_id !== message.sender_id;
+                  
+                  return (
+                    <MessageBubble
+                      key={message.id}
+                      content={message.content}
+                      isOwnMessage={isOwnMessage}
+                      timestamp={message.created_at}
+                      messageType={message.message_type}
+                      mediaUrl={message.media_url}
+                      messageId={message.id}
+                      currentUserId={currentUserId || ''}
+                      deliveryStatus={message.delivery_status}
+                      senderAvatar={isOwnMessage ? user?.user_metadata?.avatar_url : otherProfile?.avatar_url}
+                      senderName={isOwnMessage ? 'You' : otherProfile?.display_name}
+                      showAvatar={showAvatar && !isOwnMessage}
+                    />
+                  );
+                })}
                 {otherUserTyping && (
                   <TypingIndicator
                     otherUserName={otherProfile?.display_name || "User"}
