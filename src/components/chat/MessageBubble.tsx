@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Check, CheckCheck } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Check, CheckCheck, User } from "lucide-react";
 
 interface MessageBubbleProps {
   content: string;
@@ -11,6 +12,9 @@ interface MessageBubbleProps {
   messageId: string;
   currentUserId: string;
   deliveryStatus?: string;
+  senderAvatar?: string | null;
+  senderName?: string;
+  showAvatar?: boolean;
 }
 
 const MessageBubble = ({ 
@@ -19,12 +23,16 @@ const MessageBubble = ({
   timestamp, 
   messageType = "text", 
   mediaUrl,
-  deliveryStatus = "sent"
+  deliveryStatus = "sent",
+  senderAvatar,
+  senderName,
+  showAvatar = true
 }: MessageBubbleProps) => {
   const [imageOpen, setImageOpen] = useState(false);
   
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
+    // Use toLocaleTimeString which automatically uses user's local timezone
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
@@ -47,9 +55,24 @@ const MessageBubble = ({
 
   return (
     <>
-      <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-2`}>
+      <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-2 items-end gap-2`}>
+        {/* Avatar for received messages - left side */}
+        {!isOwnMessage && showAvatar && (
+          <Avatar className="w-8 h-8 flex-shrink-0">
+            <AvatarImage src={senderAvatar || undefined} />
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+              <User className="w-4 h-4" />
+            </AvatarFallback>
+          </Avatar>
+        )}
+        
+        {/* Spacer when avatar should be hidden but alignment maintained */}
+        {!isOwnMessage && !showAvatar && (
+          <div className="w-8 flex-shrink-0" />
+        )}
+
         <div
-          className={`max-w-[75%] ${
+          className={`max-w-[70%] ${
             messageType === "photo" ? "p-1" : "px-4 py-2.5"
           } ${
             isOwnMessage
