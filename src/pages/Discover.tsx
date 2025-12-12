@@ -192,25 +192,33 @@ const Discover = () => {
       // Use smart ranked RPC function
       const { data, error } = await supabase.rpc("get_discover_profiles_ranked", {
         user_id: userId,
-        max_count: 10
+        max_count: 20 // Load more profiles to reduce empty states
       });
 
       if (error) throw error;
 
-      // Cast the data to match our Profile interface
-      const profiles = (data || []).map((profile: any) => ({
-        ...profile,
-        photos: Array.isArray(profile.photos) ? profile.photos : [],
-        interests: Array.isArray(profile.interests) ? profile.interests : [],
-        photo_count: profile.photo_count || 0,
-        is_creator: profile.is_creator === true,
-        id_verified: profile.id_verified === true,
-      }));
+      // Cast and filter the data to match our Profile interface
+      const validProfiles = (data || [])
+        .map((profile: any) => ({
+          ...profile,
+          photos: Array.isArray(profile.photos) ? profile.photos : [],
+          interests: Array.isArray(profile.interests) ? profile.interests : [],
+          photo_count: profile.photo_count || 0,
+          is_creator: profile.is_creator === true,
+          id_verified: profile.id_verified === true,
+        }))
+        // Filter out profiles without any valid photos
+        .filter((profile: Profile) => {
+          const hasValidPhotos = profile.photos.some(p => p.photo_url && p.photo_url.length < 500000);
+          const hasValidAvatar = profile.avatar_url && profile.avatar_url.length < 500000;
+          return hasValidPhotos || hasValidAvatar;
+        });
 
       // Update last_active for current user
       supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", userId).then();
 
-      setProfiles(profiles);
+      setProfiles(validProfiles);
+      setCurrentIndex(0); // Reset index when loading new profiles
     } catch (error: any) {
       toast({
         title: "Error loading profiles",

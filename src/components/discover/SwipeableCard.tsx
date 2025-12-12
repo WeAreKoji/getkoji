@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Sparkles, BadgeCheck, ChevronLeft, ChevronRight, ChevronUp, User } from "lucide-react";
+import { Heart, X, MapPin, Sparkles, BadgeCheck, ChevronLeft, ChevronRight, ChevronUp, User, Loader2 } from "lucide-react";
 import { haptics } from "@/lib/native";
 import { cn } from "@/lib/utils";
 import { formatDistance } from "@/lib/native-location";
@@ -31,21 +31,31 @@ interface SwipeableCardProps {
   onProfileOpen?: () => void;
 }
 
+// Validate image URL - reject oversized base64 strings (>500KB)
+const isValidImageUrl = (url: string | null | undefined): boolean => {
+  if (!url) return false;
+  // Reject oversized base64 strings (>500KB as text = ~500000 chars)
+  if (url.startsWith('data:image') && url.length > 500000) return false;
+  return true;
+};
+
 const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) => {
   const hasSwipedRef = useRef(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
-  // Get all photos - prefer photos array, fallback to avatar_url
+  // Get all photos - prefer photos array, fallback to avatar_url (only if valid)
   const allPhotos = profile.photos?.length > 0 
-    ? profile.photos 
-    : profile.avatar_url 
-      ? [{ id: 'avatar', photo_url: profile.avatar_url, order_index: 0 }]
+    ? profile.photos.filter(p => isValidImageUrl(p.photo_url))
+    : isValidImageUrl(profile.avatar_url)
+      ? [{ id: 'avatar', photo_url: profile.avatar_url!, order_index: 0 }]
       : [];
 
-  // Get current photo URL
-  const currentPhotoUrl = allPhotos[currentPhotoIndex]?.photo_url || profile.avatar_url;
+  // Get current photo URL - validate before using
+  const rawPhotoUrl = allPhotos[currentPhotoIndex]?.photo_url || profile.avatar_url;
+  const currentPhotoUrl = isValidImageUrl(rawPhotoUrl) ? rawPhotoUrl : null;
 
   const [{ x, y, rotate, opacity }, api] = useSpring(() => ({
     x: 0,
@@ -163,18 +173,9 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     }
   };
 
-  const handleReject = (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
+  const handleReject = useCallback(() => {
+    if (isProcessing || hasSwipedRef.current) return;
     
-    console.log('❌ Reject clicked - isProcessing:', isProcessing, 'hasSwiped:', hasSwipedRef.current);
-    
-    if (isProcessing || hasSwipedRef.current) {
-      console.log('❌ Reject blocked');
-      return;
-    }
-    
-    console.log('❌ Executing reject');
     haptics.light();
     hasSwipedRef.current = true;
     setIsProcessing(true);
@@ -184,26 +185,19 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: -20,
       opacity: 0,
       onRest: () => {
-        console.log('❌ Reject animation complete, calling onSwipe(false)');
         onSwipe(false);
-        hasSwipedRef.current = false;
-        setIsProcessing(false);
+        // Reset after a delay to allow for next card
+        setTimeout(() => {
+          hasSwipedRef.current = false;
+          setIsProcessing(false);
+        }, 100);
       },
     });
-  };
+  }, [isProcessing, api, onSwipe]);
 
-  const handleLike = (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
+  const handleLike = useCallback(() => {
+    if (isProcessing || hasSwipedRef.current) return;
     
-    console.log('💜 Like clicked - isProcessing:', isProcessing, 'hasSwiped:', hasSwipedRef.current);
-    
-    if (isProcessing || hasSwipedRef.current) {
-      console.log('💜 Like blocked');
-      return;
-    }
-    
-    console.log('💜 Executing like');
     haptics.medium();
     hasSwipedRef.current = true;
     setIsProcessing(true);
@@ -213,13 +207,15 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: 20,
       opacity: 0,
       onRest: () => {
-        console.log('💜 Like animation complete, calling onSwipe(true)');
         onSwipe(true);
-        hasSwipedRef.current = false;
-        setIsProcessing(false);
+        // Reset after a delay to allow for next card
+        setTimeout(() => {
+          hasSwipedRef.current = false;
+          setIsProcessing(false);
+        }, 100);
       },
     });
-  };
+  }, [isProcessing, api, onSwipe]);
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
@@ -238,13 +234,27 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         >
           {/* Profile Image */}
           {currentPhotoUrl && !imageError ? (
-            <img
-              src={currentPhotoUrl}
-              alt={profile.display_name}
-              className="absolute inset-0 w-full h-full object-cover"
-              draggable={false}
-              onError={() => setImageError(true)}
-            />
+            <>
+              {imageLoading && (
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                  <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                </div>
+              )}
+              <img
+                src={currentPhotoUrl}
+                alt={profile.display_name}
+                className={cn(
+                  "absolute inset-0 w-full h-full object-cover transition-opacity duration-300",
+                  imageLoading ? "opacity-0" : "opacity-100"
+                )}
+                draggable={false}
+                onLoad={() => setImageLoading(false)}
+                onError={() => {
+                  setImageError(true);
+                  setImageLoading(false);
+                }}
+              />
+            </>
           ) : (
             <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
               <User className="w-24 h-24 text-muted-foreground/50" />
@@ -379,23 +389,23 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         </div>
       </animated.div>
 
-      {/* Action buttons - outside animated div to prevent drag interference */}
-      <div className="p-6 flex justify-center gap-6 relative z-50">
+      {/* Action buttons - completely separate from drag area */}
+      <div className="p-6 flex justify-center gap-8 relative z-50 pointer-events-auto">
         <button
           type="button"
-          className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10 bg-card flex items-center justify-center shadow-lg disabled:opacity-50 transition-all active:scale-95"
+          className="w-16 h-16 rounded-full border-2 border-destructive/30 hover:border-destructive hover:bg-destructive/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-destructive/50"
           disabled={isProcessing}
-          onClick={(e) => handleReject(e)}
-          aria-label="Reject profile"
+          onClick={handleReject}
+          aria-label="Pass on this profile"
         >
           <X className="w-8 h-8 text-destructive" />
         </button>
         <button
           type="button"
-          className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10 bg-card flex items-center justify-center shadow-lg disabled:opacity-50 transition-all active:scale-95"
+          className="w-16 h-16 rounded-full border-2 border-primary/30 hover:border-primary hover:bg-primary/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-primary/50"
           disabled={isProcessing}
-          onClick={(e) => handleLike(e)}
-          aria-label="Like profile"
+          onClick={handleLike}
+          aria-label="Like this profile"
         >
           <Heart className="w-8 h-8 text-primary" />
         </button>
