@@ -94,15 +94,10 @@ const Chat = () => {
       const otherUserId = match.user1_id === userId ? match.user2_id : match.user1_id;
       console.log('👤 Other user ID:', otherUserId);
 
-      // Fetch other user's profile with first photo as fallback
+      // Fetch other user's profile
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select(`
-          id, 
-          display_name, 
-          avatar_url,
-          profile_photos!profile_photos_user_id_fkey(photo_url, order_index)
-        `)
+        .select("id, display_name, avatar_url")
         .eq("id", otherUserId)
         .single();
 
@@ -110,15 +105,26 @@ const Chat = () => {
         console.error('❌ Profile fetch error:', profileError);
       } else {
         console.log('✅ Other profile loaded:', profile);
-        // Use avatar_url if set, otherwise fallback to first profile photo
-        const photos = profile.profile_photos as { photo_url: string; order_index: number }[] | null;
-        const firstPhoto = photos?.sort((a, b) => a.order_index - b.order_index)[0];
-        const avatarUrl = profile.avatar_url || firstPhoto?.photo_url || null;
+        let avatarUrl = profile.avatar_url;
+        
+        // If no avatar_url, try to get first photo from profile_photos
+        if (!avatarUrl) {
+          const { data: photos } = await supabase
+            .from("profile_photos")
+            .select("photo_url")
+            .eq("user_id", otherUserId)
+            .order("order_index", { ascending: true })
+            .limit(1);
+          
+          if (photos && photos.length > 0) {
+            avatarUrl = photos[0].photo_url;
+          }
+        }
         
         setOtherProfile({
           id: profile.id,
           display_name: profile.display_name,
-          avatar_url: avatarUrl
+          avatar_url: avatarUrl || null
         });
       }
 
@@ -163,7 +169,7 @@ const Chat = () => {
     console.log('📡 Setting up realtime subscription for match:', matchId);
 
     const channel = supabase
-      .channel(`chat:${matchId}`)
+      .channel('schema-db-changes')
       .on(
         "postgres_changes",
         {
@@ -176,10 +182,10 @@ const Chat = () => {
           console.log('📨 Realtime message received:', payload.new);
           const newMessage = payload.new as Message;
           
-          // Only add if not already in messages (avoid duplicates from optimistic updates)
+          // Add message if not already present
           setMessages((prev) => {
             const exists = prev.some(m => m.id === newMessage.id);
-            const isTempMessage = prev.some(m => 
+            const tempIndex = prev.findIndex(m => 
               m.id.startsWith('temp-') && 
               m.sender_id === newMessage.sender_id &&
               m.content === newMessage.content
@@ -190,14 +196,12 @@ const Chat = () => {
               return prev;
             }
             
-            // If there's a temp message from the same sender with same content, replace it
-            if (isTempMessage) {
+            // Replace temp message with real one
+            if (tempIndex !== -1) {
               console.log('🔄 Replacing temp message with real one');
-              return prev.map(m => 
-                (m.id.startsWith('temp-') && m.sender_id === newMessage.sender_id && m.content === newMessage.content)
-                  ? { ...newMessage, delivery_status: 'sent' }
-                  : m
-              );
+              const updated = [...prev];
+              updated[tempIndex] = { ...newMessage, delivery_status: 'sent' };
+              return updated;
             }
             
             console.log('➕ Adding new message to state');
