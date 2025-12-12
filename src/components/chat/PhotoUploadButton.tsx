@@ -93,13 +93,13 @@ export const PhotoUploadButton = ({ onPhotoSelect, disabled }: PhotoUploadButton
         variant="ghost"
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled || uploading}
-        className="shrink-0"
+        className="shrink-0 h-11 w-11 rounded-full text-muted-foreground hover:text-primary hover:bg-muted/50"
         aria-label="Upload photo"
       >
         {uploading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-5 h-5 animate-spin" />
         ) : (
-          <Image className="w-4 h-4" />
+          <Image className="w-5 h-5" />
         )}
       </Button>
     </>
