@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +65,17 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     config: { tension: 300, friction: 30 },
   }));
 
+  // Reset state when profile changes (new card mounted)
+  useEffect(() => {
+    console.log('🔄 Profile changed, resetting card state:', profile.id);
+    api.set({ x: 0, y: 0, rotate: 0, opacity: 1 });
+    hasSwipedRef.current = false;
+    setIsProcessing(false);
+    setCurrentPhotoIndex(0);
+    setImageError(false);
+    setImageLoading(true);
+  }, [profile.id, api]);
+
   const bind = useDrag(
     ({ active, movement: [mx, my], velocity: [vx], direction: [dx], event }) => {
       if (isProcessing) {
@@ -98,8 +109,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           onRest: () => {
             console.log('✅ Swipe animation complete');
             onSwipe(isLike);
-            hasSwipedRef.current = false;
-            setIsProcessing(false);
+            // Don't reset here - parent will update index and new card will mount fresh
           },
         });
       } else if (active) {
@@ -173,12 +183,9 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: -20,
       opacity: 0,
       onRest: () => {
+        console.log('✅ Reject animation complete');
         onSwipe(false);
-        // Reset after a delay to allow for next card
-        setTimeout(() => {
-          hasSwipedRef.current = false;
-          setIsProcessing(false);
-        }, 100);
+        // Don't reset here - parent will update index and new card will mount fresh
       },
     });
   }, [isProcessing, api, onSwipe]);
@@ -195,12 +202,9 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: 20,
       opacity: 0,
       onRest: () => {
+        console.log('✅ Like animation complete');
         onSwipe(true);
-        // Reset after a delay to allow for next card
-        setTimeout(() => {
-          hasSwipedRef.current = false;
-          setIsProcessing(false);
-        }, 100);
+        // Don't reset here - parent will update index and new card will mount fresh
       },
     });
   }, [isProcessing, api, onSwipe]);

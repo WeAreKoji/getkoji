@@ -287,6 +287,10 @@ const Discover = () => {
       return;
     }
 
+    // IMMEDIATELY move to next profile (optimistic update)
+    // This ensures the UI transitions right away while DB operations happen in background
+    setCurrentIndex(prev => prev + 1);
+
     // Clear any existing undo state when making a new swipe
     clearUndoState();
 
@@ -309,6 +313,8 @@ const Discover = () => {
 
     if (!rateLimit.allowed) {
       console.log('⚠️ Rate limit exceeded');
+      // Rollback the optimistic update
+      setCurrentIndex(prev => Math.max(0, prev - 1));
       toast({
         title: "Slow down!",
         description: "You're swiping too quickly. Please wait a moment.",
@@ -359,11 +365,10 @@ const Discover = () => {
           duration: 2000
         });
       }
-      
-      console.log('⏭️ Moving to next profile');
-      setCurrentIndex(prev => prev + 1);
     } catch (error: any) {
       console.error('❌ handleSwipe error:', error);
+      // Rollback on error
+      setCurrentIndex(prev => Math.max(0, prev - 1));
       toast({
         title: "Error",
         description: error.message,
