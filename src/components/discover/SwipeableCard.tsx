@@ -155,6 +155,56 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     }
   };
 
+  const handleReject = () => {
+    if (isProcessing || hasSwipedRef.current) return;
+    
+    console.log('❌ Reject button clicked:', { 
+      profileId: profile.id, 
+      profileName: profile.display_name 
+    });
+
+    haptics.light();
+    hasSwipedRef.current = true;
+    setIsProcessing(true);
+    
+    api.start({
+      x: -(200 + window.innerWidth),
+      rotate: -20,
+      opacity: 0,
+      onRest: () => {
+        console.log('✅ Reject animation complete');
+        onSwipe(false);
+        hasSwipedRef.current = false;
+        setIsProcessing(false);
+      },
+    });
+  };
+
+  const handleLike = () => {
+    if (isProcessing || hasSwipedRef.current) return;
+    
+    console.log('💜 Like button clicked:', { 
+      profileId: profile.id, 
+      profileName: profile.display_name 
+    });
+
+    haptics.medium();
+    hasSwipedRef.current = true;
+    setIsProcessing(true);
+    
+    api.start({
+      x: 200 + window.innerWidth,
+      rotate: 20,
+      opacity: 0,
+      onRest: () => {
+        console.log('✅ Like animation complete');
+        onSwipe(true);
+        hasSwipedRef.current = false;
+        setIsProcessing(false);
+      },
+    });
+  };
+
   return (
     <div className="relative">
       <animated.div
@@ -172,10 +222,14 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
               onClick={handleImageClick}
             >
               <img
-                src={allPhotos[currentPhotoIndex].photo_url}
+                src={allPhotos[currentPhotoIndex]?.photo_url}
                 alt={`${profile.display_name} - Photo ${currentPhotoIndex + 1}`}
                 className="w-full h-full object-cover"
                 draggable={false}
+                onError={(e) => {
+                  // Hide broken image and show placeholder
+                  e.currentTarget.style.display = 'none';
+                }}
               />
               
               {/* Photo indicators */}
@@ -304,76 +358,31 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
             </div>
           </div>
         </div>
-
-        <div className="p-6 flex justify-center gap-6">
-          <Button
-            size="icon"
-            variant="swipe"
-            className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10"
-            disabled={isProcessing}
-            onClick={() => {
-              if (isProcessing || hasSwipedRef.current) return;
-              
-              console.log('❌ Reject button clicked:', { 
-                profileId: profile.id, 
-                profileName: profile.display_name 
-              });
-
-              haptics.light();
-              hasSwipedRef.current = true;
-              setIsProcessing(true);
-              
-              api.start({
-                x: -(200 + window.innerWidth),
-                rotate: -20,
-                opacity: 0,
-                onRest: () => {
-                  console.log('✅ Reject animation complete');
-                  onSwipe(false);
-                  hasSwipedRef.current = false;
-                  setIsProcessing(false);
-                },
-              });
-            }}
-            aria-label="Reject profile"
-          >
-            <X className="w-8 h-8 text-destructive" />
-          </Button>
-          <Button
-            size="icon"
-            variant="swipe"
-            className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10"
-            disabled={isProcessing}
-            onClick={() => {
-              if (isProcessing || hasSwipedRef.current) return;
-              
-              console.log('💜 Like button clicked:', { 
-                profileId: profile.id, 
-                profileName: profile.display_name 
-              });
-
-              haptics.medium();
-              hasSwipedRef.current = true;
-              setIsProcessing(true);
-              
-              api.start({
-                x: 200 + window.innerWidth,
-                rotate: 20,
-                opacity: 0,
-                onRest: () => {
-                  console.log('✅ Like animation complete');
-                  onSwipe(true);
-                  hasSwipedRef.current = false;
-                  setIsProcessing(false);
-                },
-              });
-            }}
-            aria-label="Like profile"
-          >
-            <Heart className="w-8 h-8 text-primary" />
-          </Button>
-        </div>
       </animated.div>
+
+      {/* Action buttons - outside animated div to prevent drag interference */}
+      <div className="p-6 flex justify-center gap-6">
+        <Button
+          size="icon"
+          variant="swipe"
+          className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10"
+          disabled={isProcessing}
+          onClick={handleReject}
+          aria-label="Reject profile"
+        >
+          <X className="w-8 h-8 text-destructive" />
+        </Button>
+        <Button
+          size="icon"
+          variant="swipe"
+          className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10"
+          disabled={isProcessing}
+          onClick={handleLike}
+          aria-label="Like profile"
+        >
+          <Heart className="w-8 h-8 text-primary" />
+        </Button>
+      </div>
     </div>
   );
 };
