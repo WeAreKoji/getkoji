@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -38,7 +38,6 @@ const Chat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [otherProfile, setOtherProfile] = useState<MatchProfile | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -48,64 +47,32 @@ const Chat = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      setCurrentUserId(user.id);
-      fetchMatchData(user.id);
-    }
+  const currentUserId = user?.id;
 
-    // Keyboard listeners
-    keyboard.addListener((info) => {
-      if (info.keyboardHeight > 0) {
-        // Keyboard opened - scroll to bottom
-        setTimeout(() => scrollToBottom(), 100);
-      }
-    });
-
-    return () => {
-      keyboard.removeAllListeners();
-    };
-  }, [matchId, user]);
-
-  // Separate effect for realtime subscription that depends on currentUserId
-  useEffect(() => {
-    if (!currentUserId || !matchId) return;
-    
-    setupRealtimeSubscription(currentUserId);
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-      }
-    };
-  }, [matchId, currentUserId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Detect if user has scrolled up
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      setShowScrollButton(!isNearBottom);
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
   }, []);
 
-  const scrollToBottom = (smooth = true) => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
-  };
-
-
-  const fetchMatchData = async (userId: string) => {
+  const markMessagesAsRead = useCallback(async (userId: string) => {
+    if (!matchId) return;
     try {
+      await supabase
+        .from("messages")
+        .update({ read_at: new Date().toISOString() })
+        .eq("match_id", matchId)
+        .neq("sender_id", userId)
+        .is("read_at", null);
+    } catch (error) {
+      logError(error, 'Chat.markMessagesAsRead');
+    }
+  }, [matchId]);
+
+  const fetchMatchData = useCallback(async (userId: string) => {
+    if (!matchId) return;
+    
+    try {
+      console.log('📥 Fetching match data for:', matchId);
+      
       // Verify match exists and user is part of it
       const { data: match, error: matchError } = await supabase
         .from("matches")
@@ -114,6 +81,7 @@ const Chat = () => {
         .single();
 
       if (matchError || !match) {
+        console.error('❌ Match not found:', matchError);
         toast({
           title: "Error",
           description: "Match not found",
@@ -123,17 +91,22 @@ const Chat = () => {
         return;
       }
 
-      const otherUserId =
-        match.user1_id === userId ? match.user2_id : match.user1_id;
+      const otherUserId = match.user1_id === userId ? match.user2_id : match.user1_id;
+      console.log('👤 Other user ID:', otherUserId);
 
       // Fetch other user's profile
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id, display_name, avatar_url")
         .eq("id", otherUserId)
         .single();
 
-      setOtherProfile(profile);
+      if (profileError) {
+        console.error('❌ Profile fetch error:', profileError);
+      } else {
+        console.log('✅ Other profile loaded:', profile);
+        setOtherProfile(profile);
+      }
 
       // Fetch messages
       const { data: messagesData, error: messagesError } = await supabase
@@ -142,7 +115,12 @@ const Chat = () => {
         .eq("match_id", matchId)
         .order("created_at", { ascending: true });
 
-      if (messagesError) throw messagesError;
+      if (messagesError) {
+        console.error('❌ Messages fetch error:', messagesError);
+        throw messagesError;
+      }
+      
+      console.log('✅ Messages loaded:', messagesData?.length || 0);
       setMessages(messagesData || []);
 
       // Mark unread messages as read
@@ -157,30 +135,21 @@ const Chat = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [matchId, navigate, toast, markMessagesAsRead]);
 
-  const markMessagesAsRead = async (userId: string) => {
-    try {
-      await supabase
-        .from("messages")
-        .update({ read_at: new Date().toISOString() })
-        .eq("match_id", matchId)
-        .neq("sender_id", userId)
-        .is("read_at", null);
-    } catch (error) {
-      // Silent fail - not critical to user experience
-      logError(error, 'Chat.markMessagesAsRead');
-    }
-  };
-
-  const setupRealtimeSubscription = (userId: string) => {
+  const setupRealtimeSubscription = useCallback((userId: string) => {
+    if (!matchId) return;
+    
     // Remove existing channel if any
     if (channelRef.current) {
+      console.log('🔌 Removing existing channel');
       supabase.removeChannel(channelRef.current);
     }
 
+    console.log('📡 Setting up realtime subscription for match:', matchId);
+
     const channel = supabase
-      .channel(`messages:${matchId}:${userId}`)
+      .channel(`chat:${matchId}`)
       .on(
         "postgres_changes",
         {
@@ -190,18 +159,38 @@ const Chat = () => {
           filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
-          console.log('📨 New message received via realtime:', payload.new);
+          console.log('📨 Realtime message received:', payload.new);
           const newMessage = payload.new as Message;
           
-          // Check for duplicates before adding
+          // Only add if not already in messages (avoid duplicates from optimistic updates)
           setMessages((prev) => {
-            if (prev.some(m => m.id === newMessage.id)) {
+            const exists = prev.some(m => m.id === newMessage.id);
+            const isTempMessage = prev.some(m => 
+              m.id.startsWith('temp-') && 
+              m.sender_id === newMessage.sender_id &&
+              m.content === newMessage.content
+            );
+            
+            if (exists) {
+              console.log('⏭️ Message already exists, skipping');
               return prev;
             }
+            
+            // If there's a temp message from the same sender with same content, replace it
+            if (isTempMessage) {
+              console.log('🔄 Replacing temp message with real one');
+              return prev.map(m => 
+                (m.id.startsWith('temp-') && m.sender_id === newMessage.sender_id && m.content === newMessage.content)
+                  ? { ...newMessage, delivery_status: 'sent' }
+                  : m
+              );
+            }
+            
+            console.log('➕ Adding new message to state');
             return [...prev, newMessage];
           });
           
-          // Mark as read if it's not from current user
+          // Mark as read if from other user
           if (newMessage.sender_id !== userId) {
             setTimeout(() => markMessagesAsRead(userId), 100);
             setOtherUserTyping(false);
@@ -217,7 +206,6 @@ const Chat = () => {
           filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
-          console.log('⌨️ Typing indicator update:', payload);
           if (payload.new && 'user_id' in payload.new) {
             const typingUserId = (payload.new as any).user_id;
             const isTyping = (payload.new as any).is_typing;
@@ -235,7 +223,57 @@ const Chat = () => {
       });
 
     channelRef.current = channel;
-  };
+  }, [matchId, markMessagesAsRead]);
+
+  // Initial data fetch
+  useEffect(() => {
+    if (currentUserId && matchId) {
+      fetchMatchData(currentUserId);
+    }
+
+    keyboard.addListener((info) => {
+      if (info.keyboardHeight > 0) {
+        setTimeout(() => scrollToBottom(), 100);
+      }
+    });
+
+    return () => {
+      keyboard.removeAllListeners();
+    };
+  }, [matchId, currentUserId, fetchMatchData, scrollToBottom]);
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!currentUserId || !matchId) return;
+    
+    setupRealtimeSubscription(currentUserId);
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
+    };
+  }, [matchId, currentUserId, setupRealtimeSubscription]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  // Scroll button visibility
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollButton(!isNearBottom);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleTyping = async (isTyping: boolean) => {
     if (!currentUserId || !matchId) return;
@@ -266,7 +304,7 @@ const Chat = () => {
 
     setSendingMessage(true);
     
-    // Create optimistic message
+    // Create optimistic message with temp ID
     const optimisticId = `temp-${Date.now()}`;
     const optimisticMessage: Message = {
       id: optimisticId,
@@ -278,21 +316,25 @@ const Chat = () => {
       delivery_status: "sending"
     };
     
-    // Add message optimistically
+    // Add message optimistically - shows immediately
+    console.log('📤 Adding optimistic message:', optimisticMessage);
     setMessages(prev => [...prev, optimisticMessage]);
     setTimeout(() => scrollToBottom(false), 50);
 
     try {
       haptics.light();
-      console.log('📤 Sending message:', { content, mediaUrl, matchId, senderId: currentUserId });
       
-      const { data, error } = await supabase.from("messages").insert({
-        match_id: matchId,
-        sender_id: currentUserId,
-        content: content || '',
-        message_type: mediaUrl ? "photo" : "text",
-        media_url: mediaUrl || null,
-      }).select().single();
+      const { data, error } = await supabase
+        .from("messages")
+        .insert({
+          match_id: matchId,
+          sender_id: currentUserId,
+          content: content || '',
+          message_type: mediaUrl ? "photo" : "text",
+          media_url: mediaUrl || null,
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('❌ Failed to send message:', error);
@@ -303,9 +345,11 @@ const Chat = () => {
 
       console.log('✅ Message sent successfully:', data);
       
-      // Replace optimistic message with real one
+      // Replace optimistic message with real one from DB
       setMessages(prev => prev.map(m => 
-        m.id === optimisticId ? { ...data, delivery_status: 'sent' } : m
+        m.id === optimisticId 
+          ? { ...data, delivery_status: 'sent' } 
+          : m
       ));
       
       // Clear typing indicator
@@ -339,18 +383,20 @@ const Chat = () => {
             <Link to="/matches" aria-label="Back to matches">
               <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
             </Link>
-            <Avatar className="w-10 h-10">
+            <Avatar className="w-10 h-10 ring-2 ring-primary/20">
               <AvatarImage src={otherProfile?.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/10">
                 <User className="w-5 h-5 text-primary" />
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <h2 className="font-semibold">{otherProfile?.display_name}</h2>
-              <div className="flex items-center gap-1">
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-foreground truncate">
+                {otherProfile?.display_name || 'Loading...'}
+              </h2>
+              <div className="flex items-center gap-1.5">
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
                 <span className="text-xs text-muted-foreground">
-                  {isConnected ? 'Connected' : 'Connecting...'}
+                  {isConnected ? 'Online' : 'Connecting...'}
                 </span>
               </div>
             </div>
@@ -360,9 +406,12 @@ const Chat = () => {
           <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-6 relative">
             {messages.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">No messages yet</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Start the conversation!
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-8 h-8 text-primary/60" />
+                </div>
+                <p className="text-muted-foreground font-medium">No messages yet</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Say hello to {otherProfile?.display_name || 'your match'}!
                 </p>
               </div>
             ) : (
