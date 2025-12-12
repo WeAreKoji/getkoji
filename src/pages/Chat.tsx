@@ -52,7 +52,6 @@ const Chat = () => {
     if (user) {
       setCurrentUserId(user.id);
       fetchMatchData(user.id);
-      setupRealtimeSubscription();
     }
 
     // Keyboard listeners
@@ -64,12 +63,22 @@ const Chat = () => {
     });
 
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-      }
       keyboard.removeAllListeners();
     };
   }, [matchId, user]);
+
+  // Separate effect for realtime subscription that depends on currentUserId
+  useEffect(() => {
+    if (!currentUserId || !matchId) return;
+    
+    setupRealtimeSubscription(currentUserId);
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
+    };
+  }, [matchId, currentUserId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -164,9 +173,14 @@ const Chat = () => {
     }
   };
 
-  const setupRealtimeSubscription = () => {
+  const setupRealtimeSubscription = (userId: string) => {
+    // Remove existing channel if any
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
+
     const channel = supabase
-      .channel(`messages:${matchId}`)
+      .channel(`messages:${matchId}:${userId}`)
       .on(
         "postgres_changes",
         {
@@ -178,15 +192,18 @@ const Chat = () => {
         (payload) => {
           console.log('📨 New message received via realtime:', payload.new);
           const newMessage = payload.new as Message;
-          setMessages((prev) => [...prev, newMessage]);
+          
+          // Check for duplicates before adding
+          setMessages((prev) => {
+            if (prev.some(m => m.id === newMessage.id)) {
+              return prev;
+            }
+            return [...prev, newMessage];
+          });
           
           // Mark as read if it's not from current user
-          if (newMessage.sender_id !== currentUserId && currentUserId) {
-            setTimeout(() => markMessagesAsRead(currentUserId), 100);
-          }
-
-          // Stop typing indicator when message received
-          if (newMessage.sender_id !== currentUserId) {
+          if (newMessage.sender_id !== userId) {
+            setTimeout(() => markMessagesAsRead(userId), 100);
             setOtherUserTyping(false);
           }
         }
@@ -204,7 +221,7 @@ const Chat = () => {
           if (payload.new && 'user_id' in payload.new) {
             const typingUserId = (payload.new as any).user_id;
             const isTyping = (payload.new as any).is_typing;
-            if (typingUserId !== currentUserId) {
+            if (typingUserId !== userId) {
               setOtherUserTyping(isTyping);
             }
           } else if (payload.eventType === 'DELETE') {
