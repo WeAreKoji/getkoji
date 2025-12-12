@@ -463,6 +463,7 @@ const Discover = () => {
 
           {/* Swipeable Card */}
           <SwipeableCard 
+            key={currentProfile.id}
             profile={currentProfile} 
             onSwipe={handleSwipe}
             onProfileOpen={() => setModalProfile(currentProfile)}

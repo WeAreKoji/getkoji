@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, X, MapPin, Sparkles, BadgeCheck, ChevronLeft, ChevronRight, ChevronUp, User } from "lucide-react";
 import { haptics } from "@/lib/native";
@@ -57,13 +56,20 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   }));
 
   const bind = useDrag(
-    ({ active, movement: [mx, my], velocity: [vx], direction: [dx] }) => {
-      if (isProcessing) return;
+    ({ active, movement: [mx, my], velocity: [vx], direction: [dx], event }) => {
+      if (isProcessing) {
+        console.log('🚫 Drag blocked - isProcessing');
+        return;
+      }
 
       const trigger = vx > 0.5 || Math.abs(mx) > 150;
       const isLike = dx > 0;
 
+      console.log('🖐️ Drag event:', { active, mx, vx, trigger, isLike });
+
       if (!active && trigger && !hasSwipedRef.current) {
+        console.log('🎯 Swipe triggered:', { isLike, profileId: profile.id });
+        
         hasSwipedRef.current = true;
         setIsProcessing(true);
         
@@ -80,23 +86,35 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           opacity: 0,
           config: { tension: 200, friction: 20 },
           onRest: () => {
+            console.log('✅ Swipe animation complete');
             onSwipe(isLike);
             hasSwipedRef.current = false;
             setIsProcessing(false);
           },
         });
-      } else {
+      } else if (active) {
         const rotation = mx / 20;
         api.start({
-          x: active ? mx : 0,
-          y: active ? my : 0,
-          rotate: active ? rotation : 0,
+          x: mx,
+          y: my,
+          rotate: rotation,
           opacity: 1,
-          immediate: active,
+          immediate: true,
+        });
+      } else if (!active && !trigger) {
+        // Reset position when released without triggering
+        api.start({
+          x: 0,
+          y: 0,
+          rotate: 0,
+          opacity: 1,
         });
       }
     },
-    { filterTaps: true }
+    { 
+      filterTaps: true,
+      pointer: { touch: true }
+    }
   );
 
   const likeOpacity = x.to((x) => (x > 0 ? Math.min(x / 100, 1) : 0));
@@ -145,9 +163,18 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     }
   };
 
-  const handleReject = () => {
-    if (isProcessing || hasSwipedRef.current) return;
+  const handleReject = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     
+    console.log('❌ Reject clicked - isProcessing:', isProcessing, 'hasSwiped:', hasSwipedRef.current);
+    
+    if (isProcessing || hasSwipedRef.current) {
+      console.log('❌ Reject blocked');
+      return;
+    }
+    
+    console.log('❌ Executing reject');
     haptics.light();
     hasSwipedRef.current = true;
     setIsProcessing(true);
@@ -157,6 +184,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: -20,
       opacity: 0,
       onRest: () => {
+        console.log('❌ Reject animation complete, calling onSwipe(false)');
         onSwipe(false);
         hasSwipedRef.current = false;
         setIsProcessing(false);
@@ -164,9 +192,18 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     });
   };
 
-  const handleLike = () => {
-    if (isProcessing || hasSwipedRef.current) return;
+  const handleLike = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     
+    console.log('💜 Like clicked - isProcessing:', isProcessing, 'hasSwiped:', hasSwipedRef.current);
+    
+    if (isProcessing || hasSwipedRef.current) {
+      console.log('💜 Like blocked');
+      return;
+    }
+    
+    console.log('💜 Executing like');
     haptics.medium();
     hasSwipedRef.current = true;
     setIsProcessing(true);
@@ -176,6 +213,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: 20,
       opacity: 0,
       onRest: () => {
+        console.log('💜 Like animation complete, calling onSwipe(true)');
         onSwipe(true);
         hasSwipedRef.current = false;
         setIsProcessing(false);
@@ -342,27 +380,25 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       </animated.div>
 
       {/* Action buttons - outside animated div to prevent drag interference */}
-      <div className="p-6 flex justify-center gap-6">
-        <Button
-          size="icon"
-          variant="swipe"
-          className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10"
+      <div className="p-6 flex justify-center gap-6 relative z-50">
+        <button
+          type="button"
+          className="w-16 h-16 rounded-full border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/10 bg-card flex items-center justify-center shadow-lg disabled:opacity-50 transition-all active:scale-95"
           disabled={isProcessing}
-          onClick={handleReject}
+          onClick={(e) => handleReject(e)}
           aria-label="Reject profile"
         >
           <X className="w-8 h-8 text-destructive" />
-        </Button>
-        <Button
-          size="icon"
-          variant="swipe"
-          className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10"
+        </button>
+        <button
+          type="button"
+          className="w-16 h-16 rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/10 bg-card flex items-center justify-center shadow-lg disabled:opacity-50 transition-all active:scale-95"
           disabled={isProcessing}
-          onClick={handleLike}
+          onClick={(e) => handleLike(e)}
           aria-label="Like profile"
         >
           <Heart className="w-8 h-8 text-primary" />
-        </Button>
+        </button>
       </div>
     </div>
   );
