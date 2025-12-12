@@ -3,7 +3,7 @@ import { useSpring, animated } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Sparkles, BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, X, MapPin, Sparkles, BadgeCheck, ChevronLeft, ChevronRight, ChevronUp, User } from "lucide-react";
 import { haptics } from "@/lib/native";
 import { cn } from "@/lib/utils";
 import { formatDistance } from "@/lib/native-location";
@@ -36,6 +36,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   const hasSwipedRef = useRef(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
   // Get all photos - prefer photos array, fallback to avatar_url
   const allPhotos = profile.photos?.length > 0 
@@ -43,6 +44,9 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     : profile.avatar_url 
       ? [{ id: 'avatar', photo_url: profile.avatar_url, order_index: 0 }]
       : [];
+
+  // Get current photo URL
+  const currentPhotoUrl = allPhotos[currentPhotoIndex]?.photo_url || profile.avatar_url;
 
   const [{ x, y, rotate, opacity }, api] = useSpring(() => ({
     x: 0,
@@ -56,29 +60,19 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     ({ active, movement: [mx, my], velocity: [vx], direction: [dx] }) => {
       if (isProcessing) return;
 
-      const trigger = vx > 0.5 || Math.abs(mx) > 150; // Swipe threshold
+      const trigger = vx > 0.5 || Math.abs(mx) > 150;
       const isLike = dx > 0;
 
       if (!active && trigger && !hasSwipedRef.current) {
-        console.log('🎯 Swipe gesture triggered:', { 
-          isLike, 
-          profileId: profile.id, 
-          profileName: profile.display_name,
-          velocity: vx,
-          distance: mx
-        });
-
         hasSwipedRef.current = true;
         setIsProcessing(true);
         
-        // Haptic feedback on swipe complete
         if (isLike) {
           haptics.medium();
         } else {
           haptics.light();
         }
 
-        // Animate out
         api.start({
           x: (200 + window.innerWidth) * dx,
           y: my,
@@ -86,14 +80,12 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           opacity: 0,
           config: { tension: 200, friction: 20 },
           onRest: () => {
-            console.log('✅ Swipe animation complete, calling onSwipe');
             onSwipe(isLike);
             hasSwipedRef.current = false;
             setIsProcessing(false);
           },
         });
       } else {
-        // During drag
         const rotation = mx / 20;
         api.start({
           x: active ? mx : 0,
@@ -107,14 +99,13 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     { filterTaps: true }
   );
 
-  // Calculate opacity for like/reject indicators
   const likeOpacity = x.to((x) => (x > 0 ? Math.min(x / 100, 1) : 0));
   const rejectOpacity = x.to((x) => (x < 0 ? Math.min(Math.abs(x) / 100, 1) : 0));
 
-  // Photo navigation handlers
   const nextPhoto = () => {
     if (currentPhotoIndex < allPhotos.length - 1) {
       setCurrentPhotoIndex(prev => prev + 1);
+      setImageError(false);
       haptics.light();
     }
   };
@@ -122,21 +113,20 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   const previousPhoto = () => {
     if (currentPhotoIndex > 0) {
       setCurrentPhotoIndex(prev => prev - 1);
+      setImageError(false);
       haptics.light();
     }
   };
 
   const handleImageClick = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const clickX = e.clientX - rect.left;
     const width = rect.width;
 
-    if (x < width * 0.3 && currentPhotoIndex > 0) {
+    if (clickX < width * 0.3 && currentPhotoIndex > 0) {
       previousPhoto();
-    } else if (x > width * 0.7 && currentPhotoIndex < allPhotos.length - 1) {
+    } else if (clickX > width * 0.7 && currentPhotoIndex < allPhotos.length - 1) {
       nextPhoto();
-    } else if (x >= width * 0.3 && x <= width * 0.7 && onProfileOpen) {
-      onProfileOpen();
     }
   };
 
@@ -158,11 +148,6 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   const handleReject = () => {
     if (isProcessing || hasSwipedRef.current) return;
     
-    console.log('❌ Reject button clicked:', { 
-      profileId: profile.id, 
-      profileName: profile.display_name 
-    });
-
     haptics.light();
     hasSwipedRef.current = true;
     setIsProcessing(true);
@@ -172,7 +157,6 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: -20,
       opacity: 0,
       onRest: () => {
-        console.log('✅ Reject animation complete');
         onSwipe(false);
         hasSwipedRef.current = false;
         setIsProcessing(false);
@@ -183,11 +167,6 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   const handleLike = () => {
     if (isProcessing || hasSwipedRef.current) return;
     
-    console.log('💜 Like button clicked:', { 
-      profileId: profile.id, 
-      profileName: profile.display_name 
-    });
-
     haptics.medium();
     hasSwipedRef.current = true;
     setIsProcessing(true);
@@ -197,7 +176,6 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       rotate: 20,
       opacity: 0,
       onRest: () => {
-        console.log('✅ Like animation complete');
         onSwipe(true);
         hasSwipedRef.current = false;
         setIsProcessing(false);
@@ -206,97 +184,84 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full max-w-sm mx-auto">
       <animated.div
         {...bind()}
         style={{ x, y, rotate, opacity, touchAction: "none" }}
-        className={`card-gradient-border overflow-hidden shadow-2xl ${
+        className={`rounded-2xl overflow-hidden shadow-2xl bg-card ${
           isProcessing ? 'pointer-events-none' : 'cursor-grab active:cursor-grabbing'
         }`}
       >
-        <div className="relative aspect-[3/4] bg-gradient-to-br from-muted to-muted/50">
-          {/* Photo Display */}
-          {allPhotos.length > 0 ? (
-            <div 
-              className="w-full h-full relative cursor-pointer"
-              onClick={handleImageClick}
-            >
-              <img
-                src={allPhotos[currentPhotoIndex]?.photo_url}
-                alt={`${profile.display_name} - Photo ${currentPhotoIndex + 1}`}
-                className="w-full h-full object-cover"
-                draggable={false}
-                onError={(e) => {
-                  // Hide broken image and show placeholder
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-              
-              {/* Photo indicators */}
-              {allPhotos.length > 1 && (
-                <div className="absolute top-2 left-0 right-0 flex gap-1 px-2">
-                  {allPhotos.map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "flex-1 h-1 rounded-full transition-all",
-                        idx === currentPhotoIndex ? "bg-white" : "bg-white/30"
-                      )}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Navigation arrows (desktop) */}
-              {allPhotos.length > 1 && (
-                <>
-                  {currentPhotoIndex > 0 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        previousPhoto();
-                      }}
-                      className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
-                      aria-label="Previous photo"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                  )}
-                  {currentPhotoIndex < allPhotos.length - 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        nextPhoto();
-                      }}
-                      className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
-                      aria-label="Next photo"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
+        {/* Full-height image container */}
+        <div 
+          className="relative w-full"
+          style={{ aspectRatio: '3/4', minHeight: '400px' }}
+          onClick={handleImageClick}
+        >
+          {/* Profile Image */}
+          {currentPhotoUrl && !imageError ? (
+            <img
+              src={currentPhotoUrl}
+              alt={profile.display_name}
+              className="absolute inset-0 w-full h-full object-cover"
+              draggable={false}
+              onError={() => setImageError(true)}
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-8xl">👤</div>
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+              <User className="w-24 h-24 text-muted-foreground/50" />
+            </div>
+          )}
+          
+          {/* Photo indicators */}
+          {allPhotos.length > 1 && (
+            <div className="absolute top-3 left-3 right-3 flex gap-1 z-10">
+              {allPhotos.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    "flex-1 h-1 rounded-full transition-all",
+                    idx === currentPhotoIndex ? "bg-white" : "bg-white/40"
+                  )}
+                />
+              ))}
             </div>
           )}
 
-          {/* Creator Badge */}
-          {profile.is_creator === true && (
-            <div className="absolute top-6 left-4 flex items-center gap-2 bg-accent/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
-              <Sparkles className="w-4 h-4 text-white" />
-              <span className="text-white font-semibold text-sm">Creator</span>
-              {profile.id_verified === true && (
-                <BadgeCheck className="w-4 h-4 text-white" />
+          {/* Navigation arrows (desktop only) */}
+          {allPhotos.length > 1 && (
+            <>
+              {currentPhotoIndex > 0 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); previousPhoto(); }}
+                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
               )}
+              {currentPhotoIndex < allPhotos.length - 1 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); nextPhoto(); }}
+                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+            </>
+          )}
+
+          {/* Creator Badge */}
+          {profile.is_creator && (
+            <div className="absolute top-12 left-3 flex items-center gap-1.5 bg-accent/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg z-10">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <span className="text-white font-semibold text-xs">Creator</span>
+              {profile.id_verified && <BadgeCheck className="w-3.5 h-3.5 text-white" />}
             </div>
           )}
 
           {/* Subscription Price */}
-          {profile.is_creator === true && profile.creator_subscription_price && (
-            <div className="absolute top-6 right-4 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm font-semibold shadow-lg">
+          {profile.is_creator && profile.creator_subscription_price && (
+            <div className="absolute top-12 right-3 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-full text-white text-xs font-semibold shadow-lg z-10">
               ${profile.creator_subscription_price}/mo
             </div>
           )}
@@ -304,54 +269,70 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           {/* Like Indicator */}
           <animated.div
             style={{ opacity: likeOpacity }}
-            className="absolute top-8 left-8 bg-primary/90 backdrop-blur-sm px-6 py-3 rounded-xl rotate-[-20deg] border-4 border-white shadow-xl"
+            className="absolute top-20 left-4 bg-primary/90 backdrop-blur-sm px-4 py-2 rounded-xl rotate-[-20deg] border-2 border-white shadow-xl z-20"
           >
-            <Heart className="w-10 h-10 text-white fill-white" />
+            <Heart className="w-8 h-8 text-white fill-white" />
           </animated.div>
 
           {/* Reject Indicator */}
           <animated.div
             style={{ opacity: rejectOpacity }}
-            className="absolute top-8 right-8 bg-destructive/90 backdrop-blur-sm px-6 py-3 rounded-xl rotate-[20deg] border-4 border-white shadow-xl"
+            className="absolute top-20 right-4 bg-destructive/90 backdrop-blur-sm px-4 py-2 rounded-xl rotate-[20deg] border-2 border-white shadow-xl z-20"
           >
-            <X className="w-10 h-10 text-white" />
+            <X className="w-8 h-8 text-white" />
           </animated.div>
 
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
-            <h2 className="text-3xl font-bold mb-2">
-              {profile.display_name}, {profile.age}
-            </h2>
+          {/* Profile info overlay at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 text-white z-10">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-2xl font-bold truncate flex-1">
+                {profile.display_name}, {profile.age}
+              </h2>
+              {/* View profile button */}
+              {onProfileOpen && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onProfileOpen(); }}
+                  className="ml-2 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                  aria-label="View full profile"
+                >
+                  <ChevronUp className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+            
             {(profile.city || profile.distance_km) && (
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 mb-2 text-sm text-white/90">
+                <MapPin className="w-3.5 h-3.5" />
                 <span>
                   {profile.city}
                   {profile.distance_km && (
-                    <span className="text-white/70 ml-1">
-                      • {formatDistance(profile.distance_km)}
-                    </span>
+                    <span className="text-white/70 ml-1">• {formatDistance(profile.distance_km)}</span>
                   )}
                 </span>
               </div>
             )}
-            {profile.bio && <p className="text-white/90 mb-3 line-clamp-2">{profile.bio}</p>}
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className={cn("capitalize", getIntentColor(profile.intent))}>
+            
+            {profile.bio && (
+              <p className="text-white/80 text-sm mb-3 line-clamp-2">{profile.bio}</p>
+            )}
+            
+            <div className="flex flex-wrap gap-1.5">
+              <Badge variant="outline" className={cn("capitalize text-xs", getIntentColor(profile.intent))}>
                 {profile.intent.replace("_", " ")}
               </Badge>
-              {profile.id_verified === true && (
-                <Badge variant="outline" className="bg-green-500/20 border-green-500 text-green-500">
+              {profile.id_verified && (
+                <Badge variant="outline" className="bg-green-500/20 border-green-500 text-green-500 text-xs">
                   <BadgeCheck className="w-3 h-3 mr-1" />
                   Verified
                 </Badge>
               )}
               {profile.interests?.slice(0, 2).map((interest) => (
-                <Badge key={interest} variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white">
+                <Badge key={interest} variant="outline" className="bg-white/20 border-white/30 text-white text-xs">
                   {interest}
                 </Badge>
               ))}
               {(profile.interests?.length || 0) > 2 && (
-                <Badge variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white">
+                <Badge variant="outline" className="bg-white/20 border-white/30 text-white text-xs">
                   +{(profile.interests?.length || 0) - 2} more
                 </Badge>
               )}

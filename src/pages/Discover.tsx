@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 import { Sparkles, LogOut, SlidersHorizontal } from "lucide-react";
 import BottomNav from "@/components/navigation/BottomNav";
 import SwipeableCard from "@/components/discover/SwipeableCard";
@@ -421,39 +422,53 @@ const Discover = () => {
   }
   return (
     <PageTransition>
-      <div className={isMobile ? "min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4 pb-24" : "min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8 px-4"}>
+      <div className={cn(
+        "min-h-screen bg-gradient-to-br from-background to-muted/30",
+        isMobile ? "pt-4 pb-24 px-2" : "py-8 px-4"
+      )}>
         <div className="container mx-auto max-w-md">
-          <div className="flex justify-between items-center mb-6">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4 px-2">
             <img 
               src="/logo.png" 
               alt="Koji" 
-              className="h-10 w-auto"
+              className="h-8 w-auto"
             />
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={() => navigate('/discovery-settings')} 
                 aria-label="Discovery settings"
+                className="h-9 w-9"
               >
                 <SlidersHorizontal className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Log out">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleLogout} 
+                aria-label="Log out"
+                className="h-9 w-9"
+              >
                 <LogOut className="w-5 h-5" />
               </Button>
             </div>
           </div>
 
           {/* Active Filters Display */}
-          <ActiveFilters {...filters} />
+          <div className="px-2 mb-3">
+            <ActiveFilters {...filters} />
+          </div>
 
+          {/* Swipeable Card */}
           <SwipeableCard 
             profile={currentProfile} 
             onSwipe={handleSwipe}
             onProfileOpen={() => setModalProfile(currentProfile)}
           />
 
-          <p className="text-center text-muted-foreground mt-4 text-sm">
+          <p className="text-center text-muted-foreground mt-2 text-xs">
             {profiles.length - currentIndex - 1} profiles remaining
           </p>
         </div>
