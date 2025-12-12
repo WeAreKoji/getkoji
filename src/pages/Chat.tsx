@@ -378,23 +378,30 @@ const Chat = () => {
     <PageTransition type="slide">
       <BackGesture>
         <div className="flex flex-col h-screen bg-background">
-          {/* Header */}
-          <div className="bg-card border-b border-border px-4 py-3 flex items-center gap-3">
-            <Link to="/matches" aria-label="Back to matches">
-              <ArrowLeft className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
+          {/* Tinder-style Header - Centered avatar and name */}
+          <div className="bg-card border-b border-border px-4 py-4 relative">
+            {/* Back button - absolute left */}
+            <Link 
+              to="/matches" 
+              aria-label="Back to matches"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 -ml-2 text-primary hover:text-primary/80 transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
             </Link>
-            <Avatar className="w-10 h-10 ring-2 ring-primary/20">
-              <AvatarImage src={otherProfile?.avatar_url || undefined} />
-              <AvatarFallback className="bg-primary/10">
-                <User className="w-5 h-5 text-primary" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-foreground truncate">
+            
+            {/* Centered avatar and name */}
+            <div className="flex flex-col items-center">
+              <Avatar className="w-12 h-12 border-2 border-primary/20">
+                <AvatarImage src={otherProfile?.avatar_url || undefined} />
+                <AvatarFallback className="bg-primary/10">
+                  <User className="w-6 h-6 text-primary" />
+                </AvatarFallback>
+              </Avatar>
+              <h2 className="font-semibold text-foreground mt-1.5 text-base">
                 {otherProfile?.display_name || 'Loading...'}
               </h2>
-              <div className="flex items-center gap-1.5">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
+              <div className="flex items-center gap-1">
+                <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
                 <span className="text-xs text-muted-foreground">
                   {isConnected ? 'Online' : 'Connecting...'}
                 </span>
@@ -403,15 +410,20 @@ const Chat = () => {
           </div>
 
           {/* Messages */}
-          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-6 relative">
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-3 py-4 relative bg-background">
             {messages.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="w-8 h-8 text-primary/60" />
-                </div>
-                <p className="text-muted-foreground font-medium">No messages yet</p>
+              <div className="text-center py-16">
+                <Avatar className="w-20 h-20 mx-auto border-2 border-primary/20">
+                  <AvatarImage src={otherProfile?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-primary/10">
+                    <User className="w-10 h-10 text-primary/60" />
+                  </AvatarFallback>
+                </Avatar>
+                <p className="text-muted-foreground font-medium mt-4">
+                  You matched with {otherProfile?.display_name || 'someone'}!
+                </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Say hello to {otherProfile?.display_name || 'your match'}!
+                  Say something nice to start the conversation
                 </p>
               </div>
             ) : (
@@ -443,7 +455,8 @@ const Chat = () => {
             {showScrollButton && (
               <Button
                 size="icon"
-                className="absolute bottom-4 right-4 rounded-full shadow-lg"
+                variant="secondary"
+                className="absolute bottom-4 right-4 rounded-full shadow-lg h-10 w-10"
                 onClick={() => {
                   haptics.light();
                   scrollToBottom();
@@ -455,7 +468,7 @@ const Chat = () => {
           </div>
 
           {/* Input */}
-          <div className="bg-card border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <div className="bg-card border-t border-border px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <MessageInput 
               onSend={sendMessage} 
               onTyping={handleTyping}

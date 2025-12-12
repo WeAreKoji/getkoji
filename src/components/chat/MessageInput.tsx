@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Send } from "lucide-react";
+import { Send, Image } from "lucide-react";
 import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import { useToast } from "@/hooks/use-toast";
 import { PhotoUploadButton } from "./PhotoUploadButton";
@@ -16,11 +15,10 @@ interface MessageInputProps {
 const MessageInput = ({ onSend, onTyping, disabled, matchId = 'default' }: MessageInputProps) => {
   const [message, setMessage] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {
@@ -30,24 +28,16 @@ const MessageInput = ({ onSend, onTyping, disabled, matchId = 'default' }: Messa
     };
   }, []);
 
-  useEffect(() => {
-    // Auto-focus input when component mounts
-    textareaRef.current?.focus();
-  }, []);
-
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
 
-    // Handle typing indicator
     if (e.target.value.length > 0 && onTyping) {
       onTyping(true);
 
-      // Clear previous timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
 
-      // Set new timeout to stop typing indicator after 3 seconds
       typingTimeoutRef.current = setTimeout(() => {
         onTyping(false);
       }, 3000);
@@ -63,13 +53,11 @@ const MessageInput = ({ onSend, onTyping, disabled, matchId = 'default' }: Messa
     e.preventDefault();
     if ((!message.trim() && !selectedPhoto) || disabled) return;
 
-    // Stop typing indicator
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
     onTyping?.(false);
 
-    // Rate limit: 20 messages per minute
     const rateLimit = ClientRateLimiter.checkLimit({
       key: `message_send_${matchId}`,
       maxAttempts: 20,
@@ -88,16 +76,15 @@ const MessageInput = ({ onSend, onTyping, disabled, matchId = 'default' }: Messa
     onSend(message.trim(), selectedPhoto || undefined);
     setMessage("");
     setSelectedPhoto(null);
-    // Keep focus on input after sending
-    setTimeout(() => textareaRef.current?.focus(), 50);
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const handlePhotoSelect = (url: string) => {
     setSelectedPhoto(url);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleSubmit(e);
     }
@@ -110,39 +97,43 @@ const MessageInput = ({ onSend, onTyping, disabled, matchId = 'default' }: Messa
           <img
             src={selectedPhoto}
             alt="Selected"
-            className="max-h-32 rounded-lg"
+            className="max-h-24 rounded-xl border border-border"
           />
           <Button
             type="button"
             size="icon"
             variant="destructive"
-            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+            className="absolute -top-2 -right-2 h-5 w-5 rounded-full text-xs"
             onClick={() => setSelectedPhoto(null)}
           >
             ✕
           </Button>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex items-end gap-2">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <PhotoUploadButton onPhotoSelect={handlePhotoSelect} disabled={disabled} />
-        <Textarea
-          ref={textareaRef}
-          value={message}
-          onChange={handleMessageChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          disabled={disabled}
-          rows={1}
-          className="resize-none min-h-[44px] max-h-[120px]"
-        />
+        
+        <div className="flex-1 relative">
+          <input
+            ref={inputRef}
+            type="text"
+            value={message}
+            onChange={handleMessageChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message..."
+            disabled={disabled}
+            className="w-full h-11 px-4 rounded-full bg-muted/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
+          />
+        </div>
+        
         <Button
           type="submit"
           size="icon"
           disabled={(!message.trim() && !selectedPhoto) || disabled}
-          className="shrink-0"
+          className="shrink-0 h-11 w-11 rounded-full"
           aria-label="Send message"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-5 h-5" />
         </Button>
       </form>
     </div>
