@@ -424,14 +424,13 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         </div>
       </animated.div>
 
-      {/* Action buttons - completely outside animated div, isolated stacking context */}
+      {/* Action buttons - only onClick, no duplicate onTouchEnd */}
       <div className="p-6 flex justify-center gap-8 isolate">
         <button
           type="button"
           className="w-16 h-16 rounded-full border-2 border-destructive/30 hover:border-destructive hover:bg-destructive/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-destructive/50"
           disabled={isProcessing}
-          onClick={(e) => handleButtonClick(e, 'reject')}
-          onTouchEnd={(e) => handleButtonClick(e, 'reject')}
+          onClick={handleReject}
           aria-label="Pass on this profile"
         >
           <X className="w-8 h-8 text-destructive" />
@@ -440,8 +439,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           type="button"
           className="w-16 h-16 rounded-full border-2 border-primary/30 hover:border-primary hover:bg-primary/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-primary/50"
           disabled={isProcessing}
-          onClick={(e) => handleButtonClick(e, 'like')}
-          onTouchEnd={(e) => handleButtonClick(e, 'like')}
+          onClick={handleLike}
           aria-label="Like this profile"
         >
           <Heart className="w-8 h-8 text-primary" />
