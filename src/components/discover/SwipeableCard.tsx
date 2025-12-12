@@ -83,10 +83,15 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         return;
       }
 
-      const trigger = vx > 0.5 || Math.abs(mx) > 150;
-      const isLike = dx > 0;
+      // Lower thresholds for mobile - trigger on 80px movement OR velocity > 0.3
+      const isMobile = window.innerWidth < 768;
+      const movementThreshold = isMobile ? 80 : 150;
+      const velocityThreshold = isMobile ? 0.3 : 0.5;
+      
+      const trigger = vx > velocityThreshold || Math.abs(mx) > movementThreshold;
+      const isLike = mx > 0; // Use actual movement direction, not velocity direction
 
-      console.log('🖐️ Drag event:', { active, mx, vx, trigger, isLike });
+      console.log('🖐️ Drag event:', { active, mx, vx, trigger, isLike, isMobile, movementThreshold });
 
       if (!active && trigger && !hasSwipedRef.current) {
         console.log('🎯 Swipe triggered:', { isLike, profileId: profile.id });
@@ -100,16 +105,16 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           haptics.light();
         }
 
+        const swipeDirection = isLike ? 1 : -1;
         api.start({
-          x: (200 + window.innerWidth) * dx,
+          x: (200 + window.innerWidth) * swipeDirection,
           y: my,
-          rotate: dx * 20,
+          rotate: swipeDirection * 20,
           opacity: 0,
           config: { tension: 200, friction: 20 },
           onRest: () => {
             console.log('✅ Swipe animation complete');
             onSwipe(isLike);
-            // Don't reset here - parent will update index and new card will mount fresh
           },
         });
       } else if (active) {
@@ -123,6 +128,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         });
       } else if (!active && !trigger) {
         // Reset position when released without triggering
+        console.log('↩️ Swipe not triggered, resetting position');
         api.start({
           x: 0,
           y: 0,
