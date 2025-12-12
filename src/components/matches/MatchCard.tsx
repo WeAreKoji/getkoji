@@ -78,8 +78,8 @@ const MatchCard = ({ matchId, profile, lastMessage, unreadCount, currentUserId, 
 
   const cardContent = (
     <Card 
-      className={`${isMobile ? "p-3" : "p-4"} hover:bg-accent transition-all cursor-pointer relative overflow-hidden ${
-        isUnread ? "border-primary/50 bg-accent/50" : ""
+      className={`${isMobile ? "p-3" : "p-4"} hover:bg-muted transition-all cursor-pointer relative overflow-hidden ${
+        isUnread ? "border-primary/50 bg-primary/5" : ""
       }`}
       style={isMobile ? { transform: `translateX(${swipeOffset}px)` } : undefined}
     >
