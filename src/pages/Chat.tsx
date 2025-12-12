@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -379,34 +379,31 @@ const Chat = () => {
       <BackGesture>
         <div className="flex flex-col h-screen bg-background">
           {/* Tinder-style Header - Centered avatar and name */}
-          <div className="bg-card border-b border-border px-4 py-4 relative">
+          <div className="bg-card border-b border-border px-4 py-3 relative">
             {/* Back button - absolute left */}
-            <Link 
-              to="/matches" 
-              aria-label="Back to matches"
+            <button 
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
               className="absolute left-4 top-1/2 -translate-y-1/2 p-2 -ml-2 text-primary hover:text-primary/80 transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
-            </Link>
+            </button>
             
-            {/* Centered avatar and name */}
-            <div className="flex flex-col items-center">
-              <Avatar className="w-12 h-12 border-2 border-primary/20">
+            {/* Centered avatar and name - clickable to view profile */}
+            <button 
+              onClick={() => otherProfile?.id && navigate(`/profile/${otherProfile.id}`)}
+              className="flex flex-col items-center w-full cursor-pointer group"
+            >
+              <Avatar className="w-14 h-14 border-2 border-primary/30 group-hover:border-primary/50 transition-colors">
                 <AvatarImage src={otherProfile?.avatar_url || undefined} />
                 <AvatarFallback className="bg-primary/10">
-                  <User className="w-6 h-6 text-primary" />
+                  <User className="w-7 h-7 text-primary" />
                 </AvatarFallback>
               </Avatar>
-              <h2 className="font-semibold text-foreground mt-1.5 text-base">
+              <h2 className="font-semibold text-foreground mt-1 text-sm group-hover:text-primary transition-colors">
                 {otherProfile?.display_name || 'Loading...'}
               </h2>
-              <div className="flex items-center gap-1">
-                <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                <span className="text-xs text-muted-foreground">
-                  {isConnected ? 'Online' : 'Connecting...'}
-                </span>
-              </div>
-            </div>
+            </button>
           </div>
 
           {/* Messages */}
