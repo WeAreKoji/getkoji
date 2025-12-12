@@ -94,10 +94,15 @@ const Chat = () => {
       const otherUserId = match.user1_id === userId ? match.user2_id : match.user1_id;
       console.log('👤 Other user ID:', otherUserId);
 
-      // Fetch other user's profile
+      // Fetch other user's profile with first photo as fallback
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url")
+        .select(`
+          id, 
+          display_name, 
+          avatar_url,
+          profile_photos!profile_photos_user_id_fkey(photo_url, order_index)
+        `)
         .eq("id", otherUserId)
         .single();
 
@@ -105,7 +110,16 @@ const Chat = () => {
         console.error('❌ Profile fetch error:', profileError);
       } else {
         console.log('✅ Other profile loaded:', profile);
-        setOtherProfile(profile);
+        // Use avatar_url if set, otherwise fallback to first profile photo
+        const photos = profile.profile_photos as { photo_url: string; order_index: number }[] | null;
+        const firstPhoto = photos?.sort((a, b) => a.order_index - b.order_index)[0];
+        const avatarUrl = profile.avatar_url || firstPhoto?.photo_url || null;
+        
+        setOtherProfile({
+          id: profile.id,
+          display_name: profile.display_name,
+          avatar_url: avatarUrl
+        });
       }
 
       // Fetch messages
