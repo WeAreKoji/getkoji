@@ -191,7 +191,7 @@ const DiscoverySettings = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/settings')}
+            onClick={() => navigate('/discover')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
