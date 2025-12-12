@@ -1,5 +1,5 @@
 // Service Worker with Stale-While-Revalidate strategy
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `koji-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `koji-runtime-${CACHE_VERSION}`;
 
