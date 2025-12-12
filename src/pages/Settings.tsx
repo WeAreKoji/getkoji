@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { APP_VERSION, BUILD_TIMESTAMP } from "@/lib/version";
 import {
   Bell,
   Lock,
@@ -196,6 +197,12 @@ const Settings = () => {
             Log Out
           </Button>
         </Card>
+
+        {/* Version Info */}
+        <div className="text-center text-xs text-muted-foreground space-y-1 pt-4">
+          <p>Version {APP_VERSION}</p>
+          <p className="opacity-60">Build: {BUILD_TIMESTAMP}</p>
+        </div>
       </div>
 
       <ConfirmDialog
