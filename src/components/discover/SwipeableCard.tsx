@@ -186,7 +186,11 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
   };
 
   const handleReject = useCallback(() => {
-    if (isProcessing || hasSwipedRef.current) return;
+    console.log('🔴 handleReject called', { isProcessing, hasSwipedRef: hasSwipedRef.current });
+    if (isProcessing || hasSwipedRef.current) {
+      console.log('🚫 Reject blocked - already processing');
+      return;
+    }
     
     haptics.light();
     hasSwipedRef.current = true;
@@ -196,16 +200,20 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       x: -(200 + window.innerWidth),
       rotate: -20,
       opacity: 0,
+      config: { tension: 200, friction: 25 },
       onRest: () => {
-        console.log('✅ Reject animation complete');
+        console.log('✅ Reject animation complete, calling onSwipe(false)');
         onSwipe(false);
-        // Don't reset here - parent will update index and new card will mount fresh
       },
     });
   }, [isProcessing, api, onSwipe]);
 
   const handleLike = useCallback(() => {
-    if (isProcessing || hasSwipedRef.current) return;
+    console.log('💚 handleLike called', { isProcessing, hasSwipedRef: hasSwipedRef.current });
+    if (isProcessing || hasSwipedRef.current) {
+      console.log('🚫 Like blocked - already processing');
+      return;
+    }
     
     haptics.medium();
     hasSwipedRef.current = true;
@@ -215,24 +223,13 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
       x: 200 + window.innerWidth,
       rotate: 20,
       opacity: 0,
+      config: { tension: 200, friction: 25 },
       onRest: () => {
-        console.log('✅ Like animation complete');
+        console.log('✅ Like animation complete, calling onSwipe(true)');
         onSwipe(true);
-        // Don't reset here - parent will update index and new card will mount fresh
       },
     });
   }, [isProcessing, api, onSwipe]);
-
-  const handleButtonClick = useCallback((e: React.MouseEvent | React.TouchEvent, action: 'like' | 'reject') => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log(`🔘 Button ${action} clicked`);
-    if (action === 'like') {
-      handleLike();
-    } else {
-      handleReject();
-    }
-  }, [handleLike, handleReject]);
 
   return (
     <div className="relative w-full max-w-sm mx-auto flex flex-col">
@@ -424,13 +421,19 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         </div>
       </animated.div>
 
-      {/* Action buttons - only onClick, no duplicate onTouchEnd */}
-      <div className="p-6 flex justify-center gap-8 isolate">
+      {/* Action buttons - touch-action: manipulation for better mobile response */}
+      <div className="p-6 flex justify-center gap-8 isolate" style={{ touchAction: 'manipulation' }}>
         <button
           type="button"
           className="w-16 h-16 rounded-full border-2 border-destructive/30 hover:border-destructive hover:bg-destructive/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-destructive/50"
+          style={{ touchAction: 'manipulation' }}
           disabled={isProcessing}
-          onClick={handleReject}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔴 Reject button tapped');
+            handleReject();
+          }}
           aria-label="Pass on this profile"
         >
           <X className="w-8 h-8 text-destructive" />
@@ -438,8 +441,14 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         <button
           type="button"
           className="w-16 h-16 rounded-full border-2 border-primary/30 hover:border-primary hover:bg-primary/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          style={{ touchAction: 'manipulation' }}
           disabled={isProcessing}
-          onClick={handleLike}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('💚 Like button tapped');
+            handleLike();
+          }}
           aria-label="Like this profile"
         >
           <Heart className="w-8 h-8 text-primary" />
