@@ -76,30 +76,46 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     setImageLoading(true);
   }, [profile.id, api]);
 
-  // Tinder-like swipe thresholds
-  // - Distance: ~30% of screen width triggers swipe
-  // - Velocity: Fast flick (>0.7) triggers regardless of distance
-  const SWIPE_THRESHOLD = typeof window !== 'undefined' ? window.innerWidth * 0.25 : 100;
-  const VELOCITY_THRESHOLD = 0.5;
+  // Mobile-friendly swipe thresholds - VERY sensitive
+  // - Distance: ~15% of screen width (about 50-60px on mobile)
+  // - Velocity: Any noticeable flick (>0.2)
+  const SWIPE_THRESHOLD = typeof window !== 'undefined' ? Math.max(50, window.innerWidth * 0.15) : 50;
+  const VELOCITY_THRESHOLD = 0.2;
 
   const bind = useDrag(
     ({ active, movement: [mx, my], velocity: [vx, vy], direction: [dx] }) => {
-      if (isProcessing) return;
+      if (isProcessing) {
+        console.log('🚫 Drag ignored - processing');
+        return;
+      }
 
-      // Tinder uses combined logic: high velocity OR sufficient distance
       const absVelocity = Math.abs(vx);
       const absDistance = Math.abs(mx);
       
-      // Trigger if: fast flick OR dragged past threshold
+      // Trigger if: any flick OR dragged past threshold
       const triggeredByVelocity = absVelocity > VELOCITY_THRESHOLD;
       const triggeredByDistance = absDistance > SWIPE_THRESHOLD;
       const shouldTrigger = triggeredByVelocity || triggeredByDistance;
       
-      // Direction based on movement (not velocity - more intuitive)
+      // Direction based on movement
       const isLike = mx > 0;
 
+      // Log every drag end for debugging
+      if (!active) {
+        console.log('👆 Drag ended:', { 
+          mx: Math.round(mx), 
+          vx: vx.toFixed(2), 
+          threshold: SWIPE_THRESHOLD,
+          velocityThreshold: VELOCITY_THRESHOLD,
+          triggeredByDistance,
+          triggeredByVelocity,
+          shouldTrigger,
+          hasSwipedRef: hasSwipedRef.current
+        });
+      }
+
       if (!active && shouldTrigger && !hasSwipedRef.current) {
-        console.log('🎯 Swipe triggered:', { isLike, velocity: vx, distance: mx });
+        console.log('🎯 SWIPE TRIGGERED:', { isLike, direction: isLike ? 'RIGHT/LIKE' : 'LEFT/PASS' });
         
         hasSwipedRef.current = true;
         setIsProcessing(true);
@@ -111,18 +127,16 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         
         api.start({
           x: flyOutDistance * direction,
-          y: my + (vy * 50), // Add slight vertical momentum
+          y: my + (vy * 50),
           rotate: direction * 15,
           opacity: 0,
-          config: { 
-            tension: 200, 
-            friction: 25,
-            clamp: true // Prevents overshoot
+          config: { tension: 200, friction: 25, clamp: true },
+          onRest: () => {
+            console.log('✅ Animation done, calling onSwipe(' + isLike + ')');
+            onSwipe(isLike);
           },
-          onRest: () => onSwipe(isLike),
         });
       } else if (active) {
-        // While dragging - follow finger with natural rotation
         const maxRotation = 12;
         const rotation = (mx / SWIPE_THRESHOLD) * maxRotation;
         
@@ -134,20 +148,20 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           immediate: true,
         });
       } else if (!active && !shouldTrigger) {
-        // Spring back to center with bounce
+        console.log('↩️ Swipe not enough, returning card');
         api.start({
           x: 0,
           y: 0,
           rotate: 0,
           opacity: 1,
-          config: { tension: 400, friction: 20 }, // Snappy spring back
+          config: { tension: 400, friction: 20 },
         });
       }
     },
     { 
       filterTaps: true,
       pointer: { touch: true },
-      threshold: 10, // Minimum movement before gesture starts
+      threshold: 10,
     }
   );
 
