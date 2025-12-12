@@ -265,31 +265,51 @@ const Chat = () => {
     if (!content.trim() && !mediaUrl) return;
 
     setSendingMessage(true);
+    
+    // Create optimistic message
+    const optimisticId = `temp-${Date.now()}`;
+    const optimisticMessage: Message = {
+      id: optimisticId,
+      content: content || '',
+      sender_id: currentUserId,
+      created_at: new Date().toISOString(),
+      message_type: mediaUrl ? "photo" : "text",
+      media_url: mediaUrl || null,
+      delivery_status: "sending"
+    };
+    
+    // Add message optimistically
+    setMessages(prev => [...prev, optimisticMessage]);
+    setTimeout(() => scrollToBottom(false), 50);
 
     try {
       haptics.light();
       console.log('📤 Sending message:', { content, mediaUrl, matchId, senderId: currentUserId });
       
-      const { error } = await supabase.from("messages").insert({
+      const { data, error } = await supabase.from("messages").insert({
         match_id: matchId,
         sender_id: currentUserId,
-        content: content || null,
+        content: content || '',
         message_type: mediaUrl ? "photo" : "text",
         media_url: mediaUrl || null,
-      });
+      }).select().single();
 
       if (error) {
         console.error('❌ Failed to send message:', error);
+        // Remove optimistic message on error
+        setMessages(prev => prev.filter(m => m.id !== optimisticId));
         throw error;
       }
 
-      console.log('✅ Message sent successfully');
+      console.log('✅ Message sent successfully:', data);
+      
+      // Replace optimistic message with real one
+      setMessages(prev => prev.map(m => 
+        m.id === optimisticId ? { ...data, delivery_status: 'sent' } : m
+      ));
       
       // Clear typing indicator
       await handleTyping(false);
-      
-      // Scroll to bottom after sending
-      setTimeout(() => scrollToBottom(false), 100);
     } catch (error) {
       logError(error, 'Chat.sendMessage');
       toast({
