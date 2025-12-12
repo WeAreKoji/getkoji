@@ -400,8 +400,8 @@ const Chat = () => {
           <div className="bg-card border-b border-border px-4 py-3 relative">
             {/* Back button - absolute left */}
             <button 
-              onClick={() => navigate(-1)}
-              aria-label="Go back"
+              onClick={() => navigate('/matches')}
+              aria-label="Go back to matches"
               className="absolute left-4 top-1/2 -translate-y-1/2 p-2 -ml-2 text-primary hover:text-primary/80 transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
