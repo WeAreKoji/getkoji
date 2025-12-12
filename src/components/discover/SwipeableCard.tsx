@@ -34,26 +34,27 @@ interface SwipeableCardProps {
 // Validate image URL - reject oversized base64 strings (>500KB)
 const isValidImageUrl = (url: string | null | undefined): boolean => {
   if (!url) return false;
-  // Reject oversized base64 strings (>500KB as text = ~500000 chars)
   if (url.startsWith('data:image') && url.length > 500000) return false;
   return true;
 };
 
 const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) => {
-  const hasSwipedRef = useRef(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  
+  // Use a ref to track if we've already triggered a swipe
+  const swipeTriggeredRef = useRef(false);
+  const cardIdRef = useRef(profile.id);
 
-  // Get all photos - prefer photos array, fallback to avatar_url (only if valid)
+  // Get all photos
   const allPhotos = profile.photos?.length > 0 
     ? profile.photos.filter(p => isValidImageUrl(p.photo_url))
     : isValidImageUrl(profile.avatar_url)
       ? [{ id: 'avatar', photo_url: profile.avatar_url!, order_index: 0 }]
       : [];
 
-  // Get current photo URL - validate before using
   const rawPhotoUrl = allPhotos[currentPhotoIndex]?.photo_url || profile.avatar_url;
   const currentPhotoUrl = isValidImageUrl(rawPhotoUrl) ? rawPhotoUrl : null;
 
@@ -65,90 +66,113 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     config: { tension: 300, friction: 30 },
   }));
 
-  // Reset state when profile changes (new card mounted)
+  // Reset when profile changes
   useEffect(() => {
-    console.log('🔄 Profile changed, resetting card state:', profile.id);
-    api.set({ x: 0, y: 0, rotate: 0, opacity: 1 });
-    hasSwipedRef.current = false;
-    setIsProcessing(false);
-    setCurrentPhotoIndex(0);
-    setImageError(false);
-    setImageLoading(true);
+    if (cardIdRef.current !== profile.id) {
+      console.log('🔄 New profile loaded:', profile.id);
+      cardIdRef.current = profile.id;
+      swipeTriggeredRef.current = false;
+      setIsProcessing(false);
+      setCurrentPhotoIndex(0);
+      setImageError(false);
+      setImageLoading(true);
+      api.set({ x: 0, y: 0, rotate: 0, opacity: 1 });
+    }
   }, [profile.id, api]);
 
-  // Mobile-friendly swipe thresholds - VERY sensitive
-  // - Distance: ~15% of screen width (about 50-60px on mobile)
-  // - Velocity: Any noticeable flick (>0.2)
-  const SWIPE_THRESHOLD = typeof window !== 'undefined' ? Math.max(50, window.innerWidth * 0.15) : 50;
-  const VELOCITY_THRESHOLD = 0.2;
+  // Safety reset - if stuck in processing for too long, reset
+  useEffect(() => {
+    if (isProcessing) {
+      const timeout = setTimeout(() => {
+        console.log('⚠️ Safety reset - processing took too long');
+        setIsProcessing(false);
+        swipeTriggeredRef.current = false;
+        api.set({ x: 0, y: 0, rotate: 0, opacity: 1 });
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isProcessing, api]);
+
+  // Execute swipe action - called immediately, not waiting for animation
+  const executeSwipe = useCallback((isLike: boolean) => {
+    if (swipeTriggeredRef.current) {
+      console.log('🚫 Swipe already triggered, ignoring');
+      return;
+    }
+    
+    console.log('🎯 EXECUTING SWIPE:', isLike ? 'LIKE' : 'PASS');
+    swipeTriggeredRef.current = true;
+    setIsProcessing(true);
+    
+    haptics[isLike ? 'medium' : 'light']();
+    
+    // Animate card off screen
+    const direction = isLike ? 1 : -1;
+    const flyOutDistance = window.innerWidth + 200;
+    
+    api.start({
+      x: flyOutDistance * direction,
+      rotate: direction * 20,
+      opacity: 0,
+      config: { tension: 200, friction: 25, clamp: true },
+    });
+    
+    // Call onSwipe IMMEDIATELY - don't wait for animation
+    // Use a tiny delay just to ensure state is set
+    setTimeout(() => {
+      console.log('✅ Calling onSwipe(' + isLike + ')');
+      onSwipe(isLike);
+    }, 50);
+  }, [api, onSwipe]);
+
+  // Very low thresholds for mobile
+  const SWIPE_THRESHOLD = 40;
+  const VELOCITY_THRESHOLD = 0.15;
 
   const bind = useDrag(
-    ({ active, movement: [mx, my], velocity: [vx, vy], direction: [dx] }) => {
-      if (isProcessing) {
-        console.log('🚫 Drag ignored - processing');
+    ({ active, movement: [mx, my], velocity: [vx], direction: [dx], first, tap }) => {
+      // Ignore taps - let them bubble to buttons
+      if (tap) return;
+      
+      if (isProcessing || swipeTriggeredRef.current) {
         return;
       }
 
       const absVelocity = Math.abs(vx);
       const absDistance = Math.abs(mx);
       
-      // Trigger if: any flick OR dragged past threshold
       const triggeredByVelocity = absVelocity > VELOCITY_THRESHOLD;
       const triggeredByDistance = absDistance > SWIPE_THRESHOLD;
       const shouldTrigger = triggeredByVelocity || triggeredByDistance;
       
-      // Direction based on movement
+      // Direction based on movement, not velocity direction
       const isLike = mx > 0;
 
-      // Log every drag end for debugging
       if (!active) {
-        console.log('👆 Drag ended:', { 
+        console.log('👆 Drag end:', { 
           mx: Math.round(mx), 
-          vx: vx.toFixed(2), 
-          threshold: SWIPE_THRESHOLD,
-          velocityThreshold: VELOCITY_THRESHOLD,
-          triggeredByDistance,
-          triggeredByVelocity,
+          vx: vx.toFixed(2),
           shouldTrigger,
-          hasSwipedRef: hasSwipedRef.current
+          isLike 
         });
       }
 
-      if (!active && shouldTrigger && !hasSwipedRef.current) {
-        console.log('🎯 SWIPE TRIGGERED:', { isLike, direction: isLike ? 'RIGHT/LIKE' : 'LEFT/PASS' });
-        
-        hasSwipedRef.current = true;
-        setIsProcessing(true);
-        
-        haptics[isLike ? 'medium' : 'light']();
-
-        const flyOutDistance = window.innerWidth + 200;
-        const direction = isLike ? 1 : -1;
-        
-        api.start({
-          x: flyOutDistance * direction,
-          y: my + (vy * 50),
-          rotate: direction * 15,
-          opacity: 0,
-          config: { tension: 200, friction: 25, clamp: true },
-          onRest: () => {
-            console.log('✅ Animation done, calling onSwipe(' + isLike + ')');
-            onSwipe(isLike);
-          },
-        });
+      if (!active && shouldTrigger) {
+        executeSwipe(isLike);
       } else if (active) {
+        // During drag - follow finger
         const maxRotation = 12;
-        const rotation = (mx / SWIPE_THRESHOLD) * maxRotation;
+        const rotation = (mx / 100) * maxRotation;
         
         api.start({
           x: mx,
-          y: my,
+          y: my * 0.5, // Reduce vertical movement
           rotate: Math.max(-maxRotation, Math.min(maxRotation, rotation)),
           opacity: 1,
           immediate: true,
         });
       } else if (!active && !shouldTrigger) {
-        console.log('↩️ Swipe not enough, returning card');
+        // Return to center
         api.start({
           x: 0,
           y: 0,
@@ -161,14 +185,18 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     { 
       filterTaps: true,
       pointer: { touch: true },
-      threshold: 10,
+      threshold: 5,
+      // Allow vertical scrolling, capture horizontal
+      axis: 'x',
     }
   );
 
-  const likeOpacity = x.to((x) => (x > 0 ? Math.min(x / 100, 1) : 0));
-  const rejectOpacity = x.to((x) => (x < 0 ? Math.min(Math.abs(x) / 100, 1) : 0));
+  const likeOpacity = x.to((val) => (val > 0 ? Math.min(val / 80, 1) : 0));
+  const rejectOpacity = x.to((val) => (val < 0 ? Math.min(Math.abs(val) / 80, 1) : 0));
 
-  const nextPhoto = () => {
+  const nextPhoto = (e?: React.MouseEvent | React.TouchEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (currentPhotoIndex < allPhotos.length - 1) {
       setCurrentPhotoIndex(prev => prev + 1);
       setImageError(false);
@@ -176,7 +204,9 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     }
   };
 
-  const previousPhoto = () => {
+  const previousPhoto = (e?: React.MouseEvent | React.TouchEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (currentPhotoIndex > 0) {
       setCurrentPhotoIndex(prev => prev - 1);
       setImageError(false);
@@ -199,65 +229,44 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     }
   };
 
-  const handleReject = useCallback(() => {
-    console.log('🔴 handleReject called', { isProcessing, hasSwipedRef: hasSwipedRef.current });
-    if (isProcessing || hasSwipedRef.current) {
-      console.log('🚫 Reject blocked - already processing');
-      return;
-    }
-    
-    haptics.light();
-    hasSwipedRef.current = true;
-    setIsProcessing(true);
-    
-    api.start({
-      x: -(200 + window.innerWidth),
-      rotate: -20,
-      opacity: 0,
-      config: { tension: 200, friction: 25 },
-      onRest: () => {
-        console.log('✅ Reject animation complete, calling onSwipe(false)');
-        onSwipe(false);
-      },
-    });
-  }, [isProcessing, api, onSwipe]);
+  // Button handlers - simple and direct
+  const handleRejectClick = useCallback(() => {
+    console.log('🔴 REJECT BUTTON CLICKED');
+    executeSwipe(false);
+  }, [executeSwipe]);
 
-  const handleLike = useCallback(() => {
-    console.log('💚 handleLike called', { isProcessing, hasSwipedRef: hasSwipedRef.current });
-    if (isProcessing || hasSwipedRef.current) {
-      console.log('🚫 Like blocked - already processing');
-      return;
+  const handleLikeClick = useCallback(() => {
+    console.log('💚 LIKE BUTTON CLICKED');
+    executeSwipe(true);
+  }, [executeSwipe]);
+
+  const handleProfileOpen = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onProfileOpen) {
+      onProfileOpen();
     }
-    
-    haptics.medium();
-    hasSwipedRef.current = true;
-    setIsProcessing(true);
-    
-    api.start({
-      x: 200 + window.innerWidth,
-      rotate: 20,
-      opacity: 0,
-      config: { tension: 200, friction: 25 },
-      onRest: () => {
-        console.log('✅ Like animation complete, calling onSwipe(true)');
-        onSwipe(true);
-      },
-    });
-  }, [isProcessing, api, onSwipe]);
+  }, [onProfileOpen]);
 
   return (
     <div className="relative w-full max-w-sm mx-auto flex flex-col">
-      {/* Draggable card area */}
+      {/* Swipeable Card */}
       <animated.div
         {...bind()}
-        style={{ x, y, rotate, opacity, touchAction: "none" }}
-        className={`rounded-2xl overflow-hidden shadow-2xl bg-card select-none ${
+        style={{ 
+          x, 
+          y, 
+          rotate: rotate.to(r => `${r}deg`), 
+          opacity,
+          touchAction: 'pan-y',
+        }}
+        className={cn(
+          "rounded-2xl overflow-hidden shadow-2xl bg-card select-none",
           isProcessing ? 'pointer-events-none' : 'cursor-grab active:cursor-grabbing'
-        }`}
+        )}
       >
-        {/* Image container - pointer-events-none for drag passthrough */}
         <div 
-          className="relative w-full pointer-events-none"
+          className="relative w-full"
           style={{ aspectRatio: '3/4', minHeight: '400px' }}
         >
           {/* Profile Image */}
@@ -289,26 +298,28 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
             </div>
           )}
 
-          {/* Photo navigation zones - re-enable pointer events */}
+          {/* Photo navigation tap zones */}
           {allPhotos.length > 1 && (
-            <div className="absolute inset-0 flex pointer-events-auto">
-              <div 
-                className="w-1/3 h-full cursor-pointer" 
+            <div className="absolute inset-0 flex z-30">
+              <button 
+                type="button"
+                className="w-1/3 h-full bg-transparent" 
                 onClick={previousPhoto}
-                onTouchEnd={(e) => { e.preventDefault(); previousPhoto(); }}
+                aria-label="Previous photo"
               />
               <div className="w-1/3 h-full" />
-              <div 
-                className="w-1/3 h-full cursor-pointer" 
+              <button 
+                type="button"
+                className="w-1/3 h-full bg-transparent" 
                 onClick={nextPhoto}
-                onTouchEnd={(e) => { e.preventDefault(); nextPhoto(); }}
+                aria-label="Next photo"
               />
             </div>
           )}
           
           {/* Photo indicators */}
           {allPhotos.length > 1 && (
-            <div className="absolute top-3 left-3 right-3 flex gap-1 z-10">
+            <div className="absolute top-3 left-3 right-3 flex gap-1 z-10 pointer-events-none">
               {allPhotos.map((_, idx) => (
                 <div
                   key={idx}
@@ -321,21 +332,23 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
             </div>
           )}
 
-          {/* Navigation arrows (desktop only) */}
+          {/* Desktop navigation arrows */}
           {allPhotos.length > 1 && (
             <>
               {currentPhotoIndex > 0 && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); previousPhoto(); }}
-                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10 pointer-events-auto"
+                  type="button"
+                  onClick={previousPhoto}
+                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-40"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
               )}
               {currentPhotoIndex < allPhotos.length - 1 && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); nextPhoto(); }}
-                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-10 pointer-events-auto"
+                  type="button"
+                  onClick={nextPhoto}
+                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors z-40"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -345,7 +358,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
 
           {/* Creator Badge */}
           {profile.is_creator && (
-            <div className="absolute top-12 left-3 flex items-center gap-1.5 bg-accent/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg z-10">
+            <div className="absolute top-12 left-3 flex items-center gap-1.5 bg-accent/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg z-10 pointer-events-none">
               <Sparkles className="w-3.5 h-3.5 text-white" />
               <span className="text-white font-semibold text-xs">Creator</span>
               {profile.id_verified && <BadgeCheck className="w-3.5 h-3.5 text-white" />}
@@ -354,7 +367,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
 
           {/* Subscription Price */}
           {profile.is_creator && profile.creator_subscription_price && (
-            <div className="absolute top-12 right-3 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-full text-white text-xs font-semibold shadow-lg z-10">
+            <div className="absolute top-12 right-3 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-full text-white text-xs font-semibold shadow-lg z-10 pointer-events-none">
               ${profile.creator_subscription_price}/mo
             </div>
           )}
@@ -362,7 +375,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           {/* Like Indicator */}
           <animated.div
             style={{ opacity: likeOpacity }}
-            className="absolute top-20 left-4 bg-primary/90 backdrop-blur-sm px-4 py-2 rounded-xl rotate-[-20deg] border-2 border-white shadow-xl z-20"
+            className="absolute top-20 left-4 bg-primary/90 backdrop-blur-sm px-4 py-2 rounded-xl rotate-[-20deg] border-2 border-white shadow-xl z-20 pointer-events-none"
           >
             <Heart className="w-8 h-8 text-white fill-white" />
           </animated.div>
@@ -370,23 +383,22 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
           {/* Reject Indicator */}
           <animated.div
             style={{ opacity: rejectOpacity }}
-            className="absolute top-20 right-4 bg-destructive/90 backdrop-blur-sm px-4 py-2 rounded-xl rotate-[20deg] border-2 border-white shadow-xl z-20"
+            className="absolute top-20 right-4 bg-destructive/90 backdrop-blur-sm px-4 py-2 rounded-xl rotate-[20deg] border-2 border-white shadow-xl z-20 pointer-events-none"
           >
             <X className="w-8 h-8 text-white" />
           </animated.div>
 
-          {/* Profile info overlay at bottom - re-enable pointer events for button */}
+          {/* Profile info overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 text-white z-10">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-2xl font-bold truncate flex-1">
                 {profile.display_name}, {profile.age}
               </h2>
-              {/* View profile button */}
               {onProfileOpen && (
                 <button 
-                  onClick={(e) => { e.stopPropagation(); onProfileOpen(); }}
-                  onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); onProfileOpen(); }}
-                  className="ml-2 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors pointer-events-auto"
+                  type="button"
+                  onClick={handleProfileOpen}
+                  className="ml-2 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors z-50"
                   aria-label="View full profile"
                 >
                   <ChevronUp className="w-5 h-5" />
@@ -395,7 +407,7 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
             </div>
             
             {(profile.city || profile.distance_km) && (
-              <div className="flex items-center gap-1.5 mb-2 text-sm text-white/90">
+              <div className="flex items-center gap-1.5 mb-2 text-sm text-white/90 pointer-events-none">
                 <MapPin className="w-3.5 h-3.5" />
                 <span>
                   {profile.city}
@@ -407,10 +419,10 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
             )}
             
             {profile.bio && (
-              <p className="text-white/80 text-sm mb-3 line-clamp-2">{profile.bio}</p>
+              <p className="text-white/80 text-sm mb-3 line-clamp-2 pointer-events-none">{profile.bio}</p>
             )}
             
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5 pointer-events-none">
               <Badge variant="outline" className={cn("capitalize text-xs", getIntentColor(profile.intent))}>
                 {profile.intent.replace("_", " ")}
               </Badge>
@@ -435,34 +447,36 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
         </div>
       </animated.div>
 
-      {/* Action buttons - touch-action: manipulation for better mobile response */}
-      <div className="p-6 flex justify-center gap-8 isolate" style={{ touchAction: 'manipulation' }}>
+      {/* Action Buttons - Completely isolated from drag gestures */}
+      <div 
+        className="p-6 flex justify-center gap-8"
+        style={{ touchAction: 'manipulation' }}
+      >
         <button
           type="button"
-          className="w-16 h-16 rounded-full border-2 border-destructive/30 hover:border-destructive hover:bg-destructive/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-destructive/50"
-          style={{ touchAction: 'manipulation' }}
           disabled={isProcessing}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🔴 Reject button tapped');
-            handleReject();
-          }}
+          onClick={handleRejectClick}
+          className={cn(
+            "w-16 h-16 rounded-full border-2 border-destructive/30 bg-card flex items-center justify-center shadow-xl transition-all duration-200",
+            "hover:border-destructive hover:bg-destructive/20",
+            "active:scale-90 focus:outline-none focus:ring-2 focus:ring-destructive/50",
+            isProcessing && "opacity-50 cursor-not-allowed"
+          )}
           aria-label="Pass on this profile"
         >
           <X className="w-8 h-8 text-destructive" />
         </button>
+        
         <button
           type="button"
-          className="w-16 h-16 rounded-full border-2 border-primary/30 hover:border-primary hover:bg-primary/20 bg-card flex items-center justify-center shadow-xl disabled:opacity-50 transition-all duration-200 active:scale-90 focus:outline-none focus:ring-2 focus:ring-primary/50"
-          style={{ touchAction: 'manipulation' }}
           disabled={isProcessing}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('💚 Like button tapped');
-            handleLike();
-          }}
+          onClick={handleLikeClick}
+          className={cn(
+            "w-16 h-16 rounded-full border-2 border-primary/30 bg-card flex items-center justify-center shadow-xl transition-all duration-200",
+            "hover:border-primary hover:bg-primary/20",
+            "active:scale-90 focus:outline-none focus:ring-2 focus:ring-primary/50",
+            isProcessing && "opacity-50 cursor-not-allowed"
+          )}
           aria-label="Like this profile"
         >
           <Heart className="w-8 h-8 text-primary" />
