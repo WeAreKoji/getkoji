@@ -1,18 +1,16 @@
-// Service Worker with Stale-While-Revalidate strategy
-const CACHE_VERSION = 'v4';
+// Service Worker with Network-First strategy for code, Cache-First for static assets
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `koji-${CACHE_VERSION}`;
-const RUNTIME_CACHE = `koji-runtime-${CACHE_VERSION}`;
 
-// Assets to cache on install
-const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+// Only cache static assets (images, fonts) - NOT code
+const CACHEABLE_EXTENSIONS = [
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico',
+  '.woff', '.woff2', '.ttf', '.eot'
 ];
 
-// Patterns to bypass caching entirely (dev assets, Supabase, etc.)
-const BYPASS_CACHE_PATTERNS = [
-  '/node_modules/.vite/',
+// Patterns to NEVER cache (always fetch fresh)
+const NEVER_CACHE_PATTERNS = [
+  '/node_modules/',
   '/@vite/',
   '/src/',
   '.hot-update',
@@ -20,118 +18,107 @@ const BYPASS_CACHE_PATTERNS = [
   '.map',
   'supabase.co',
   'supabase.in',
+  '.js',
+  '.css',
+  '.html',
+  '/index.html',
+  'manifest.json'
 ];
 
-// Check if URL should bypass cache
-const shouldBypassCache = (url) => {
-  return BYPASS_CACHE_PATTERNS.some(pattern => url.includes(pattern));
+// Check if URL should never be cached
+const shouldNeverCache = (url) => {
+  return NEVER_CACHE_PATTERNS.some(pattern => url.includes(pattern));
 };
 
-// Install event - cache core assets
+// Check if URL is a cacheable static asset
+const isCacheableAsset = (url) => {
+  return CACHEABLE_EXTENSIONS.some(ext => url.endsWith(ext));
+};
+
+// Install event - skip waiting immediately
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
-  );
+  console.log('[SW] Installing new version:', CACHE_VERSION);
+  // Force immediate activation
+  self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and take control immediately
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating new version:', CACHE_VERSION);
   event.waitUntil(
     caches.keys().then((cacheNames) =>
       Promise.all(
         cacheNames
-          .filter((name) => {
-            // Delete any cache that isn't the current version
-            return name.startsWith('koji-') && 
-                   name !== CACHE_NAME && 
-                   name !== RUNTIME_CACHE;
-          })
+          .filter((name) => name.startsWith('koji-') && name !== CACHE_NAME)
           .map((name) => {
             console.log('[SW] Deleting old cache:', name);
             return caches.delete(name);
           })
       )
     ).then(() => {
-      console.log('[SW] Activated, claiming clients');
+      console.log('[SW] Taking control of all clients');
+      // Take control of all pages immediately
       return self.clients.claim();
     })
   );
 });
 
-// Fetch event - Stale-While-Revalidate strategy
+// Fetch event - Network-first for code, Cache-first for static assets
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
   const url = event.request.url;
 
-  // Skip caching for certain patterns
-  if (shouldBypassCache(url)) {
-    return; // Let browser handle normally
+  // Never cache these - let browser handle normally (always fresh)
+  if (shouldNeverCache(url)) {
+    return;
   }
 
-  // For navigation requests (HTML pages), use network-first
+  // For navigation requests (HTML pages), ALWAYS use network-first
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .then((response) => {
-          // Clone and cache the fresh response
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-          return response;
-        })
         .catch(() => {
-          // Fallback to cache if offline
-          return caches.match(event.request).then((cachedResponse) => {
-            return cachedResponse || caches.match('/');
-          });
+          // Only use cache if completely offline
+          return caches.match('/index.html');
         })
     );
     return;
   }
 
-  // For other requests, use stale-while-revalidate
-  event.respondWith(
-    caches.open(RUNTIME_CACHE).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        // Start fetch in background regardless
-        const fetchPromise = fetch(event.request)
-          .then((networkResponse) => {
-            // Only cache successful responses
+  // For static assets (images, fonts), use cache-first
+  if (isCacheableAsset(url)) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          return fetch(event.request).then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
               cache.put(event.request, networkResponse.clone());
             }
             return networkResponse;
-          })
-          .catch((error) => {
-            console.log('[SW] Fetch failed:', error);
-            return cachedResponse; // Return cached if network fails
           });
+        });
+      })
+    );
+    return;
+  }
 
-        // Return cached response immediately, or wait for network
-        return cachedResponse || fetchPromise;
-      });
-    })
+  // For everything else, use network-first (fresh content)
+  event.respondWith(
+    fetch(event.request)
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
 
-// Listen for messages from the main thread
+// Listen for skip waiting message
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[SW] Skip waiting requested');
     self.skipWaiting();
   }
-  
-  if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({ version: CACHE_VERSION });
-  }
-});
-
-// Notify clients when there's a new version
-self.addEventListener('controllerchange', () => {
-  console.log('[SW] Controller changed - new version active');
 });
