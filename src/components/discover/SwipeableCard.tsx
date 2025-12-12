@@ -76,70 +76,78 @@ const SwipeableCard = ({ profile, onSwipe, onProfileOpen }: SwipeableCardProps) 
     setImageLoading(true);
   }, [profile.id, api]);
 
+  // Tinder-like swipe thresholds
+  // - Distance: ~30% of screen width triggers swipe
+  // - Velocity: Fast flick (>0.7) triggers regardless of distance
+  const SWIPE_THRESHOLD = typeof window !== 'undefined' ? window.innerWidth * 0.25 : 100;
+  const VELOCITY_THRESHOLD = 0.5;
+
   const bind = useDrag(
-    ({ active, movement: [mx, my], velocity: [vx], direction: [dx], event }) => {
-      if (isProcessing) {
-        console.log('🚫 Drag blocked - isProcessing');
-        return;
-      }
+    ({ active, movement: [mx, my], velocity: [vx, vy], direction: [dx] }) => {
+      if (isProcessing) return;
 
-      // Lower thresholds for mobile - trigger on 80px movement OR velocity > 0.3
-      const isMobile = window.innerWidth < 768;
-      const movementThreshold = isMobile ? 80 : 150;
-      const velocityThreshold = isMobile ? 0.3 : 0.5;
+      // Tinder uses combined logic: high velocity OR sufficient distance
+      const absVelocity = Math.abs(vx);
+      const absDistance = Math.abs(mx);
       
-      const trigger = vx > velocityThreshold || Math.abs(mx) > movementThreshold;
-      const isLike = mx > 0; // Use actual movement direction, not velocity direction
+      // Trigger if: fast flick OR dragged past threshold
+      const triggeredByVelocity = absVelocity > VELOCITY_THRESHOLD;
+      const triggeredByDistance = absDistance > SWIPE_THRESHOLD;
+      const shouldTrigger = triggeredByVelocity || triggeredByDistance;
+      
+      // Direction based on movement (not velocity - more intuitive)
+      const isLike = mx > 0;
 
-      console.log('🖐️ Drag event:', { active, mx, vx, trigger, isLike, isMobile, movementThreshold });
-
-      if (!active && trigger && !hasSwipedRef.current) {
-        console.log('🎯 Swipe triggered:', { isLike, profileId: profile.id });
+      if (!active && shouldTrigger && !hasSwipedRef.current) {
+        console.log('🎯 Swipe triggered:', { isLike, velocity: vx, distance: mx });
         
         hasSwipedRef.current = true;
         setIsProcessing(true);
         
-        if (isLike) {
-          haptics.medium();
-        } else {
-          haptics.light();
-        }
+        haptics[isLike ? 'medium' : 'light']();
 
-        const swipeDirection = isLike ? 1 : -1;
+        const flyOutDistance = window.innerWidth + 200;
+        const direction = isLike ? 1 : -1;
+        
         api.start({
-          x: (200 + window.innerWidth) * swipeDirection,
-          y: my,
-          rotate: swipeDirection * 20,
+          x: flyOutDistance * direction,
+          y: my + (vy * 50), // Add slight vertical momentum
+          rotate: direction * 15,
           opacity: 0,
-          config: { tension: 200, friction: 20 },
-          onRest: () => {
-            console.log('✅ Swipe animation complete');
-            onSwipe(isLike);
+          config: { 
+            tension: 200, 
+            friction: 25,
+            clamp: true // Prevents overshoot
           },
+          onRest: () => onSwipe(isLike),
         });
       } else if (active) {
-        const rotation = mx / 20;
+        // While dragging - follow finger with natural rotation
+        const maxRotation = 12;
+        const rotation = (mx / SWIPE_THRESHOLD) * maxRotation;
+        
         api.start({
           x: mx,
           y: my,
-          rotate: rotation,
+          rotate: Math.max(-maxRotation, Math.min(maxRotation, rotation)),
           opacity: 1,
           immediate: true,
         });
-      } else if (!active && !trigger) {
-        // Reset position when released without triggering
-        console.log('↩️ Swipe not triggered, resetting position');
+      } else if (!active && !shouldTrigger) {
+        // Spring back to center with bounce
         api.start({
           x: 0,
           y: 0,
           rotate: 0,
           opacity: 1,
+          config: { tension: 400, friction: 20 }, // Snappy spring back
         });
       }
     },
     { 
       filterTaps: true,
-      pointer: { touch: true }
+      pointer: { touch: true },
+      threshold: 10, // Minimum movement before gesture starts
     }
   );
 
