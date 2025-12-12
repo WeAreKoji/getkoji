@@ -36,6 +36,12 @@ interface LikesYouCardProps {
 const LikesYouCard = ({ profile, likedAt, onLikeBack, onPass, onViewProfile, loading }: LikesYouCardProps) => {
   const [actionLoading, setActionLoading] = useState<'like' | 'pass' | null>(null);
 
+  // Get the best available image: avatar_url first, then first photo
+  const profileImage = profile.avatar_url || 
+    (profile.photos && profile.photos.length > 0 
+      ? profile.photos.sort((a, b) => a.order_index - b.order_index)[0]?.photo_url 
+      : null);
+
   const handleLikeBack = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setActionLoading('like');
@@ -62,7 +68,7 @@ const LikesYouCard = ({ profile, likedAt, onLikeBack, onPass, onViewProfile, loa
       onClick={handleCardClick}
     >
       <Avatar className="w-14 h-14 border-2 border-primary/20">
-        <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name} />
+        <AvatarImage src={profileImage || undefined} alt={profile.display_name} />
         <AvatarFallback className="bg-primary/10 text-primary font-semibold">
           {profile.display_name?.charAt(0)?.toUpperCase() || "?"}
         </AvatarFallback>
