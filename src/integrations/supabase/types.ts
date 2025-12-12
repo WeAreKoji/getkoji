@@ -3038,7 +3038,6 @@ export type Database = {
             Args: {
               _event_type: Database["public"]["Enums"]["security_event_type"]
               _ip_address?: unknown
-              _location_info?: Json
               _metadata?: Json
               _severity?: string
               _user_agent?: string
@@ -3050,6 +3049,7 @@ export type Database = {
             Args: {
               _event_type: Database["public"]["Enums"]["security_event_type"]
               _ip_address?: unknown
+              _location_info?: Json
               _metadata?: Json
               _severity?: string
               _user_agent?: string
