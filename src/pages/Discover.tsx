@@ -19,6 +19,7 @@ import { ClientRateLimiter } from "@/lib/rate-limit-client";
 import { ActiveFilters } from "@/components/discover/ActiveFilters";
 import { InviteEarnModal } from "@/components/referrals/InviteEarnModal";
 import { useOnboardingModal } from "@/hooks/useOnboardingModal";
+import { APP_VERSION } from "@/lib/version";
 
 interface Profile {
   id: string;
@@ -483,7 +484,7 @@ const Discover = () => {
           />
 
           <p className="text-center text-muted-foreground mt-2 text-xs">
-            {profiles.length - currentIndex - 1} profiles remaining
+            {profiles.length - currentIndex - 1} profiles remaining • v{APP_VERSION}
           </p>
         </div>
 
