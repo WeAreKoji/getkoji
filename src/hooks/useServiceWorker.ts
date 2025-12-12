@@ -22,6 +22,10 @@ export const useServiceWorker = () => {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         window.location.reload();
       }, { once: true });
+    } else {
+      // No waiting worker - just reload to get the latest version
+      // This handles the case where service worker auto-activates with skipWaiting()
+      window.location.reload();
     }
   }, [state.registration]);
 
