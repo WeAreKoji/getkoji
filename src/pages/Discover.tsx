@@ -20,7 +20,7 @@ import { ActiveFilters } from "@/components/discover/ActiveFilters";
 import { InviteEarnModal } from "@/components/referrals/InviteEarnModal";
 import { useOnboardingModal } from "@/hooks/useOnboardingModal";
 import { APP_VERSION } from "@/lib/version";
-
+import { getAllDemoProfiles, DemoProfile } from "@/data/demoProfiles";
 interface Profile {
   id: string;
   display_name: string;
@@ -188,6 +188,25 @@ const Discover = () => {
     }
   };
 
+  // Convert demo profiles to match the Profile interface
+  const convertDemoToProfile = (demo: DemoProfile): Profile => ({
+    id: demo.id,
+    display_name: demo.display_name,
+    username: null,
+    bio: demo.bio,
+    age: demo.age,
+    city: demo.city,
+    avatar_url: demo.photos[0]?.photo_url || null,
+    intent: demo.intent,
+    photos: demo.photos,
+    photo_count: demo.photos.length,
+    interests: demo.interests,
+    is_creator: demo.is_creator,
+    creator_subscription_price: demo.subscription_price || null,
+    creator_tagline: null,
+    id_verified: false,
+  });
+
   const loadProfiles = async (userId: string) => {
     try {
       // Use smart ranked RPC function
@@ -218,14 +237,25 @@ const Discover = () => {
       // Update last_active for current user
       supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", userId).then();
 
-      setProfiles(validProfiles);
+      // If no real profiles found, use demo profiles as fallback
+      if (validProfiles.length === 0) {
+        console.log('No real profiles found, loading demo profiles for testing/presentation');
+        const demoProfiles = getAllDemoProfiles().map(convertDemoToProfile);
+        // Shuffle demo profiles for variety
+        const shuffled = demoProfiles.sort(() => Math.random() - 0.5);
+        setProfiles(shuffled);
+      } else {
+        setProfiles(validProfiles);
+      }
+      
       setCurrentIndex(0); // Reset index when loading new profiles
     } catch (error: any) {
-      toast({
-        title: "Error loading profiles",
-        description: error.message,
-        variant: "destructive"
-      });
+      // On error, also fallback to demo profiles for testing
+      console.error('Error loading profiles, using demo data:', error);
+      const demoProfiles = getAllDemoProfiles().map(convertDemoToProfile);
+      const shuffled = demoProfiles.sort(() => Math.random() - 0.5);
+      setProfiles(shuffled);
+      setCurrentIndex(0);
     } finally {
       setLoading(false);
     }
