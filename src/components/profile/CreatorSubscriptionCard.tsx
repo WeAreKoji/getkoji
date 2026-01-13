@@ -1,14 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, FileText, DollarSign, Sparkles, Lock } from "lucide-react";
+import { Users, FileText, DollarSign, Sparkles, Lock, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { logError } from "@/lib/error-logger";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreatorSubscriptionCardProps {
   creatorId: string;
@@ -16,9 +16,10 @@ interface CreatorSubscriptionCardProps {
 }
 
 export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubscriptionCardProps) => {
-  const navigate = useNavigate();
+  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(true);
+  const [subscribing, setSubscribing] = useState(false);
   const [subscriptionPrice, setSubscriptionPrice] = useState<number>(0);
   const [subscriberCount, setSubscriberCount] = useState<number>(0);
   const [postCount, setPostCount] = useState<number>(0);
@@ -72,8 +73,32 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
     }
   };
 
-  const handleSubscribe = () => {
-    navigate(`/creators`); // Navigate to creator subscription flow
+  const handleSubscribe = async () => {
+    setSubscribing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { creatorId }
+      });
+      
+      if (error) {
+        throw new Error(error.message || "Failed to create checkout session");
+      }
+      
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("No checkout URL received");
+      }
+    } catch (error: any) {
+      logError(error, 'CreatorSubscriptionCard.handleSubscribe');
+      toast({
+        title: "Subscription Error",
+        description: error.message || "Unable to start subscription. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   if (loading) {
@@ -146,12 +171,17 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
             onClick={handleSubscribe}
             className="w-full h-11 text-sm font-semibold"
             variant={isSubscribed ? "outline" : "default"}
-            disabled={isSubscribed}
+            disabled={isSubscribed || subscribing}
           >
             {isSubscribed ? (
               <>
                 <DollarSign className="w-4 h-4 mr-2" />
                 Subscribed
+              </>
+            ) : subscribing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Starting checkout...
               </>
             ) : (
               <>
