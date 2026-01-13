@@ -77,3 +77,6 @@ verify_jwt = true
 
 [functions.get-nearby-profiles]
 verify_jwt = true
+
+[functions.fix-creator-stripe]
+verify_jwt = true

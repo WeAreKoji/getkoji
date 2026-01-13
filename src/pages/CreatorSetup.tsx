@@ -94,26 +94,23 @@ const CreatorSetup = () => {
 
       if (profileError) throw profileError;
 
-      // Then create Stripe product and price
-      const { error: productError } = await supabase.functions.invoke(
+      // Then create Stripe product and price - this is mandatory for subscriptions
+      const { data: productData, error: productError } = await supabase.functions.invoke(
         "create-creator-product",
         {
           body: { subscriptionPrice: priceAmount },
         }
       );
 
-      if (productError) {
-        logWarning('Stripe product creation failed during creator setup', 'CreatorSetup');
-        toast({
-          title: "Warning",
-          description: "Profile created but Stripe setup incomplete. You can set it up later.",
-          variant: "default",
-        });
+      if (productError || !productData?.priceId) {
+        // Delete the incomplete profile since Stripe setup failed
+        await supabase.from("creator_profiles").delete().eq("user_id", user.id);
+        throw new Error("Failed to set up payment processing. Please try again.");
       }
 
       toast({
         title: "Creator profile created! 🎉",
-        description: "You can now start posting content",
+        description: "You can now start posting content and accept subscriptions",
       });
 
       navigate(`/creator/${user.id}`);
