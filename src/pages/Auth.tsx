@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
 import { validateAuthSignup, validateAuthLogin } from "@/lib/auth-validation";
 import { logError, getUserFriendlyError } from "@/lib/error-logger";
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const Auth = () => {
+  const { user, loading: authLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,6 +26,13 @@ const Auth = () => {
   const { toast } = useToast();
 
   const HCAPTCHA_SITE_KEY = "27e08e88-27e2-4dac-896c-d14c86da4f92";
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/discover", { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   // Check for referral code in URL on mount
   useEffect(() => {
@@ -165,6 +174,24 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render form if user is already authenticated (will redirect)
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
