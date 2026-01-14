@@ -288,6 +288,7 @@ const CreatorDashboard = () => {
                 userId={userId}
                 payoutInfo={payoutInfo}
                 failedTransfers={failedTransfers}
+                onRefetch={refetch}
               />
 
               {/* Quick Actions */}
