@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, FileText, DollarSign, Sparkles, Lock, Loader2 } from "lucide-react";
+import { Users, FileText, DollarSign, Sparkles, Lock, Loader2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +24,7 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
   const [subscriberCount, setSubscriberCount] = useState<number>(0);
   const [postCount, setPostCount] = useState<number>(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [hasStripeSetup, setHasStripeSetup] = useState(true);
 
   useEffect(() => {
     fetchCreatorData();
@@ -31,16 +32,17 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
 
   const fetchCreatorData = async () => {
     try {
-      // Fetch creator profile
+      // Fetch creator profile including stripe_price_id
       const { data: creatorProfile } = await supabase
         .from("creator_profiles")
-        .select("subscription_price, subscriber_count")
+        .select("subscription_price, subscriber_count, stripe_price_id")
         .eq("user_id", creatorId)
         .single();
 
       if (creatorProfile) {
         setSubscriptionPrice(parseFloat(String(creatorProfile.subscription_price)));
         setSubscriberCount(creatorProfile.subscriber_count || 0);
+        setHasStripeSetup(!!creatorProfile.stripe_price_id);
       }
 
       // Fetch post count
@@ -86,6 +88,17 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
       
       if (data?.url) {
         window.open(data.url, "_blank");
+      } else if (data?.error) {
+        // Handle specific error messages from the function
+        if (data.error.includes("Creator price not found")) {
+          toast({
+            title: "Subscription Not Available",
+            description: "This creator hasn't completed their payment setup yet. Please try again later.",
+            variant: "destructive",
+          });
+        } else {
+          throw new Error(data.error);
+        }
       } else {
         throw new Error("No checkout URL received");
       }
@@ -145,7 +158,7 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
         </div>
 
         {/* Benefits */}
-        {!isOwnProfile && (
+        {!isOwnProfile && hasStripeSetup && (
           <div className="space-y-2 pt-2 border-t border-border">
             <p className="text-sm font-medium">What you'll get:</p>
             <ul className="space-y-1.5">
@@ -165,13 +178,23 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
           </div>
         )}
 
+        {/* Subscription not available message */}
+        {!isOwnProfile && !hasStripeSetup && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border">
+            <AlertCircle className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <p className="text-xs text-muted-foreground">
+              Subscriptions coming soon for this creator
+            </p>
+          </div>
+        )}
+
         {/* CTA */}
         {!isOwnProfile && (
           <Button 
             onClick={handleSubscribe}
             className="w-full h-11 text-sm font-semibold"
             variant={isSubscribed ? "outline" : "default"}
-            disabled={isSubscribed || subscribing}
+            disabled={isSubscribed || subscribing || !hasStripeSetup}
           >
             {isSubscribed ? (
               <>
@@ -182,6 +205,11 @@ export const CreatorSubscriptionCard = ({ creatorId, isOwnProfile }: CreatorSubs
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Starting checkout...
+              </>
+            ) : !hasStripeSetup ? (
+              <>
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Coming Soon
               </>
             ) : (
               <>
